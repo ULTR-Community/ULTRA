@@ -15,5 +15,6 @@
     "metrics": [
         "mrr", "ndcg"
     ],
-    "metrics_topn" : [3,5,10]
+    "metrics_topn" : [3,5,10],
+    "objective_metric": "ndcg_3"
 }

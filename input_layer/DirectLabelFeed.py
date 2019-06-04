@@ -52,19 +52,22 @@ class DirectLabelFeed:
         self.batch_size = batch_size
         self.model = model
         
-    def prepare_true_labels_with_index(self, data_set, index, docid_inputs, letor_features, labels):
+    def prepare_true_labels_with_index(self, data_set, index, docid_inputs, letor_features, labels, check_validation=True):
         i = index
+        # Generate label list.
+        label_list = [0 if data_set.initial_list[i][x] < 0 else data_set.labels[i][x] for x in range(len(data_set.initial_list[i]))]
+
+        # Check if data is valid
+        if check_validation and sum(label_list) == 0:
+            return
         base = len(letor_features)
         for x in data_set.initial_list[i]:
             if x >= 0:
                 letor_features.append(data_set.features[x])
         docid_inputs.append(list([-1 if data_set.initial_list[i][x] < 0 else base+x for x in range(len(data_set.initial_list[i]))]))
-            
-        # Generate clicks with click models.
-        label_list = [0 if data_set.initial_list[i][x] < 0 else data_set.labels[i][x] for x in range(len(data_set.initial_list[i]))]
         labels.append(label_list)
     
-    def get_batch(self, data_set):
+    def get_batch(self, data_set, check_validation=True):
         """Get a random batch of data, prepare for step. Typically used for training.
 
         To feed data in step(..) it must be a list of batch-major vectors, while
@@ -73,6 +76,7 @@ class DirectLabelFeed:
 
         Args:
             data_set: (Raw_data) The dataset used to build the input layer.
+            check_validation: (bool) Set True to ignore data with no positive labels.
 
         Returns:
             input_feed: a feed dictionary for the next step
@@ -90,10 +94,11 @@ class DirectLabelFeed:
             i = int(random.random() * length)
             rank_list_idxs.append(i)
             self.prepare_true_labels_with_index(data_set, i,
-                                docid_inputs, letor_features, labels)
+                                docid_inputs, letor_features, labels, check_validation)
 
+        local_batch_size = len(docid_inputs)
         letor_features_length = len(letor_features)
-        for i in range(self.batch_size):
+        for i in range(local_batch_size):
             for j in range(self.rank_list_size):
                 if docid_inputs[i][j] < 0:
                     docid_inputs[i][j] = letor_features_length
@@ -105,11 +110,11 @@ class DirectLabelFeed:
             # Batch encoder inputs are just re-indexed docid_inputs.
             batch_docid_inputs.append(
                 np.array([docid_inputs[batch_idx][length_idx]
-                    for batch_idx in range(self.batch_size)], dtype=np.float32))
+                    for batch_idx in range(local_batch_size)], dtype=np.float32))
             # Batch decoder inputs are re-indexed decoder_inputs, we create labels.
             batch_labels.append(
                 np.array([labels[batch_idx][length_idx]
-                        for batch_idx in range(self.batch_size)], dtype=np.float32))
+                        for batch_idx in range(local_batch_size)], dtype=np.float32))
         # Create input feed map
         input_feed = {}
         input_feed[self.model.letor_features.name] = np.array(letor_features)
@@ -126,7 +131,7 @@ class DirectLabelFeed:
 
         return input_feed, info_map
 
-    def get_next_batch(self, index, data_set):
+    def get_next_batch(self, index, data_set, check_validation=True):
         """Get the next batch of data from a specific index, prepare for step. 
            Typically used for validation.
 
@@ -137,6 +142,7 @@ class DirectLabelFeed:
         Args:
             index: the index of the data before which we will use to create the data batch.
             data_set: (Raw_data) The dataset used to build the input layer.
+            check_validation: (bool) Set True to ignore data with no positive labels.
 
         Returns:
             input_feed: a feed dictionary for the next step
@@ -150,11 +156,11 @@ class DirectLabelFeed:
         docid_inputs, letor_features, labels = [], [], []
         
         num_remain_data = len(data_set.initial_list) - index
-        local_batch_size = self.batch_size if num_remain_data > self.batch_size else num_remain_data
-        for offset in range(local_batch_size):
+        for offset in range(min(self.batch_size, num_remain_data)):
             i = index + offset
-            self.prepare_true_labels_with_index(data_set, i, docid_inputs, letor_features, labels)
+            self.prepare_true_labels_with_index(data_set, i, docid_inputs, letor_features, labels, check_validation)
 
+        local_batch_size = len(docid_inputs)
         letor_features_length = len(letor_features)
         for i in range(local_batch_size):
             for j in range(self.rank_list_size):
@@ -187,15 +193,13 @@ class DirectLabelFeed:
 
         return input_feed, others_map
 
-    def get_data_by_index(self, data_set, index): 
+    def get_data_by_index(self, data_set, index, check_validation=False): 
         """Get one data from the specified index, prepare for step.
 
                 Args:
-                    input_seq: a list of initial ranking ([0,1,2,3,4...])
-                    output_seq: the target ranking list ([2,3,1,0,4,...])
-                    output_weights: the weight list of each output
-                    features: a list of feature vectors for initial ranking list
+                    data_set: (Raw_data) The dataset used to build the input layer.
                     index: the index of the data
+                    check_validation: (bool) Set True to ignore data with no positive labels.
 
                 Returns:
                     The triple (docid_inputs, decoder_inputs, target_weights) for
@@ -208,13 +212,12 @@ class DirectLabelFeed:
         docid_inputs, letor_features, labels = [], [], []
         
         i = index
-        self.prepare_true_labels_with_index(data_set, i, docid_inputs, letor_features, labels)
+        self.prepare_true_labels_with_index(data_set, i, docid_inputs, letor_features, labels, check_validation)
 
         letor_features_length = len(letor_features)
-        for i in range(self.batch_size):
-            for j in range(self.rank_list_size):
-                if docid_inputs[i][j] < 0:
-                    docid_inputs[i][j] = letor_features_length
+        for j in range(self.rank_list_size):
+            if docid_inputs[-1][j] < 0:
+                docid_inputs[-1][j] = letor_features_length
 
         batch_docid_inputs = []
         batch_labels = []
@@ -222,11 +225,11 @@ class DirectLabelFeed:
             # Batch encoder inputs are just re-indexed docid_inputs.
             batch_docid_inputs.append(
                 np.array([docid_inputs[batch_idx][length_idx]
-                    for batch_idx in range(self.batch_size)], dtype=np.float32))
+                    for batch_idx in range(1)], dtype=np.float32))
             # Batch decoder inputs are re-indexed decoder_inputs, we create weights.
             batch_labels.append(
                 np.array([labels[batch_idx][length_idx]
-                        for batch_idx in range(self.batch_size)], dtype=np.float32))
+                        for batch_idx in range(1)], dtype=np.float32))
         # Create input feed map
         input_feed = {}
         input_feed[self.model.letor_features.name] = np.array(letor_features)

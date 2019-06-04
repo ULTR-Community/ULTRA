@@ -31,7 +31,7 @@ tf.app.flags.DEFINE_string("output_dir", "./tmp_output/", "The directory to outp
 
 # model 
 #tf.app.flags.DEFINE_string("click_model_json", "", "Josn file for the click model used to generate clicks.")
-tf.app.flags.DEFINE_string("setting_file", "./example/ipw_rank_exp_settings.json", "A json file that contains all the settings of the algorithm.")
+tf.app.flags.DEFINE_string("setting_file", "./example/dla_exp_settings.json", "A json file that contains all the settings of the algorithm.")
 #tf.app.flags.DEFINE_boolean("use_non_clicked_data", False,
 #                            "Set to True for estimating propensity weights for non-click data.")
 
@@ -109,7 +109,7 @@ def train(exp_settings):
         step_time, loss = 0.0, 0.0
         current_step = 0
         previous_losses = []
-        best_loss = None
+        best_perf = None
         while True:
             # Get a batch and make a step.
             start_time = time.time()
@@ -127,26 +127,40 @@ def train(exp_settings):
                              "%.2f" % (model.global_step.eval(), model.learning_rate.eval(),
                                                  step_time, loss))
                 previous_losses.append(loss)
-
                 # Validate model
                 it = 0
                 count_batch = 0.0
                 valid_loss = 0
+                summary_list = []
+                batch_size_list = []
                 while it < len(valid_set.initial_list):
-                    input_feed, _ = valid_input_feed.get_next_batch(it, valid_set)
+                    input_feed, info_map = valid_input_feed.get_next_batch(it, valid_set)
                     v_loss, _, summary = model.step(sess, input_feed, True)
+                    summary_list.append(summary)
+                    batch_size_list.append(len(info_map['input_list']))
                     it += valid_input_feed.batch_size
                     valid_loss += v_loss
                     count_batch += 1.0
-                valid_writer.add_summary(summary, current_step)
+                valid_summary = utils.merge_TFSummary(summary_list, batch_size_list)
+                valid_writer.add_summary(valid_summary, current_step)
                 valid_loss /= count_batch
-                print("  eval: loss %.2f" % (valid_loss))
+                print("  eval: %s" % (
+                    ' '.join(['%s:%.3f' % (x.tag, x.simple_value) for x in valid_summary.value])
+                ))
 
-                # Save checkpoint and zero timer and loss. # need to rethink
-                #if best_loss == None or best_loss >= eval_ppx:
-                #    best_loss = eval_ppx
-                checkpoint_path = os.path.join(FLAGS.model_dir, "DLA.ckpt")
-                model.saver.save(sess, checkpoint_path, global_step=model.global_step)
+                # Save checkpoint if the objective metric on the validation set is better
+                if "objective_metric" in exp_settings:
+                    for x in valid_summary.value:
+                        if x.tag == exp_settings["objective_metric"]:
+                            if best_perf == None or best_perf < x.simple_value:
+                                checkpoint_path = os.path.join(FLAGS.model_dir, "DLA.ckpt")
+                                model.saver.save(sess, checkpoint_path, global_step=model.global_step)
+                                best_perf = x.simple_value
+                            break
+                # Save checkpoint if there is no objective metic
+                if best_perf == None:
+                    checkpoint_path = os.path.join(FLAGS.model_dir, "DLA.ckpt")
+                    model.saver.save(sess, checkpoint_path, global_step=model.global_step)
                 if loss == float('inf'):
                     break
 
@@ -174,18 +188,26 @@ def test(exp_settings):
         #test_input_feed = input_layer.DirectLabelFeed(model, 1, exp_settings['test_input_hparams'])
         test_input_feed = utils.find_class(exp_settings['test_input_feed'])(model, 1, exp_settings['test_input_hparams'])
 
+        test_writer = tf.summary.FileWriter(FLAGS.model_dir + '/test_log')
+
         rerank_scores = []
 
         # Decode from test data.
+        summary_list = []
         for i in range(len(test_set.initial_list)):
             input_feed, _ = test_input_feed.get_data_by_index(test_set, i)
             _, output_logits, summary = model.step(sess, input_feed, True)
-
+            summary_list.append(summary)
             #The output is a list of rerank index for decoder_inputs (which represents the gold rank list)
             rerank_scores.append(output_logits[0])
             if i % FLAGS.steps_per_checkpoint == 0:
                 print("Testing %.2f \r" % (float(i)/len(test_set.initial_list))),
-
+        # TODO merge summary
+        test_summary = utils.merge_TFSummary(summary_list, np.ones(len(test_set.initial_list)))
+        test_writer.add_summary(test_summary, i)
+        print("  eval: %s" % (
+                ' '.join(['%s:%.3f' % (x.tag, x.simple_value) for x in test_summary.value])
+        ))
         #get rerank indexes with new scores
         rerank_lists = []
         for i in range(len(rerank_scores)):

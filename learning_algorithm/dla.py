@@ -144,12 +144,12 @@ class DLA(BasicAlgorithm):
                 for topn in self.exp_settings['metrics_topn']:
                     list_weights = tf.reduce_mean(self.propensity_weights * clipped_labels, axis=1, keep_dims=True)
                     metric_value = metrics.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, list_weights)
-                    tf.summary.scalar('Weighted_%s@%d' % (metric.upper(), topn), metric_value, collections=['train'])
+                    tf.summary.scalar('Weighted_%s_%d' % (metric, topn), metric_value, collections=['train'])
         
         for metric in self.exp_settings['metrics']:
             for topn in self.exp_settings['metrics_topn']:
                 metric_value = metrics.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, None)
-                tf.summary.scalar('%s@%d' % (metric.upper(), topn), metric_value, collections=['train', 'eval'])
+                tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train', 'eval'])
 
 
         self.train_summary = tf.summary.merge_all(key='train')

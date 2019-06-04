@@ -17,6 +17,8 @@ import numpy as np
 import json
 import random
 import os
+import tensorflow as tf
+from tensorflow.core.framework import summary_pb2
 
 class Raw_data:
     def __init__(self, data_path = None, file_prefix = None, rank_cut=None):
@@ -102,6 +104,30 @@ class Raw_data:
                 else:    # pad heads
                     self.initial_list[i] = [-1] * (self.rank_list_size - len(self.initial_list[i])) + self.initial_list[i]
 
+def merge_TFSummary(summary_list, weights):
+    merged_values = {}
+    for i in range(len(summary_list)):
+        summary = summary_list[i]
+        if isinstance(summary, bytes):
+            parse_TFSummary_from_bytes(summary)
+            summ = summary_pb2.Summary()
+            summ.ParseFromString(summary)
+            summary = summ
+        for e in summary.value:
+            if e.tag not in merged_values:
+                merged_values[e.tag] = 0.0
+            merged_values[e.tag] += e.simple_value * weights[i]
+    weight_sum = sum(weights)
+    for k in merged_values:
+        merged_values[k] /= weight_sum
+    return tf.Summary(value=[ 
+                tf.Summary.Value(tag=k, simple_value=merged_values[k]) for k in merged_values  
+            ]) 
+
+def parse_TFSummary_from_bytes(summary_bytes):
+    summary = summary_pb2.Summary()
+    summary.ParseFromString(summary_bytes)
+    return {x.tag:x.simple_value for x in summary.value}
 
 def read_data(data_path, file_prefix, rank_cut = None):
     data = Raw_data(data_path, file_prefix, rank_cut)
