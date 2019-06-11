@@ -62,15 +62,13 @@ class IPWrank(BasicAlgorithm):
             learning_rate=0.5,                 # Learning rate.
             max_gradient_norm=5.0,            # Clip gradients to this norm.
             loss_func='click_weighted_softmax_cross_entropy',      # Select Loss function
-            l2_loss=0.0,                    # Set strength for L2 regularization.
+            l2_loss=0.01,                    # Set strength for L2 regularization.
         )
         print(exp_settings['learning_algorithm_hparams'])
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
         self.exp_settings = exp_settings
         self.propensity_estimator = utils.find_class(self.hparams.propensity_estimator_type)(self.hparams.propensity_estimator_json)
 
-        self.start_index = 0
-        self.count = 1
         self.rank_list_size = data_set.rank_list_size
         self.feature_size = data_set.feature_size
         self.learning_rate = tf.Variable(float(self.hparams.learning_rate), trainable=False)

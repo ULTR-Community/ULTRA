@@ -30,10 +30,7 @@ tf.app.flags.DEFINE_string("model_dir", "./tmp_model/", "The directory for model
 tf.app.flags.DEFINE_string("output_dir", "./tmp_output/", "The directory to output results.")
 
 # model 
-#tf.app.flags.DEFINE_string("click_model_json", "", "Josn file for the click model used to generate clicks.")
 tf.app.flags.DEFINE_string("setting_file", "./example/dla_exp_settings.json", "A json file that contains all the settings of the algorithm.")
-#tf.app.flags.DEFINE_boolean("use_non_clicked_data", False,
-#                            "Set to True for estimating propensity weights for non-click data.")
 
 # general training parameters
 tf.app.flags.DEFINE_integer("batch_size", 256,
@@ -42,7 +39,7 @@ tf.app.flags.DEFINE_integer("train_list_cutoff", 10,
                             "The number of top documents to consider in each rank list during training.")
 tf.app.flags.DEFINE_integer("max_train_iteration", 0,
                             "Limit on the iterations of training (0: no limit).")
-tf.app.flags.DEFINE_integer("steps_per_checkpoint", 200,
+tf.app.flags.DEFINE_integer("steps_per_checkpoint", 20,
                             "How many training steps to do per checkpoint.")
 
 tf.app.flags.DEFINE_boolean("test_only", False,
@@ -61,7 +58,6 @@ def create_model(session, exp_settings, data_set, forward_only):
             forward_only: Set true to conduct prediction only, false to conduct training.
     """
     
-    #model = learning_algorithm.DLA(data_set, exp_settings, forward_only)
     model = utils.find_class(exp_settings['learning_algorithm'])(data_set, exp_settings, forward_only)
 
     ckpt = tf.train.get_checkpoint_state(FLAGS.model_dir)
@@ -130,20 +126,17 @@ def train(exp_settings):
                 # Validate model
                 it = 0
                 count_batch = 0.0
-                valid_loss = 0
                 summary_list = []
                 batch_size_list = []
                 while it < len(valid_set.initial_list):
                     input_feed, info_map = valid_input_feed.get_next_batch(it, valid_set)
-                    v_loss, _, summary = model.step(sess, input_feed, True)
+                    _, _, summary = model.step(sess, input_feed, True)
                     summary_list.append(summary)
                     batch_size_list.append(len(info_map['input_list']))
                     it += valid_input_feed.batch_size
-                    valid_loss += v_loss
                     count_batch += 1.0
                 valid_summary = utils.merge_TFSummary(summary_list, batch_size_list)
                 valid_writer.add_summary(valid_summary, current_step)
-                valid_loss /= count_batch
                 print("  eval: %s" % (
                     ' '.join(['%s:%.3f' % (x.tag, x.simple_value) for x in valid_summary.value])
                 ))
@@ -153,13 +146,13 @@ def train(exp_settings):
                     for x in valid_summary.value:
                         if x.tag == exp_settings["objective_metric"]:
                             if best_perf == None or best_perf < x.simple_value:
-                                checkpoint_path = os.path.join(FLAGS.model_dir, "DLA.ckpt")
+                                checkpoint_path = os.path.join(FLAGS.model_dir, "%s.ckpt" % exp_settings['learning_algorithm'])
                                 model.saver.save(sess, checkpoint_path, global_step=model.global_step)
                                 best_perf = x.simple_value
                             break
                 # Save checkpoint if there is no objective metic
                 if best_perf == None:
-                    checkpoint_path = os.path.join(FLAGS.model_dir, "DLA.ckpt")
+                    checkpoint_path = os.path.join(FLAGS.model_dir, "%s.ckpt" % exp_settings['learning_algorithm'])
                     model.saver.save(sess, checkpoint_path, global_step=model.global_step)
                 if loss == float('inf'):
                     break
@@ -192,7 +185,7 @@ def test(exp_settings):
 
         rerank_scores = []
 
-        # Decode from test data.
+        # Start testing.
         summary_list = []
         for i in range(len(test_set.initial_list)):
             input_feed, _ = test_input_feed.get_data_by_index(test_set, i)

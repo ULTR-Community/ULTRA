@@ -60,16 +60,13 @@ class DLA(BasicAlgorithm):
             logits_to_prob='softmax',        # the function used to convert logits to probability distributions
             ranker_learning_rate=-1.0,         # The learning rate for ranker (-1 means same with learning_rate).
             ranker_loss_weight=1.0,            # Set the weight of unbiased ranking loss
-            l2_loss=0.0,                    # Set strength for L2 regularization.
+            l2_loss=0.01,                    # Set strength for L2 regularization.
             grad_strategy='ada',            # Select gradient strategy
-            relevance_category_num=5,        # Select the number of relevance category
         )
         print(exp_settings['learning_algorithm_hparams'])
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
         self.exp_settings = exp_settings
 
-        self.start_index = 0
-        self.count = 1
         self.rank_list_size = data_set.rank_list_size
         self.feature_size = data_set.feature_size
         if self.hparams.ranker_learning_rate < 0:
@@ -115,14 +112,14 @@ class DLA(BasicAlgorithm):
         self.rank_loss, self.propensity_weights = self.loss_func(self.output, reshaped_labels, self.propensity)
         pw_list = tf.split(self.propensity_weights, self.rank_list_size, 1) # Compute propensity weights
         for i in range(self.rank_list_size):
-            tf.summary.scalar('Avg Propensity weights %d' % i, tf.reduce_mean(pw_list[i]), collections=['train'])
+            tf.summary.scalar('Inverse Propensity weights %d' % i, tf.reduce_mean(pw_list[i]), collections=['train'])
         tf.summary.scalar('Rank Loss', tf.reduce_mean(self.rank_loss), collections=['train'])
 
         # Compute examination loss
         self.exam_loss, self.relevance_weights = self.loss_func(self.propensity, reshaped_labels, self.output)
         rw_list = tf.split(self.relevance_weights, self.rank_list_size, 1) # Compute propensity weights
         for i in range(self.rank_list_size):
-            tf.summary.scalar('Avg Relevance weights %d' % i, tf.reduce_mean(rw_list[i]), collections=['train'])
+            tf.summary.scalar('Inverse Relevance weights %d' % i, tf.reduce_mean(rw_list[i]), collections=['train'])
         tf.summary.scalar('Exam Loss', tf.reduce_mean(self.exam_loss), collections=['train'])
         
         # Gradients and SGD update operation for training the model.
@@ -161,8 +158,8 @@ class DLA(BasicAlgorithm):
         ranking_model_params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, "ranking_model")
 
         if self.hparams.l2_loss > 0:
-            for p in denoise_params:
-                self.exam_loss += self.hparams.l2_loss * tf.nn.l2_loss(p)
+            #for p in denoise_params:
+            #    self.exam_loss += self.hparams.l2_loss * tf.nn.l2_loss(p)
             for p in ranking_model_params:
                 self.rank_loss += self.hparams.l2_loss * tf.nn.l2_loss(p)
         self.loss = self.exam_loss + self.hparams.ranker_loss_weight * self.rank_loss
@@ -214,8 +211,9 @@ class DLA(BasicAlgorithm):
                     output_data = input_data
                     current_size = input_vec_size
                     output_sizes = [
-                        int((self.hparams.relevance_category_num+self.rank_list_size+1)/2), 
-                        int((self.hparams.relevance_category_num+self.rank_list_size+1)/4),
+                        int((self.rank_list_size+1)/2) + 1, 
+                        int((self.rank_list_size+1)/4) + 1,
+                        1
                     ]
                     for i in range(len(output_sizes)):
                         expand_W = tf.get_variable("W_%d" % i, [current_size, output_sizes[i]])
@@ -223,9 +221,9 @@ class DLA(BasicAlgorithm):
                         output_data = tf.nn.bias_add(tf.matmul(output_data, expand_W), expand_b)
                         output_data = tf.nn.elu(output_data)
                         current_size = output_sizes[i]
-                    expand_W = tf.get_variable("final_W", [current_size, 1])
-                    expand_b = tf.get_variable("final_b" , [1])
-                    output_data = tf.nn.bias_add(tf.matmul(output_data, expand_W), expand_b)
+                    #expand_W = tf.get_variable("final_W", [current_size, 1])
+                    #expand_b = tf.get_variable("final_b" , [1])
+                    #output_data = tf.nn.bias_add(tf.matmul(output_data, expand_W), expand_b)
                     return output_data
 
             output_propensity_list = []

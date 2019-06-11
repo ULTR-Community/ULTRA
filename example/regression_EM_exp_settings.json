@@ -9,7 +9,7 @@
     "ranking_model":"learning_algorithm.ranking_model.DNN",
     "ranking_model_hparams":"hidden_layer_sizes=[512, 256, 128]",
 
-    "learning_algorithm": "learning_algorithm.DLA",
+    "learning_algorithm": "learning_algorithm.RegressionEM",
     "learning_algorithm_hparams":"",
 
     "metrics": [
