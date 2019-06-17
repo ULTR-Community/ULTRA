@@ -75,6 +75,7 @@ class IPWrank(BasicAlgorithm):
         self.global_step = tf.Variable(0, trainable=False)
         
         # Feeds for inputs.
+        self.is_training = tf.placeholder(tf.bool, name="is_train")
         self.docid_inputs = [] # a list of top documents
         self.letor_features = tf.placeholder(tf.float32, shape=[None, self.feature_size], 
                                 name="letor_features") # the letor features for the documents
@@ -156,7 +157,7 @@ class IPWrank(BasicAlgorithm):
 
             for i in range(self.rank_list_size):
                 input_feature_list.append(tf.nn.embedding_lookup(letor_features, self.docid_inputs[i]))
-            output_scores = model.build(input_feature_list)
+            output_scores = model.build(input_feature_list, is_training=self.is_training)
 
             return tf.concat(output_scores,1)
 
@@ -185,11 +186,13 @@ class IPWrank(BasicAlgorithm):
         
         # Output feed: depends on whether we do a backward step or not.
         if not forward_only:
+            input_feed[self.is_training.name] = True
             output_feed = [self.updates,    # Update Op that does SGD.
                             self.loss,    # Loss for this batch.
                             self.train_summary # Summarize statistics.
                             ]    
         else:
+            input_feed[self.is_training.name] = False
             output_feed = [self.loss, # Loss for this batch.
                         self.eval_summary, # Summarize statistics.
                         self.output   # Model outputs

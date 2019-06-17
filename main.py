@@ -120,7 +120,7 @@ def train(exp_settings):
             if current_step % FLAGS.steps_per_checkpoint == 0:
                 # Print statistics for the previous epoch.
                 print ("global step %d learning rate %.4f step-time %.2f loss "
-                             "%.2f" % (model.global_step.eval(), model.learning_rate.eval(),
+                             "%.4f" % (model.global_step.eval(), model.learning_rate.eval(),
                                                  step_time, loss))
                 previous_losses.append(loss)
                 # Validate model
@@ -149,7 +149,7 @@ def train(exp_settings):
                                 checkpoint_path = os.path.join(FLAGS.model_dir, "%s.ckpt" % exp_settings['learning_algorithm'])
                                 model.saver.save(sess, checkpoint_path, global_step=model.global_step)
                                 best_perf = x.simple_value
-                            break
+                                break
                 # Save checkpoint if there is no objective metic
                 if best_perf == None:
                     checkpoint_path = os.path.join(FLAGS.model_dir, "%s.ckpt" % exp_settings['learning_algorithm'])

@@ -1,6 +1,6 @@
 """Training and testing the regression-based EM algorithm for unbiased learning to rank.
 
-See the following paper for more information on the dual learning algorithm.
+See the following paper for more information on the regression-based EM algorithm.
     
     * Wang, Xuanhui, Nadav Golbandi, Michael Bendersky, Donald Metzler, and Marc Najork. "Position bias estimation for unbiased learning to rank in personal search." In Proceedings of the Eleventh ACM International Conference on Web Search and Data Mining, pp. 610-618. ACM, 2018.
     
@@ -77,6 +77,7 @@ class RegressionEM(BasicAlgorithm):
         self.learning_rate = tf.Variable(float(self.hparams.learning_rate), trainable=False)
         
         # Feeds for inputs.
+        self.is_training = tf.placeholder(tf.bool, name="is_train")
         self.docid_inputs = [] # a list of top documents
         self.letor_features = tf.placeholder(tf.float32, shape=[None, self.feature_size], 
                                 name="letor_features") # the letor features for the documents
@@ -149,7 +150,7 @@ class RegressionEM(BasicAlgorithm):
                     list_weights = tf.reduce_mean(reshaped_propensity * clipped_labels, axis=1, keep_dims=True)
                     metric_value = metrics.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, list_weights)
                     tf.summary.scalar('Weighted_%s_%d' % (metric, topn), metric_value, collections=['train'])
-                    
+
         for metric in self.exp_settings['metrics']:
             for topn in self.exp_settings['metrics_topn']:
                 metric_value = metrics.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, None)
@@ -170,7 +171,7 @@ class RegressionEM(BasicAlgorithm):
 
             for i in range(self.rank_list_size):
                 input_feature_list.append(tf.nn.embedding_lookup(letor_features, self.docid_inputs[i]))
-            output_scores = model.build(input_feature_list)
+            output_scores = model.build(input_feature_list, is_training=self.is_training)
 
             return tf.concat(output_scores,1)
 
@@ -190,6 +191,7 @@ class RegressionEM(BasicAlgorithm):
         
         # Output feed: depends on whether we do a backward step or not.
         if not forward_only:
+            input_feed[self.is_training.name] = True
             output_feed = [
                             self.updates,    # Update Op that does SGD.
                             self.loss,    # Loss for this batch.
@@ -197,6 +199,7 @@ class RegressionEM(BasicAlgorithm):
                             self.train_summary # Summarize statistics.
                             ]    
         else:
+            input_feed[self.is_training.name] = False
             output_feed = [
                         self.eval_summary, # Summarize statistics.
                         self.output   # Model outputs
