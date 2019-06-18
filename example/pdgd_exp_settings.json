@@ -1,5 +1,5 @@
 {
-    "train_input_feed":"input_layer.ClickSimulationFeed",
+    "train_input_feed":"input_layer.OnlineSimulationFeed",
     "train_input_hparams":"",
     "valid_input_feed":"input_layer.DirectLabelFeed",
     "valid_input_hparams":"",

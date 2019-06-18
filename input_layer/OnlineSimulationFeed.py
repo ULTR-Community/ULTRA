@@ -1,4 +1,4 @@
-"""Simulate click data based on human annotations.
+"""Simulate online learning process and click data based on human annotations.
 
 See the following paper for more information on the simulation data.
     
@@ -17,28 +17,28 @@ import sys
 import time
 import json
 import numpy as np
-from .BasicInputFeed import BasicInputFeed
 from . import click_models as cm
 
 import tensorflow as tf
 # We disable pylint because we need python3 compatibility.
 from six.moves import zip     # pylint: disable=redefined-builtin
 
-class ClickSimulationFeed(BasicInputFeed):
-    """Simulate clicks based on human annotations.
+class OnlineSimulationFeed:
+    """Simulate online learning to rank and click data based on human annotations.
 
-    This class implements a input layer for unbiased learning to rank experiments
+    This class implements a input layer for online learning to rank experiments
     by simulating click data based on both the human relevance annotation of
     each query-document pair and a predefined click model.
     """
 
-    def __init__(self, model, batch_size, hparam_str, session=None):
+    def __init__(self, model, batch_size, hparam_str, session):
         """Create the model.
     
         Args:
             model: (BasicModel) The model we are going to train.
             batch_size: the size of the batches generated in each iteration.
             hparam_str: the hyper-parameters for the input layer.
+            session: the current tensorflow Session (used for online learning).
         """
         self.hparams = tf.contrib.training.HParams(
             click_model_json='./example/ClickModel/pbm_0.1_1.0_4_1.0.json', # the setting file for the predefined click models.
@@ -58,26 +58,57 @@ class ClickSimulationFeed(BasicInputFeed):
         self.feature_size = model.feature_size
         self.batch_size = batch_size
         self.model = model
+        self.session = session
     
-    def prepare_sim_clicks_with_index(self, data_set, index, docid_inputs, letor_features, labels, check_validation=True):
+    def prepare_true_labels_with_index(self, data_set, index, docid_inputs, letor_features, labels, check_validation=True):
         i = index
-        # Generate clicks with click models.
+        # Generate label list.
         label_list = [0 if data_set.initial_list[i][x] < 0 else data_set.labels[i][x] for x in range(len(data_set.initial_list[i]))]
-        click_list, _, _ = self.click_model.sampleClicksForOneList(list(label_list))
-        sample_count = 0
-        while check_validation and sum(click_list) == 0 and sample_count < 100:
-            click_list, _, _ = self.click_model.sampleClicksForOneList(list(label_list))
-            sample_count += 1
 
         # Check if data is valid
-        if check_validation and sum(click_list) == 0:
+        if check_validation and sum(label_list) == 0:
             return
         base = len(letor_features)
         for x in data_set.initial_list[i]:
             if x >= 0:
                 letor_features.append(data_set.features[x])
         docid_inputs.append(list([-1 if data_set.initial_list[i][x] < 0 else base+x for x in range(len(data_set.initial_list[i]))]))
-        labels.append(click_list)
+        labels.append(label_list)
+
+    def simulate_clicks_online(self, input_feed, check_validation=True):
+        # Compute ranking scores with input_feed
+        input_feed[self.model.is_training.name] = False
+        rank_scores = self.session.run([self.model.output], input_feed)[0]
+        # Rerank documents and collect clicks
+        letor_features_length = len(input_feed[self.model.letor_features.name])
+        for i in range(len(input_feed[self.model.docid_inputs[0].name])):
+            # Get valid doc index
+            valid_idx = self.rank_list_size - 1
+            while valid_idx > -1:
+                if input_feed[self.model.docid_inputs[valid_idx].name][i] < letor_features_length: # a valid doc
+                    break
+                valid_idx -= 1
+            list_len = valid_idx + 1
+            # Rerank documents
+            scores = rank_scores[i][:list_len]
+            rerank_list = sorted(range(len(scores)), key=lambda k: scores[k], reverse=True)
+            new_docid_list = np.zeros(list_len)
+            new_label_list = np.zeros(list_len)
+            for j in range(list_len):
+                new_docid_list[j] = input_feed[self.model.docid_inputs[rerank_list[j]].name][i]
+                new_label_list[j] = input_feed[self.model.labels[rerank_list[j]].name][i]
+            # Collect clicks online
+            click_list, _, _ = self.click_model.sampleClicksForOneList(new_label_list)
+            sample_count = 0
+            while check_validation and sum(click_list) == 0 and sample_count < 100:
+                click_list, _, _ = self.click_model.sampleClicksForOneList(new_label_list)
+                sample_count += 1
+            # update input_feed
+            for j in range(list_len):
+                input_feed[self.model.docid_inputs[j].name][i] = new_docid_list[j]
+                input_feed[self.model.labels[j].name][i] = click_list[j]
+        return input_feed
+        
     
     def get_batch(self, data_set, check_validation=True):
         """Get a random batch of data, prepare for step. Typically used for training.
@@ -105,7 +136,7 @@ class ClickSimulationFeed(BasicInputFeed):
         for _ in range(self.batch_size):
             i = int(random.random() * length)
             rank_list_idxs.append(i)
-            self.prepare_sim_clicks_with_index(data_set, i,
+            self.prepare_true_labels_with_index(data_set, i,
                                 docid_inputs, letor_features, labels, check_validation)
         local_batch_size = len(docid_inputs)
         letor_features_length = len(letor_features)
@@ -113,7 +144,6 @@ class ClickSimulationFeed(BasicInputFeed):
             for j in range(self.rank_list_size):
                 if docid_inputs[i][j] < 0:
                     docid_inputs[i][j] = letor_features_length
-
 
         batch_docid_inputs = []
         batch_labels = []
@@ -132,6 +162,10 @@ class ClickSimulationFeed(BasicInputFeed):
         for l in range(self.model.rank_list_size):
             input_feed[self.model.docid_inputs[l].name] = batch_docid_inputs[l]
             input_feed[self.model.labels[l].name] = batch_labels[l]
+        
+        # Simulate online environment and collect clicks.
+        input_feed = self.simulate_clicks_online(input_feed)
+
         # Create info_map to store other information
         info_map = {
             'rank_list_idxs' : rank_list_idxs,
@@ -169,7 +203,7 @@ class ClickSimulationFeed(BasicInputFeed):
         num_remain_data = len(data_set.initial_list) - index
         for offset in range(min(self.batch_size, num_remain_data)):
             i = index + offset
-            self.prepare_sim_clicks_with_index(data_set, i, docid_inputs, letor_features, labels, check_validation)
+            self.prepare_true_labels_with_index(data_set, i, docid_inputs, letor_features, labels, check_validation)
 
         local_batch_size = len(docid_inputs)
         letor_features_length = len(letor_features)
@@ -196,6 +230,10 @@ class ClickSimulationFeed(BasicInputFeed):
         for l in range(self.rank_list_size):
             input_feed[self.model.docid_inputs[l].name] = batch_docid_inputs[l]
             input_feed[self.model.labels[l].name] = batch_labels[l]
+
+        # Simulate online environment and collect clicks.
+        input_feed = self.simulate_clicks_online(input_feed)
+
         # Create others_map to store other information
         others_map = {
             'input_list' : docid_inputs,
@@ -223,7 +261,7 @@ class ClickSimulationFeed(BasicInputFeed):
         docid_inputs, letor_features, labels = [], [], []
         
         i = index
-        self.prepare_sim_clicks_with_index(data_set, i, docid_inputs, letor_features, labels, check_validation)
+        self.prepare_true_labels_with_index(data_set, i, docid_inputs, letor_features, labels, check_validation)
 
         letor_features_length = len(letor_features)
         for j in range(self.rank_list_size):
@@ -247,6 +285,10 @@ class ClickSimulationFeed(BasicInputFeed):
         for l in range(self.rank_list_size):
             input_feed[self.model.docid_inputs[l].name] = batch_docid_inputs[l]
             input_feed[self.model.labels[l].name] = batch_labels[l]
+
+        # Simulate online environment and collect clicks.
+        input_feed = self.simulate_clicks_online(input_feed)
+
         # Create others_map to store other information
         others_map = {
             'input_list' : docid_inputs,

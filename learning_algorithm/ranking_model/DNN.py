@@ -21,9 +21,13 @@ class DNN(BasicRankingModel):
         """ Create the model
         
         Args:
-            input_list: (list<tf.tensor>) A list of tensors containing the features 
+            input_list: (list<tf.Tensor>) A list of tensors containing the features 
                         for a list of documents.
             is_training: (bool) A flag indicating whether the model is running in training mode.
+        
+        Returns:
+            A list of tf.Tensor containing the ranking scores for each instance in input_list.
+
         """
         output_list = []
         with tf.variable_scope(tf.get_variable_scope(),
@@ -37,7 +41,7 @@ class DNN(BasicRankingModel):
                     expand_b = tf.get_variable("dnn_b_%d" % i, [output_sizes[i]])
                     output_data = tf.nn.bias_add(tf.matmul(output_data, expand_W), expand_b)
                     output_data = tf.compat.v1.layers.batch_normalization(output_data, training=is_training)
-                    output_data = tf.nn.relu(output_data)
+                    output_data = tf.nn.elu(output_data)
                     current_size = output_sizes[i]
                 output_list.append(output_data)
             return output_list

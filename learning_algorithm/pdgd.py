@@ -169,14 +169,9 @@ class PDGD(BasicAlgorithm):
         
         if not forward_only:
             # Run the model to get ranking scores
-            # TODO (Maybe) Revised input feed when it is training
-            #input_feed[self.positive_docid_inputs.name] = [0]
-            #input_feed[self.negative_docid_inputs.name] = [-1]
-            #input_feed[self.pair_weights.name] = [0.0]
             input_feed[self.is_training.name] = False
             rank_outputs = session.run([self.output,self.eval_summary], input_feed)
-            #print('max scores %.3f' % (np.amax(rank_outputs[0])))
-            #print('min scores %.3f' % (np.amin(rank_outputs[0])))
+            
             # reduce value to avoid numerical problems
             rank_outputs[0] = np.array(rank_outputs[0])
             for i in range(len(rank_outputs[0])):
@@ -194,10 +189,6 @@ class PDGD(BasicAlgorithm):
                     idx = self.rank_list_size - 1 - j
                     if input_feed[self.docid_inputs[idx].name][i] < 0: # not a valid doc
                         continue
-                    #if j == 0: # which means that idx is the last doc
-                    #    denominators[idx] = ranking_scores[i][idx]
-                    #    p_r[idx] = 1
-                    #else:
                     denominators[idx] = exp_scores[idx] + denominators[idx+1]
                     p_r[idx] = exp_scores[idx]/denominators[idx] * p_r[idx+1]
                 
@@ -228,7 +219,6 @@ class PDGD(BasicAlgorithm):
                 self.train_summary # Summarize statistics.
                 ], input_feed)
             summary = utils.merge_TFSummary([rank_outputs[-1], train_outputs[-1]], [0.5, 0.5])
-            #summary = tf.summary.merge([rank_outputs[-1], train_outputs[-1]])
 
             return train_outputs[1], rank_outputs, summary    # loss, no outputs, summary.
   

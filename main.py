@@ -88,9 +88,9 @@ def train(exp_settings):
 
         # Create data feed
         #train_input_feed = input_layer.ClickSimulationFeed(model, FLAGS.batch_size, exp_settings['train_input_hparams'])
-        train_input_feed = utils.find_class(exp_settings['train_input_feed'])(model, FLAGS.batch_size, exp_settings['train_input_hparams'])
+        train_input_feed = utils.find_class(exp_settings['train_input_feed'])(model, FLAGS.batch_size, exp_settings['train_input_hparams'], sess)
         #valid_input_feed = input_layer.DirectLabelFeed(model, FLAGS.batch_size, exp_settings['valid_input_hparams'])
-        valid_input_feed = utils.find_class(exp_settings['valid_input_feed'])(model, FLAGS.batch_size, exp_settings['valid_input_hparams'])
+        valid_input_feed = utils.find_class(exp_settings['valid_input_feed'])(model, FLAGS.batch_size, exp_settings['valid_input_hparams'], sess)
 
         # Create tensorboard summarizations.
         train_writer = tf.summary.FileWriter(FLAGS.model_dir + '/train_log',
@@ -179,7 +179,7 @@ def test(exp_settings):
 
         # Create input feed
         #test_input_feed = input_layer.DirectLabelFeed(model, 1, exp_settings['test_input_hparams'])
-        test_input_feed = utils.find_class(exp_settings['test_input_feed'])(model, 1, exp_settings['test_input_hparams'])
+        test_input_feed = utils.find_class(exp_settings['test_input_feed'])(model, 1, exp_settings['test_input_hparams'], sess)
 
         test_writer = tf.summary.FileWriter(FLAGS.model_dir + '/test_log')
 

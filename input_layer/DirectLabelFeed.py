@@ -17,19 +17,20 @@ import sys
 import time
 import json
 import numpy as np
+from .BasicInputFeed import BasicInputFeed
 from . import click_models as cm
 import tensorflow as tf
 # We disable pylint because we need python3 compatibility.
 from six.moves import zip     # pylint: disable=redefined-builtin
 
-class DirectLabelFeed:
+class DirectLabelFeed(BasicInputFeed):
     """Feed data with human annotations.
 
     This class implements a input layer for unbiased learning to rank experiments
     by directly feeding the model with the true labels of each query-document pair.
     """
 
-    def __init__(self, model, batch_size, hparam_str):
+    def __init__(self, model, batch_size, hparam_str, session=None):
         """Create the model.
     
         Args:
