@@ -20,15 +20,31 @@ class BasicRankingModel(ABC):
         pass
 
     @abstractmethod
-    def build(self, input_list):
+    def build(self, input_list, is_training=False):
         """ Create the model
         
         Args:
             input_list: (list<tf.tensor>) A list of tensors containing the features 
                         for a list of documents.
-            reuse: (bool) A flag indicating whether we need to reuse the parameters.
+            is_training: (bool) A flag indicating whether the model is running in training mode.
         
         Returns:
             A list of tf.Tensor containing the ranking scores for each instance in input_list.
+        """
+        pass
+    
+    @abstractmethod
+    def build_with_random_noise(self, input_list, noise_rate, is_training):
+        """ Create the model and add random noise (for online learning).
+        
+        Args:
+            input_list: (list<tf.tensor>) A list of tensors containing the features 
+                        for a list of documents.
+            noise_rate: (float) A value specify how much noise to add.
+            is_training: (bool) A flag indicating whether the model is running in training mode.
+        
+        Returns:
+            A list of tf.Tensor containing the ranking scores for each instance in input_list.
+            A list of (tf.Tensor, tf.Tensor) containing the random noise and the parameters it is designed for.
         """
         pass

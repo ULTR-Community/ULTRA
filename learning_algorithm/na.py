@@ -36,7 +36,7 @@ class NavieAlgorithm(BasicAlgorithm):
         self.hparams = tf.contrib.training.HParams(
             learning_rate=0.05,                 # Learning rate.
             max_gradient_norm=5.0,            # Clip gradients to this norm.
-            l2_loss=0.01,                    # Set strength for L2 regularization.
+            l2_loss=0.0,                    # Set strength for L2 regularization.
             grad_strategy='ada',            # Select gradient strategy
         )
         print(exp_settings['learning_algorithm_hparams'])

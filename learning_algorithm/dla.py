@@ -60,7 +60,7 @@ class DLA(BasicAlgorithm):
             logits_to_prob='softmax',        # the function used to convert logits to probability distributions
             ranker_learning_rate=-1.0,         # The learning rate for ranker (-1 means same with learning_rate).
             ranker_loss_weight=1.0,            # Set the weight of unbiased ranking loss
-            l2_loss=0.01,                    # Set strength for L2 regularization.
+            l2_loss=0.0,                    # Set strength for L2 regularization.
             grad_strategy='ada',            # Select gradient strategy
         )
         print(exp_settings['learning_algorithm_hparams'])
@@ -120,7 +120,7 @@ class DLA(BasicAlgorithm):
         self.exam_loss, self.relevance_weights = self.loss_func(self.propensity, reshaped_labels, self.output)
         rw_list = tf.split(self.relevance_weights, self.rank_list_size, 1) # Compute propensity weights
         for i in range(self.rank_list_size):
-            tf.summary.scalar('Inverse Relevance weights %d' % i, tf.reduce_mean(rw_list[i]), collections=['train'])
+            tf.summary.scalar('Relevance weights %d' % i, tf.reduce_mean(rw_list[i]), collections=['train'])
         tf.summary.scalar('Exam Loss', tf.reduce_mean(self.exam_loss), collections=['train'])
         
         # Gradients and SGD update operation for training the model.
