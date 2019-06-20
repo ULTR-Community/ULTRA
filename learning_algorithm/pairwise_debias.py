@@ -1,4 +1,8 @@
-"""The navie algorithm that directly trains ranking models with clicks.
+"""Training and testing the Pairwise Debiasing algorithm for unbiased learning to rank.
+
+See the following paper for more information on the Pairwise Debiasing algorithm.
+    
+    * Hu, Ziniu, Yang Wang, Qu Peng, and Hang Li. "Unbiased LambdaMART: An Unbiased Pairwise Learning-to-Rank Algorithm." In The World Wide Web Conference, pp. 2830-2836. ACM, 2019.
     
 """
 
@@ -10,17 +14,42 @@ import math
 import os
 import random
 import sys
+import time
+import numpy as np
 import tensorflow as tf
 import tensorflow_ranking as tfr
+import copy
+import itertools
+from six.moves import zip
+from tensorflow import dtypes
+
 from . import ranking_model
 from . import metrics
 from .BasicAlgorithm import BasicAlgorithm
 sys.path.append("..")
 import utils
 
-class NavieAlgorithm(BasicAlgorithm):
-    """The input_layer class that directly trains ranking models with clicks.
 
+def get_bernoulli_sample(probs):
+    """Conduct Bernoulli sampling according to a specific probability distribution.
+
+        Args:
+            prob: (tf.Tensor) A tensor in which each element denotes a probability of 1 in a Bernoulli distribution.
+
+        Returns:
+            A Tensor of binary samples (0 or 1) with the same shape of probs.
+
+        """
+    return tf.ceil(probs - tf.random_uniform(tf.shape(probs)))
+
+class PairDebias(BasicAlgorithm):
+    """The Pairwise Debiasing algorithm for unbiased learning to rank.
+
+    This class implements the Pairwise Debiasing algorithm based on the input layer 
+    feed. See the following paper for more information.
+    
+    * Hu, Ziniu, Yang Wang, Qu Peng, and Hang Li. "Unbiased LambdaMART: An Unbiased Pairwise Learning-to-Rank Algorithm." In The World Wide Web Conference, pp. 2830-2836. ACM, 2019.
+    
     """
 
     def __init__(self, data_set, exp_settings, forward_only=False):
@@ -31,11 +60,12 @@ class NavieAlgorithm(BasicAlgorithm):
             exp_settings: (dictionary) The dictionary containing the model settings.
             forward_only: Set true to conduct prediction only, false to conduct training.
         """
-        print('Build NavieAlgorithm')
+        print('Build Pairwise Debiasing algorithm.')
 
         self.hparams = tf.contrib.training.HParams(
             learning_rate=0.05,                 # Learning rate.
             max_gradient_norm=5.0,            # Clip gradients to this norm.
+            regulation_p=2,                 # An int specify the regularization term.
             l2_loss=0.0,                    # Set strength for L2 regularization.
             grad_strategy='ada',            # Select gradient strategy
         )
@@ -48,6 +78,7 @@ class NavieAlgorithm(BasicAlgorithm):
         self.learning_rate = tf.Variable(float(self.hparams.learning_rate), trainable=False)
         
         # Feeds for inputs.
+        self.is_training = tf.placeholder(tf.bool, name="is_train")
         self.docid_inputs = [] # a list of top documents
         self.letor_features = tf.placeholder(tf.float32, shape=[None, self.feature_size], 
                                 name="letor_features") # the letor features for the documents
@@ -64,8 +95,46 @@ class NavieAlgorithm(BasicAlgorithm):
         self.output = self.ranking_model(forward_only)
         
         reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
+        # Build unbiased pairwise loss only when it is training
         if not forward_only:
-            self.loss = self.softmax_loss(self.output, reshaped_labels)
+            # Build propensity parameters
+            self.t_plus = tf.Variable(tf.ones([1, self.rank_list_size]), trainable=False)
+            self.t_minus = tf.Variable(tf.ones([1, self.rank_list_size]), trainable=False)
+            self.splitted_t_plus = tf.split(self.t_plus, self.rank_list_size, axis=1)
+            self.splitted_t_minus = tf.split(self.t_minus, self.rank_list_size, axis=1)
+            for i in range(self.rank_list_size):
+                tf.summary.scalar('t_plus Probability %d' % i, tf.reduce_max(self.splitted_t_plus[i]), collections=['train'])
+                tf.summary.scalar('t_minus Probability %d' % i, tf.reduce_max(self.splitted_t_minus[i]), collections=['train'])
+
+            # Build pairwise loss based on clicks (0 for unclick, 1 for click)
+            output_list = tf.split(self.output, self.rank_list_size, axis=1)
+            t_plus_loss_list = [0.0 for _ in range(self.rank_list_size)]
+            t_minus_loss_list = [0.0 for _ in range(self.rank_list_size)]
+            self.loss = 0.0
+            for i in range(self.rank_list_size):
+                for j in range(self.rank_list_size):
+                    if i == j:
+                        continue
+                    valid_pair_mask = tf.nn.relu(self.labels[i] - self.labels[j])
+                    pair_loss = tf.reduce_sum(
+                        valid_pair_mask * self.pairwise_cross_entropy_loss(output_list[i], output_list[j])
+                    )
+                    t_plus_loss_list[i] += pair_loss / self.splitted_t_minus[j]
+                    t_minus_loss_list[j] += pair_loss / self.splitted_t_plus[i]
+                    self.loss += pair_loss / self.splitted_t_plus[i] / self.splitted_t_minus[j]
+
+            # Update propensity
+            # TODO add a learning rate here to avoid unstable EM process with small batches.
+            self.update_propensity_op = tf.group(
+                self.t_plus.assign(
+                    tf.pow(tf.concat(t_minus_loss_list, axis=1) / t_minus_loss_list[0], 1/(self.hparams.regulation_p + 1))
+                    ), 
+                self.t_minus.assign(
+                    tf.pow(tf.concat(t_plus_loss_list, axis=1) / t_plus_loss_list[0], 1/(self.hparams.regulation_p + 1))
+                )
+            )
+
+            # Add l2 loss
             params = tf.trainable_variables()
             if self.hparams.l2_loss > 0:
                 for p in params:
@@ -107,31 +176,9 @@ class NavieAlgorithm(BasicAlgorithm):
 
             for i in range(self.rank_list_size):
                 input_feature_list.append(tf.nn.embedding_lookup(letor_features, self.docid_inputs[i]))
-            output_scores = model.build(input_feature_list)
+            output_scores = model.build(input_feature_list, is_training=self.is_training)
 
             return tf.concat(output_scores,1)
-
-    # TODO Move to BasicAlgorithm.py
-    def softmax_loss(self, output, labels, name=None):
-        """Computes listwise softmax loss without propensity weighting.
-
-        Args:
-            output: (tf.Tensor) A tensor with shape [batch_size, list_size]. Each value is
-            the ranking score of the corresponding example.
-            labels: (tf.Tensor) A tensor of the same shape as `output`. A value >= 1 means a
-            relevant example.
-            propensity: No use. 
-            name: A string used as the name for this variable scope.
-
-        Returns:
-            (tf.Tensor) A single value tensor containing the loss.
-        """
-
-        loss = None
-        with tf.name_scope(name, "softmax_loss",[output]):
-            label_dis = labels / tf.reduce_sum(labels, 1, keep_dims=True)
-            loss = tf.nn.softmax_cross_entropy_with_logits(logits=output, labels=label_dis) * tf.reduce_sum(labels, 1)
-        return tf.reduce_sum(loss) / tf.reduce_sum(labels)
 
     def step(self, session, input_feed, forward_only):
         """Run a step of the model feeding the given inputs.
@@ -149,12 +196,15 @@ class NavieAlgorithm(BasicAlgorithm):
         
         # Output feed: depends on whether we do a backward step or not.
         if not forward_only:
+            input_feed[self.is_training.name] = True
             output_feed = [
                             self.updates,    # Update Op that does SGD.
                             self.loss,    # Loss for this batch.
+                            self.update_propensity_op,
                             self.train_summary # Summarize statistics.
                             ]    
         else:
+            input_feed[self.is_training.name] = False
             output_feed = [
                         self.eval_summary, # Summarize statistics.
                         self.output   # Model outputs

@@ -271,6 +271,7 @@ class DLA(BasicAlgorithm):
         else:
             return outputs[0], outputs[2], outputs[1]    # loss, outputs, summary.
 
+    # TODO Move to BasicAlgorithm.py
     def softmax_loss(self, output, labels, propensity=None, name=None):
         """Computes listwise softmax loss without propensity weighting.
 
@@ -293,6 +294,7 @@ class DLA(BasicAlgorithm):
             loss = tf.nn.softmax_cross_entropy_with_logits(logits=output, labels=label_dis) * tf.reduce_sum(labels, 1)
         return tf.reduce_sum(loss) / tf.reduce_sum(labels), propensity_weights
 
+    # TODO Move to BasicAlgorithm.py
     def click_weighted_softmax_cross_entropy_loss(self, output, labels, propensity, name=None):
         """Computes listwise softmax loss with propensity weighting.
 
@@ -319,6 +321,7 @@ class DLA(BasicAlgorithm):
             loss = tf.nn.softmax_cross_entropy_with_logits(logits=output, labels=label_dis) * tf.reduce_sum(labels*propensity_weights, 1)
         return tf.reduce_sum(loss) / tf.reduce_sum(labels*propensity_weights), propensity_weights
 
+    # TODO Move to BasicAlgorithm.py
     def click_weighted_log_loss(self, output, labels, propensity, name=None):
         """Computes pointwise sigmoid loss with propensity weighting.
 

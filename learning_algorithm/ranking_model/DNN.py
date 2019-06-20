@@ -78,6 +78,6 @@ class DNN(BasicRankingModel):
                 # Run dnn
                 output_data = tf.nn.bias_add(tf.matmul(output_data, expand_W), expand_b)
                 output_data = tf.compat.v1.layers.batch_normalization(output_data, training=is_training, name="batch_normalization_%d" % j)
-                output_data = tf.nn.relu(output_data)
+                output_data = tf.nn.elu(output_data)
                 current_size = output_sizes[j]
-            return tf.split(output_data, len(input_list)), noise_tensor_list
+            return tf.split(output_data, len(input_list), axis=0), noise_tensor_list

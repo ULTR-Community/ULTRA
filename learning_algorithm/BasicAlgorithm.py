@@ -55,4 +55,28 @@ class BasicAlgorithm(ABC):
 
         """
         pass
+
+    def pairwise_cross_entropy_loss(self, pos_scores, neg_scores, name=None):
+        """Computes pairwise softmax loss without propensity weighting.
+
+        Args:
+            pos_scores: (tf.Tensor) A tensor with shape [batch_size, 1]. Each value is
+            the ranking score of a positive example.
+            neg_scores: (tf.Tensor) A tensor with shape [batch_size, 1]. Each value is
+            the ranking score of a negative example.
+            name: A string used as the name for this variable scope.
+
+        Returns:
+            (tf.Tensor) A single value tensor containing the loss.
+        """
+        # TODO bug: scores keep increasing
+        loss = None
+        with tf.name_scope(name, "pairwise_cross_entropy_loss", [pos_scores, neg_scores]):
+            label_dis = tf.concat([tf.ones_like(pos_scores), tf.zeros_like(neg_scores)], axis=1)
+            loss = tf.nn.softmax_cross_entropy_with_logits(
+                logits=tf.concat([pos_scores, neg_scores], axis=1), labels=label_dis
+            )
+        return tf.reduce_mean(loss)
+    
+    
         

@@ -245,7 +245,7 @@ class IPWrank(BasicAlgorithm):
             loss = tf.nn.softmax_cross_entropy_with_logits(logits=output, labels=label_dis) * tf.reduce_sum(labels, 1)
         return tf.reduce_sum(loss) / tf.reduce_sum(labels)
 
-    
+    # TODO Move to BasicAlgorithm.py
     def click_weighted_softmax_loss(self, output, labels, propensity, name=None):
         """Computes listwise softmax loss with propensity weighting.
 

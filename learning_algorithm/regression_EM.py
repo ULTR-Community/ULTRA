@@ -46,7 +46,7 @@ class RegressionEM(BasicAlgorithm):
     """The regression-based EM algorithm for unbiased learning to rank.
 
     This class implements the regression-based EM algorithm based on the input layer 
-    feed. See the following paper for more information on the simulation data.
+    feed. See the following paper for more information.
     
     * Wang, Xuanhui, Nadav Golbandi, Michael Bendersky, Donald Metzler, and Marc Najork. "Position bias estimation for unbiased learning to rank in personal search." In Proceedings of the Eleventh ACM International Conference on Web Search and Data Mining, pp. 610-618. ACM, 2018.
     
@@ -113,6 +113,7 @@ class RegressionEM(BasicAlgorithm):
             p_r1 = reshaped_labels + (1-reshaped_labels) * p_e0_r1_c0
 
             # Conduct maximization step
+            # TODO add a learning rate here to avoid unstable EM process with small batches.
             self.update_propensity_op =  self.propensity.assign(
                 tf.reduce_mean(
                     reshaped_labels + (1-reshaped_labels) * p_e1_r0_c0, axis=0, keep_dims=True
@@ -138,6 +139,7 @@ class RegressionEM(BasicAlgorithm):
                                                                      self.hparams.max_gradient_norm)
                 self.updates = opt.apply_gradients(zip(self.clipped_gradients, params),
                                              global_step=self.global_step)
+                tf.summary.scalar('Gradient Norm', self.norm, collections=['train'])
             else:
                 self.norm = None 
                 self.updates = opt.apply_gradients(zip(self.gradients, params),

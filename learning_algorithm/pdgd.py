@@ -89,14 +89,7 @@ class PDGD(BasicAlgorithm):
             pair_scores = self.get_ranking_scores(
                 [self.positive_docid_inputs, self.negative_docid_inputs], is_training=self.is_training, scope='ranking_model'
                 )
-            # TODO bug: scores keep increasing
-            tf.summary.scalar('max_scores', tf.reduce_max(pair_scores), collections=['train'])
-            probs = tf.nn.softmax(
-                tf.concat([pair_scores[0]-pair_scores[1], tf.zeros_like(pair_scores[1])], axis=1)
-                )
-            neg_prob = tf.split(probs, num_or_size_splits=2, axis=1)[1]
-            tf.summary.scalar('neg_prob', tf.reduce_mean(neg_prob), collections=['train'])
-            self.loss = tf.reduce_sum(self.pair_weights * neg_prob) / tf.reduce_sum(self.pair_weights)
+            self.loss = self.pairwise_cross_entropy_loss(pair_scores[0], pair_scores[1])
             params = tf.trainable_variables()
             if self.hparams.l2_loss > 0:
                 for p in params:
