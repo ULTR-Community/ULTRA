@@ -193,9 +193,8 @@ def test(exp_settings):
             summary_list.append(summary)
             #The output is a list of rerank index for decoder_inputs (which represents the gold rank list)
             rerank_scores.append(output_logits[0])
-            if i % FLAGS.steps_per_checkpoint == 0:
-                print("Testing %.2f \r" % (float(i)/len(test_set.initial_list))),
-        # TODO merge summary
+            print("Testing {:.0%} finished".format(float(i+1)/len(test_set.initial_list)), end="\r", flush=True)
+        print("\n[Done]")
         test_summary = utils.merge_TFSummary(summary_list, np.ones(len(test_set.initial_list)))
         test_writer.add_summary(test_summary, i)
         print("  eval: %s" % (

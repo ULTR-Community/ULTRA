@@ -1,5 +1,5 @@
 {
-    "train_input_feed":"input_layer.ClickSimulationFeed",
+    "train_input_feed":"input_layer.OnlineSimulationFeed",
     "train_input_hparams":"",
     "valid_input_feed":"input_layer.DirectLabelFeed",
     "valid_input_hparams":"",
@@ -9,12 +9,12 @@
     "ranking_model":"learning_algorithm.ranking_model.DNN",
     "ranking_model_hparams":"hidden_layer_sizes=[512, 256, 128]",
 
-    "learning_algorithm": "learning_algorithm.RegressionEM",
+    "learning_algorithm": "learning_algorithm.IPWrank",
     "learning_algorithm_hparams":"",
 
     "metrics": [
         "mrr", "ndcg"
     ],
     "metrics_topn" : [3,5,10],
-    "objective_metric": "ndcg_3"
+    "objective_metric": ""
 }

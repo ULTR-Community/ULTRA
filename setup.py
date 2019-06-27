@@ -28,17 +28,12 @@ setup(
     ],
     install_requires=[
         #'keras >= 2.0.5',
-        #'tensorflow-gpu >= 1.1.0',
+        #'tensorflow-gpu >= 1.1.0,<2',
         'tensorflow >= 1.1.0,<2',
         'tensorflow_ranking >= 0.1.0', # You may need to mannually install tensorflow_ranking from the source code
-        #'nltk >= 3.2.3',
         'numpy >= 1.12.1',
         'six >= 1.10.0',
-        #'h5py >= 2.7.0',
-        #'tqdm >= 4.19.4',
         'scipy >= 1.0.0',
-        #'jieba >= 0.39',
-        #'psutil >= 5.4.6'
     ]
     #extras_require={
     #    'visualize': ['matplotlib >= 2.2.0'],
