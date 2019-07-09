@@ -30,16 +30,18 @@ tf.app.flags.DEFINE_string("model_dir", "./tmp_model/", "The directory for model
 tf.app.flags.DEFINE_string("output_dir", "./tmp_output/", "The directory to output results.")
 
 # model 
-tf.app.flags.DEFINE_string("setting_file", "./example/dla_exp_settings.json", "A json file that contains all the settings of the algorithm.")
+tf.app.flags.DEFINE_string("setting_file", "./example/offline_setting/dla_exp_settings.json", "A json file that contains all the settings of the algorithm.")
 
 # general training parameters
 tf.app.flags.DEFINE_integer("batch_size", 256,
                             "Batch size to use during training.")
 tf.app.flags.DEFINE_integer("train_list_cutoff", 10,
-                            "The number of top documents to consider in each rank list during training.")
+                            "The number of top documents to consider in each rank list during training (0: no limit).")
+tf.app.flags.DEFINE_integer("max_list_cutoff", 0,
+                            "The maximum number of top documents to consider in each rank list (0: no limit).")
 tf.app.flags.DEFINE_integer("max_train_iteration", 0,
                             "Limit on the iterations of training (0: no limit).")
-tf.app.flags.DEFINE_integer("steps_per_checkpoint", 20,
+tf.app.flags.DEFINE_integer("steps_per_checkpoint", 200,
                             "How many training steps to do per checkpoint.")
 
 tf.app.flags.DEFINE_boolean("test_only", False,
@@ -73,10 +75,16 @@ def create_model(session, exp_settings, data_set, forward_only):
 def train(exp_settings):
     # Prepare data.
     print("Reading data in %s" % FLAGS.data_dir)
-    train_set = utils.read_data(FLAGS.data_dir, 'train', FLAGS.train_list_cutoff)
-    valid_set = utils.read_data(FLAGS.data_dir, 'valid', FLAGS.train_list_cutoff)
+    train_set = utils.read_data(FLAGS.data_dir, 'train', FLAGS.max_list_cutoff)
+    valid_set = utils.read_data(FLAGS.data_dir, 'valid', FLAGS.max_list_cutoff)
     print("Train Rank list size %d" % train_set.rank_list_size)
     print("Valid Rank list size %d" % valid_set.rank_list_size)
+    exp_settings['max_candidate_num'] = max(train_set.rank_list_size, valid_set.rank_list_size)
+    exp_settings['train_list_cutoff'] = min(FLAGS.train_list_cutoff, exp_settings['max_candidate_num']) if FLAGS.train_list_cutoff > 0 else exp_settings['max_candidate_num']
+    
+    # Pad data
+    train_set.pad(exp_settings['max_candidate_num'])
+    valid_set.pad(exp_settings['max_candidate_num'])
 
     config = tf.ConfigProto()
     #config.gpu_options.allow_growth = True
@@ -87,19 +95,13 @@ def train(exp_settings):
         #model.print_info()
 
         # Create data feed
-        #train_input_feed = input_layer.ClickSimulationFeed(model, FLAGS.batch_size, exp_settings['train_input_hparams'])
         train_input_feed = utils.find_class(exp_settings['train_input_feed'])(model, FLAGS.batch_size, exp_settings['train_input_hparams'], sess)
-        #valid_input_feed = input_layer.DirectLabelFeed(model, FLAGS.batch_size, exp_settings['valid_input_hparams'])
         valid_input_feed = utils.find_class(exp_settings['valid_input_feed'])(model, FLAGS.batch_size, exp_settings['valid_input_hparams'], sess)
 
         # Create tensorboard summarizations.
         train_writer = tf.summary.FileWriter(FLAGS.model_dir + '/train_log',
                                         sess.graph)
         valid_writer = tf.summary.FileWriter(FLAGS.model_dir + '/valid_log')
-
-        #pad data
-        train_set.pad(train_set.rank_list_size)
-        valid_set.pad(train_set.rank_list_size)
 
         # This is the training loop.
         step_time, loss = 0.0, 0.0
@@ -109,7 +111,7 @@ def train(exp_settings):
         while True:
             # Get a batch and make a step.
             start_time = time.time()
-            input_feed, _ = train_input_feed.get_batch(train_set)
+            input_feed, _ = train_input_feed.get_batch(train_set, check_validation=True)
             step_loss, _, summary = model.step(sess, input_feed, False)
             step_time += (time.time() - start_time) / FLAGS.steps_per_checkpoint
             loss += step_loss / FLAGS.steps_per_checkpoint
@@ -129,11 +131,11 @@ def train(exp_settings):
                 summary_list = []
                 batch_size_list = []
                 while it < len(valid_set.initial_list):
-                    input_feed, info_map = valid_input_feed.get_next_batch(it, valid_set)
+                    input_feed, info_map = valid_input_feed.get_next_batch(it, valid_set, check_validation=False)
                     _, _, summary = model.step(sess, input_feed, True)
                     summary_list.append(summary)
                     batch_size_list.append(len(info_map['input_list']))
-                    it += valid_input_feed.batch_size
+                    it += batch_size_list[-1]
                     count_batch += 1.0
                 valid_summary = utils.merge_TFSummary(summary_list, batch_size_list)
                 valid_writer.add_summary(valid_summary, current_step)
@@ -171,35 +173,45 @@ def test(exp_settings):
     with tf.Session(config=config) as sess:
         # Load test data.
         print("Reading data in %s" % FLAGS.data_dir)
-        test_set = utils.read_data(FLAGS.data_dir,'test')
-        test_set.pad(test_set.rank_list_size)
+        test_set = utils.read_data(FLAGS.data_dir, 'test', FLAGS.max_list_cutoff)
+        exp_settings['max_candidate_num'] = test_set.rank_list_size
+
+        test_set.pad(exp_settings['max_candidate_num'])
+        
 
         # Create model and load parameters.
         model = create_model(sess, exp_settings, test_set, True)
 
         # Create input feed
-        #test_input_feed = input_layer.DirectLabelFeed(model, 1, exp_settings['test_input_hparams'])
-        test_input_feed = utils.find_class(exp_settings['test_input_feed'])(model, 1, exp_settings['test_input_hparams'], sess)
+        #test_input_feed = utils.find_class(exp_settings['test_input_feed'])(model, 1, exp_settings['test_input_hparams'], sess)
+        test_input_feed = utils.find_class(exp_settings['test_input_feed'])(model, FLAGS.batch_size, exp_settings['test_input_hparams'], sess)
 
         test_writer = tf.summary.FileWriter(FLAGS.model_dir + '/test_log')
 
         rerank_scores = []
-
-        # Start testing.
         summary_list = []
-        for i in range(len(test_set.initial_list)):
-            input_feed, _ = test_input_feed.get_data_by_index(test_set, i)
+        # Start testing.
+        
+        it = 0
+        count_batch = 0.0
+        batch_size_list = []
+        while it < len(test_set.initial_list):
+            input_feed, info_map = test_input_feed.get_next_batch(it, test_set, check_validation=False)
             _, output_logits, summary = model.step(sess, input_feed, True)
             summary_list.append(summary)
-            #The output is a list of rerank index for decoder_inputs (which represents the gold rank list)
-            rerank_scores.append(output_logits[0])
-            print("Testing {:.0%} finished".format(float(i+1)/len(test_set.initial_list)), end="\r", flush=True)
+            batch_size_list.append(len(info_map['input_list']))
+            for x in range(batch_size_list[-1]):
+                rerank_scores.append(output_logits[x])
+            it += batch_size_list[-1]
+            count_batch += 1.0
+            print("Testing {:.0%} finished".format(float(it)/len(test_set.initial_list)), end="\r", flush=True)
         print("\n[Done]")
-        test_summary = utils.merge_TFSummary(summary_list, np.ones(len(test_set.initial_list)))
-        test_writer.add_summary(test_summary, i)
+        test_summary = utils.merge_TFSummary(summary_list, batch_size_list)
+        test_writer.add_summary(test_summary, it)
         print("  eval: %s" % (
                 ' '.join(['%s:%.3f' % (x.tag, x.simple_value) for x in test_summary.value])
         ))
+
         #get rerank indexes with new scores
         rerank_lists = []
         for i in range(len(rerank_scores)):

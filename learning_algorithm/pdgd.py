@@ -24,7 +24,7 @@ from six.moves import zip
 from tensorflow import dtypes
 
 from . import ranking_model
-from . import metrics
+
 from .BasicAlgorithm import BasicAlgorithm
 sys.path.append("..")
 import utils
@@ -59,7 +59,7 @@ class PDGD(BasicAlgorithm):
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
         self.exp_settings = exp_settings
 
-        self.rank_list_size = data_set.rank_list_size
+        self.max_candidate_num = exp_settings['max_candidate_num']
         self.feature_size = data_set.feature_size
         self.learning_rate = tf.Variable(float(self.hparams.learning_rate), trainable=False)
         
@@ -69,7 +69,7 @@ class PDGD(BasicAlgorithm):
         self.letor_features = tf.placeholder(tf.float32, shape=[None, self.feature_size], 
                                 name="letor_features") # the letor features for the documents
         self.labels = []  # the labels for the documents (e.g., clicks)
-        for i in range(self.rank_list_size):
+        for i in range(self.max_candidate_num):
             self.docid_inputs.append(tf.placeholder(tf.int64, shape=[None],
                                             name="docid_input{0}".format(i)))
             self.labels.append(tf.placeholder(tf.float32, shape=[None],
@@ -78,8 +78,16 @@ class PDGD(BasicAlgorithm):
         self.global_step = tf.Variable(0, trainable=False)
 
         self.output = tf.concat(self.get_ranking_scores(self.docid_inputs, is_training=self.is_training, scope='ranking_model'),1)
+
+        reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
+        for metric in self.exp_settings['metrics']:
+            for topn in self.exp_settings['metrics_topn']:
+                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, None)
+                tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['eval'])
+                
         # Build model
         if not forward_only:
+            self.rank_list_size = exp_settings['train_list_cutoff']
             # Build training pair inputs only when it is training
             self.positive_docid_inputs = tf.placeholder(tf.int64, shape=[None], name="positive_docid_input")
             self.negative_docid_inputs = tf.placeholder(tf.int64, shape=[None], name="negative_docid_input")
@@ -110,13 +118,6 @@ class PDGD(BasicAlgorithm):
                                              global_step=self.global_step)                 
             tf.summary.scalar('Learning Rate', self.learning_rate, collections=['train'])
             tf.summary.scalar('Loss', self.loss, collections=['train'])
-            
-        
-        reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
-        for metric in self.exp_settings['metrics']:
-            for topn in self.exp_settings['metrics_topn']:
-                metric_value = metrics.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, None)
-                tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['eval'])
 
         self.train_summary = tf.summary.merge_all(key='train')
         self.eval_summary = tf.summary.merge_all(key='eval')

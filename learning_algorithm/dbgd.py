@@ -25,7 +25,7 @@ from six.moves import zip
 from tensorflow import dtypes
 
 from . import ranking_model
-from . import metrics
+
 from .BasicAlgorithm import BasicAlgorithm
 sys.path.append("..")
 import utils
@@ -60,7 +60,7 @@ class DBGD(BasicAlgorithm):
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
         self.exp_settings = exp_settings
 
-        self.rank_list_size = data_set.rank_list_size
+        self.max_candidate_num = exp_settings['max_candidate_num']
         self.feature_size = data_set.feature_size
         self.learning_rate = tf.Variable(float(self.hparams.learning_rate), trainable=False)
         
@@ -78,16 +78,25 @@ class DBGD(BasicAlgorithm):
 
         self.global_step = tf.Variable(0, trainable=False)
         self.output = tf.concat(self.get_ranking_scores(self.docid_inputs, is_training=self.is_training, scope='ranking_model'),1)
+        reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [max_candidate_num, ?] to [?, max_candidate_num]
+        for metric in self.exp_settings['metrics']:
+            for topn in self.exp_settings['metrics_topn']:
+                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, None)
+                tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['eval'])
+
         # Build model
-        reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
         if not forward_only:
+            self.rank_list_size = exp_settings['train_list_cutoff']
+            train_output = tf.concat(self.get_ranking_scores(self.docid_inputs[:self.rank_list_size], is_training=self.is_training, scope='ranking_model'),1)
+            train_labels = self.labels[:self.rank_list_size]
             # Create random gradients and apply it to get new ranking scores
-            new_output_list, noise_list = self.get_ranking_scores_with_noise(self.docid_inputs, is_training=self.is_training, scope='ranking_model')
+            new_output_list, noise_list = self.get_ranking_scores_with_noise(self.docid_inputs[:self.rank_list_size], is_training=self.is_training, scope='ranking_model')
             
             # Compute NDCG for the old ranking scores and new ranking scores
+            reshaped_train_labels = tf.transpose(tf.convert_to_tensor(train_labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
             self.new_output = tf.concat(new_output_list,1)
-            previous_ndcg = metrics.make_ranking_metric_fn('ndcg', self.rank_list_size)(reshaped_labels, self.output, None)
-            new_ndcg = metrics.make_ranking_metric_fn('ndcg', self.rank_list_size)(reshaped_labels, self.new_output, None)
+            previous_ndcg = utils.make_ranking_metric_fn('ndcg', self.rank_list_size)(reshaped_train_labels, train_output, None)
+            new_ndcg = utils.make_ranking_metric_fn('ndcg', self.rank_list_size)(reshaped_train_labels, self.new_output, None)
             update_or_not = tf.ceil(new_ndcg - previous_ndcg)
             self.loss = 1.0 - new_ndcg
 
@@ -109,11 +118,10 @@ class DBGD(BasicAlgorithm):
                                              global_step=self.global_step)                 
             tf.summary.scalar('Learning Rate', self.learning_rate, collections=['train'])
             tf.summary.scalar('Loss', self.loss, collections=['train'])
-            
-        for metric in self.exp_settings['metrics']:
-            for topn in self.exp_settings['metrics_topn']:
-                metric_value = metrics.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, None)
-                tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train', 'eval'])
+            for metric in self.exp_settings['metrics']:
+                for topn in self.exp_settings['metrics_topn']:
+                    metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, train_output, None)
+                    tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train'])
 
         self.train_summary = tf.summary.merge_all(key='train')
         self.eval_summary = tf.summary.merge_all(key='eval')

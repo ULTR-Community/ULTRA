@@ -55,27 +55,28 @@ class OnlineSimulationFeed:
         self.start_index = 0
         self.count = 1
         self.rank_list_size = model.rank_list_size
+        self.max_candidate_num = model.max_candidate_num
         self.feature_size = model.feature_size
         self.batch_size = batch_size
         self.model = model
         self.session = session
     
-    def prepare_true_labels_with_index(self, data_set, index, docid_inputs, letor_features, labels, check_validation=True):
+    def prepare_true_labels_with_index(self, data_set, index, docid_inputs, letor_features, labels, check_validation=False):
         i = index
         # Generate label list.
-        label_list = [0 if data_set.initial_list[i][x] < 0 else data_set.labels[i][x] for x in range(len(data_set.initial_list[i]))]
+        label_list = [0 if data_set.initial_list[i][x] < 0 else data_set.labels[i][x] for x in range(self.max_candidate_num)]
 
         # Check if data is valid
         if check_validation and sum(label_list) == 0:
             return
         base = len(letor_features)
-        for x in data_set.initial_list[i]:
-            if x >= 0:
-                letor_features.append(data_set.features[x])
-        docid_inputs.append(list([-1 if data_set.initial_list[i][x] < 0 else base+x for x in range(len(data_set.initial_list[i]))]))
+        for x in range(self.max_candidate_num):
+            if data_set.initial_list[i][x] >= 0:
+                letor_features.append(data_set.features[data_set.initial_list[i][x]])
+        docid_inputs.append(list([-1 if data_set.initial_list[i][x] < 0 else base+x for x in range(self.max_candidate_num)]))
         labels.append(label_list)
 
-    def simulate_clicks_online(self, input_feed, check_validation=True):
+    def simulate_clicks_online(self, input_feed, check_validation=False):
         # Compute ranking scores with input_feed
         input_feed[self.model.is_training.name] = False
         rank_scores = self.session.run([self.model.output], input_feed)[0]
@@ -83,7 +84,7 @@ class OnlineSimulationFeed:
         letor_features_length = len(input_feed[self.model.letor_features.name])
         for i in range(len(input_feed[self.model.docid_inputs[0].name])):
             # Get valid doc index
-            valid_idx = self.rank_list_size - 1
+            valid_idx = self.max_candidate_num - 1
             while valid_idx > -1:
                 if input_feed[self.model.docid_inputs[valid_idx].name][i] < letor_features_length: # a valid doc
                     break
@@ -98,19 +99,23 @@ class OnlineSimulationFeed:
                 new_docid_list[j] = input_feed[self.model.docid_inputs[rerank_list[j]].name][i]
                 new_label_list[j] = input_feed[self.model.labels[rerank_list[j]].name][i]
             # Collect clicks online
-            click_list, _, _ = self.click_model.sampleClicksForOneList(new_label_list)
+            click_list, _, _ = self.click_model.sampleClicksForOneList(new_label_list[:self.rank_list_size])
             sample_count = 0
             while check_validation and sum(click_list) == 0 and sample_count < 100:
-                click_list, _, _ = self.click_model.sampleClicksForOneList(new_label_list)
+                click_list, _, _ = self.click_model.sampleClicksForOneList(new_label_list[:self.rank_list_size])
                 sample_count += 1
             # update input_feed
             for j in range(list_len):
                 input_feed[self.model.docid_inputs[j].name][i] = new_docid_list[j]
-                input_feed[self.model.labels[j].name][i] = click_list[j]
+                if j < self.rank_list_size:
+                    input_feed[self.model.labels[j].name][i] = click_list[j] 
+                else:
+                    input_feed[self.model.labels[j].name][i] = 0
+                    
         return input_feed
         
     
-    def get_batch(self, data_set, check_validation=True):
+    def get_batch(self, data_set, check_validation=False):
         """Get a random batch of data, prepare for step. Typically used for training.
 
         To feed data in step(..) it must be a list of batch-major vectors, while
@@ -127,8 +132,8 @@ class OnlineSimulationFeed:
 
         """
 
-        if len(data_set.initial_list[0]) != self.rank_list_size:
-            raise ValueError("Input ranklist length must be equal to the one in bucket,"
+        if len(data_set.initial_list[0]) < self.rank_list_size:
+            raise ValueError("Input ranklist length must be no less than the required list size,"
                              " %d != %d." % (len(data_set.initial_list[0]), self.rank_list_size))
         length = len(data_set.initial_list)
         docid_inputs, letor_features, labels = [], [], []
@@ -141,13 +146,13 @@ class OnlineSimulationFeed:
         local_batch_size = len(docid_inputs)
         letor_features_length = len(letor_features)
         for i in range(local_batch_size):
-            for j in range(self.rank_list_size):
+            for j in range(self.max_candidate_num):
                 if docid_inputs[i][j] < 0:
                     docid_inputs[i][j] = letor_features_length
 
         batch_docid_inputs = []
         batch_labels = []
-        for length_idx in range(self.rank_list_size):
+        for length_idx in range(self.max_candidate_num):
             # Batch encoder inputs are just re-indexed docid_inputs.
             batch_docid_inputs.append(
                 np.array([docid_inputs[batch_idx][length_idx]
@@ -194,8 +199,8 @@ class OnlineSimulationFeed:
             info_map: a dictionary contain some basic information about the batch (for debugging).
 
         """
-        if len(data_set.initial_list[0]) != self.rank_list_size:
-            raise ValueError("Input ranklist length must be equal to the one in bucket,"
+        if len(data_set.initial_list[0]) < self.rank_list_size:
+            raise ValueError("Input ranklist length must be no less than the required list size,"
                              " %d != %d." % (len(data_set.initial_list[0]), self.rank_list_size))
         
         docid_inputs, letor_features, labels = [], [], []
@@ -208,14 +213,14 @@ class OnlineSimulationFeed:
         local_batch_size = len(docid_inputs)
         letor_features_length = len(letor_features)
         for i in range(local_batch_size):
-            for j in range(self.rank_list_size):
+            for j in range(self.max_candidate_num):
                 if docid_inputs[i][j] < 0:
                     docid_inputs[i][j] = letor_features_length
 
 
         batch_docid_inputs = []
         batch_labels = []
-        for length_idx in range(self.rank_list_size):
+        for length_idx in range(self.max_candidate_num):
             # Batch encoder inputs are just re-indexed docid_inputs.
             batch_docid_inputs.append(
                 np.array([docid_inputs[batch_idx][length_idx]
@@ -227,7 +232,7 @@ class OnlineSimulationFeed:
         # Create input feed map
         input_feed = {}
         input_feed[self.model.letor_features.name] = np.array(letor_features)
-        for l in range(self.rank_list_size):
+        for l in range(self.max_candidate_num):
             input_feed[self.model.docid_inputs[l].name] = batch_docid_inputs[l]
             input_feed[self.model.labels[l].name] = batch_labels[l]
 
@@ -254,8 +259,8 @@ class OnlineSimulationFeed:
                     The triple (docid_inputs, decoder_inputs, target_weights) for
                     the constructed batch that has the proper format to call step(...) later.
                 """
-        if len(data_set.initial_list[0]) != self.rank_list_size:
-            raise ValueError("Input ranklist length must be equal to the one in bucket,"
+        if len(data_set.initial_list[0]) < self.rank_list_size:
+            raise ValueError("Input ranklist length must be no less than the required list size,"
                              " %d != %d." % (len(data_set.initial_list[0]), self.rank_list_size))
         
         docid_inputs, letor_features, labels = [], [], []
@@ -264,13 +269,13 @@ class OnlineSimulationFeed:
         self.prepare_true_labels_with_index(data_set, i, docid_inputs, letor_features, labels, check_validation)
 
         letor_features_length = len(letor_features)
-        for j in range(self.rank_list_size):
+        for j in range(self.max_candidate_num):
             if docid_inputs[-1][j] < 0:
                 docid_inputs[-1][j] = letor_features_length
 
         batch_docid_inputs = []
         batch_labels = []
-        for length_idx in range(self.rank_list_size):
+        for length_idx in range(self.max_candidate_num):
             # Batch encoder inputs are just re-indexed docid_inputs.
             batch_docid_inputs.append(
                 np.array([docid_inputs[batch_idx][length_idx]
@@ -282,7 +287,7 @@ class OnlineSimulationFeed:
         # Create input feed map
         input_feed = {}
         input_feed[self.model.letor_features.name] = np.array(letor_features)
-        for l in range(self.rank_list_size):
+        for l in range(self.max_candidate_num):
             input_feed[self.model.docid_inputs[l].name] = batch_docid_inputs[l]
             input_feed[self.model.labels[l].name] = batch_labels[l]
 

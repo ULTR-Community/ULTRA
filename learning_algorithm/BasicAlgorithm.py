@@ -14,7 +14,7 @@ import tensorflow as tf
 import tensorflow_ranking as tfr
 from abc import ABC, abstractmethod
 from . import ranking_model
-from . import metrics
+
 sys.path.append("..")
 import utils
 
@@ -38,6 +38,8 @@ class BasicAlgorithm(ABC):
         self.letor_features = None # the letor features for the documents
         self.labels = None  # the labels for the documents (e.g., clicks)
         self.output = None # the ranking scores of the inputs
+        self.rank_list_size = None # the number of documents considered in each rank list.
+        self.max_candidate_num = None # the maximum number of candidates for each query.
         pass
 
     @abstractmethod

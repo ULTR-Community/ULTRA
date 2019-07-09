@@ -61,8 +61,9 @@ class ClickSimulationFeed(BasicInputFeed):
     
     def prepare_sim_clicks_with_index(self, data_set, index, docid_inputs, letor_features, labels, check_validation=True):
         i = index
+
         # Generate clicks with click models.
-        label_list = [0 if data_set.initial_list[i][x] < 0 else data_set.labels[i][x] for x in range(len(data_set.initial_list[i]))]
+        label_list = [0 if data_set.initial_list[i][x] < 0 else data_set.labels[i][x] for x in range(self.rank_list_size)]
         click_list, _, _ = self.click_model.sampleClicksForOneList(list(label_list))
         sample_count = 0
         while check_validation and sum(click_list) == 0 and sample_count < 100:
@@ -73,13 +74,13 @@ class ClickSimulationFeed(BasicInputFeed):
         if check_validation and sum(click_list) == 0:
             return
         base = len(letor_features)
-        for x in data_set.initial_list[i]:
-            if x >= 0:
-                letor_features.append(data_set.features[x])
-        docid_inputs.append(list([-1 if data_set.initial_list[i][x] < 0 else base+x for x in range(len(data_set.initial_list[i]))]))
+        for x in range(self.rank_list_size):
+            if data_set.initial_list[i][x] >= 0:
+                letor_features.append(data_set.features[data_set.initial_list[i][x]])
+        docid_inputs.append(list([-1 if data_set.initial_list[i][x] < 0 else base+x for x in range(self.rank_list_size)]))
         labels.append(click_list)
     
-    def get_batch(self, data_set, check_validation=True):
+    def get_batch(self, data_set, check_validation=False):
         """Get a random batch of data, prepare for step. Typically used for training.
 
         To feed data in step(..) it must be a list of batch-major vectors, while
@@ -96,8 +97,8 @@ class ClickSimulationFeed(BasicInputFeed):
 
         """
 
-        if len(data_set.initial_list[0]) != self.rank_list_size:
-            raise ValueError("Input ranklist length must be equal to the one in bucket,"
+        if len(data_set.initial_list[0]) < self.rank_list_size:
+            raise ValueError("Input ranklist length must be no less than the required list size,"
                              " %d != %d." % (len(data_set.initial_list[0]), self.rank_list_size))
         length = len(data_set.initial_list)
         docid_inputs, letor_features, labels = [], [], []
@@ -129,7 +130,7 @@ class ClickSimulationFeed(BasicInputFeed):
         # Create input feed map
         input_feed = {}
         input_feed[self.model.letor_features.name] = np.array(letor_features)
-        for l in range(self.model.rank_list_size):
+        for l in range(self.rank_list_size):
             input_feed[self.model.docid_inputs[l].name] = batch_docid_inputs[l]
             input_feed[self.model.labels[l].name] = batch_labels[l]
         # Create info_map to store other information
@@ -142,7 +143,7 @@ class ClickSimulationFeed(BasicInputFeed):
 
         return input_feed, info_map
 
-    def get_next_batch(self, index, data_set, check_validation=True):
+    def get_next_batch(self, index, data_set, check_validation=False):
         """Get the next batch of data from a specific index, prepare for step. 
            Typically used for validation.
 
@@ -160,8 +161,8 @@ class ClickSimulationFeed(BasicInputFeed):
             info_map: a dictionary contain some basic information about the batch (for debugging).
 
         """
-        if len(data_set.initial_list[0]) != self.rank_list_size:
-            raise ValueError("Input ranklist length must be equal to the one in bucket,"
+        if len(data_set.initial_list[0]) < self.rank_list_size:
+            raise ValueError("Input ranklist length must be no less than the required list size,"
                              " %d != %d." % (len(data_set.initial_list[0]), self.rank_list_size))
         
         docid_inputs, letor_features, labels = [], [], []
@@ -216,8 +217,8 @@ class ClickSimulationFeed(BasicInputFeed):
                     The triple (docid_inputs, decoder_inputs, target_weights) for
                     the constructed batch that has the proper format to call step(...) later.
                 """
-        if len(data_set.initial_list[0]) != self.rank_list_size:
-            raise ValueError("Input ranklist length must be equal to the one in bucket,"
+        if len(data_set.initial_list[0]) < self.rank_list_size:
+            raise ValueError("Input ranklist length must be no less than the required list size,"
                              " %d != %d." % (len(data_set.initial_list[0]), self.rank_list_size))
         
         docid_inputs, letor_features, labels = [], [], []

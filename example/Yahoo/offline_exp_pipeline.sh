@@ -9,10 +9,10 @@ tar -zxvf ltrc_yahoo.tgz
 cd ../
 
 # Prepare the dataset "set 1".
-# Sort features and remove duplicates.
-python ./utils/libsvm/sort_libsvm_features.py ./Webscope_C14B/set1.train.txt ./Webscope_C14B/train.txt 
-python ./utils/libsvm/sort_libsvm_features.py ./Webscope_C14B/set1.valid.txt ./Webscope_C14B/valid.txt
-python ./utils/libsvm/sort_libsvm_features.py ./Webscope_C14B/set1.test.txt ./Webscope_C14B/test.txt
+# Sort features, sort query id, remove duplicates, and remove queries without relevant documents in validation and test set.
+python ./utils/libsvm/clean_libsvm_file.py ./Webscope_C14B/set1.train.txt ./Webscope_C14B/train.txt 0
+python ./utils/libsvm/clean_libsvm_file.py ./Webscope_C14B/set1.valid.txt ./Webscope_C14B/valid.txt 1
+python ./utils/libsvm/clean_libsvm_file.py ./Webscope_C14B/set1.test.txt ./Webscope_C14B/test.txt 1
 
 # Sample 1% training data to build the initial ranker.
 python ./utils/libsvm/sample_libsvm_data.py ./Webscope_C14B/train.txt ./Webscope_C14B/sampled_train.txt 0.01

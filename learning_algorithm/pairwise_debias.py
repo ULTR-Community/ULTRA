@@ -24,7 +24,7 @@ from six.moves import zip
 from tensorflow import dtypes
 
 from . import ranking_model
-from . import metrics
+
 from .BasicAlgorithm import BasicAlgorithm
 sys.path.append("..")
 import utils
@@ -73,7 +73,7 @@ class PairDebias(BasicAlgorithm):
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
         self.exp_settings = exp_settings
 
-        self.rank_list_size = data_set.rank_list_size
+        self.max_candidate_num = exp_settings['max_candidate_num']
         self.feature_size = data_set.feature_size
         self.learning_rate = tf.Variable(float(self.hparams.learning_rate), trainable=False)
         
@@ -83,7 +83,7 @@ class PairDebias(BasicAlgorithm):
         self.letor_features = tf.placeholder(tf.float32, shape=[None, self.feature_size], 
                                 name="letor_features") # the letor features for the documents
         self.labels = []  # the labels for the documents (e.g., clicks)
-        for i in range(self.rank_list_size):
+        for i in range(self.max_candidate_num):
             self.docid_inputs.append(tf.placeholder(tf.int64, shape=[None],
                                             name="docid_input{0}".format(i)))
             self.labels.append(tf.placeholder(tf.float32, shape=[None],
@@ -91,12 +91,18 @@ class PairDebias(BasicAlgorithm):
 
         self.global_step = tf.Variable(0, trainable=False)
 
-        # Build model
-        self.output = self.ranking_model(forward_only)
-        
-        reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
+        self.output = self.ranking_model(self.max_candidate_num, forward_only)
+        reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [max_candidate_num, ?] to [?, max_candidate_num]
+        for metric in self.exp_settings['metrics']:
+            for topn in self.exp_settings['metrics_topn']:
+                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, None)
+                tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['eval'])
+
         # Build unbiased pairwise loss only when it is training
         if not forward_only:
+            self.rank_list_size = exp_settings['train_list_cutoff']
+            train_output = self.ranking_model(self.rank_list_size, forward_only)
+            train_labels = self.labels[:self.rank_list_size]
             # Build propensity parameters
             self.t_plus = tf.Variable(tf.ones([1, self.rank_list_size]), trainable=False)
             self.t_minus = tf.Variable(tf.ones([1, self.rank_list_size]), trainable=False)
@@ -107,7 +113,7 @@ class PairDebias(BasicAlgorithm):
                 tf.summary.scalar('t_minus Probability %d' % i, tf.reduce_max(self.splitted_t_minus[i]), collections=['train'])
 
             # Build pairwise loss based on clicks (0 for unclick, 1 for click)
-            output_list = tf.split(self.output, self.rank_list_size, axis=1)
+            output_list = tf.split(train_output, self.rank_list_size, axis=1)
             t_plus_loss_list = [0.0 for _ in range(self.rank_list_size)]
             t_minus_loss_list = [0.0 for _ in range(self.rank_list_size)]
             self.loss = 0.0
@@ -155,17 +161,17 @@ class PairDebias(BasicAlgorithm):
                                              global_step=self.global_step)
             tf.summary.scalar('Learning Rate', self.learning_rate, collections=['train'])
             tf.summary.scalar('Loss', tf.reduce_mean(self.loss), collections=['train'])
-            
-        for metric in self.exp_settings['metrics']:
-            for topn in self.exp_settings['metrics_topn']:
-                metric_value = metrics.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, None)
-                tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train', 'eval'])
+            for metric in self.exp_settings['metrics']:
+                for topn in self.exp_settings['metrics_topn']:
+                    metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, train_output, None)
+                    tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train'])
+        
 
         self.train_summary = tf.summary.merge_all(key='train')
         self.eval_summary = tf.summary.merge_all(key='eval')
         self.saver = tf.train.Saver(tf.global_variables())
 
-    def ranking_model(self, forward_only=False, scope=None):
+    def ranking_model(self, list_size, forward_only=False, scope=None):
         with tf.variable_scope(scope or "ranking_model"):
             PAD_embed = tf.zeros([1,self.feature_size],dtype=tf.float32)
             letor_features = tf.concat(axis=0,values=[self.letor_features, PAD_embed])
@@ -174,7 +180,7 @@ class PairDebias(BasicAlgorithm):
 
             model = utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
 
-            for i in range(self.rank_list_size):
+            for i in range(list_size):
                 input_feature_list.append(tf.nn.embedding_lookup(letor_features, self.docid_inputs[i]))
             output_scores = model.build(input_feature_list, is_training=self.is_training)
 

@@ -48,7 +48,7 @@ class DirectLabelFeed(BasicInputFeed):
         
         self.start_index = 0
         self.count = 1
-        self.rank_list_size = model.rank_list_size
+        self.rank_list_size = model.max_candidate_num
         self.feature_size = model.feature_size
         self.batch_size = batch_size
         self.model = model
@@ -56,19 +56,19 @@ class DirectLabelFeed(BasicInputFeed):
     def prepare_true_labels_with_index(self, data_set, index, docid_inputs, letor_features, labels, check_validation=True):
         i = index
         # Generate label list.
-        label_list = [0 if data_set.initial_list[i][x] < 0 else data_set.labels[i][x] for x in range(len(data_set.initial_list[i]))]
+        label_list = [0 if data_set.initial_list[i][x] < 0 else data_set.labels[i][x] for x in range(self.rank_list_size)]
 
         # Check if data is valid
         if check_validation and sum(label_list) == 0:
             return
         base = len(letor_features)
-        for x in data_set.initial_list[i]:
-            if x >= 0:
-                letor_features.append(data_set.features[x])
-        docid_inputs.append(list([-1 if data_set.initial_list[i][x] < 0 else base+x for x in range(len(data_set.initial_list[i]))]))
+        for x in range(self.rank_list_size):
+            if data_set.initial_list[i][x] >= 0:
+                letor_features.append(data_set.features[data_set.initial_list[i][x]])
+        docid_inputs.append(list([-1 if data_set.initial_list[i][x] < 0 else base+x for x in range(self.rank_list_size)]))
         labels.append(label_list)
     
-    def get_batch(self, data_set, check_validation=True):
+    def get_batch(self, data_set, check_validation=False):
         """Get a random batch of data, prepare for step. Typically used for training.
 
         To feed data in step(..) it must be a list of batch-major vectors, while
@@ -85,8 +85,8 @@ class DirectLabelFeed(BasicInputFeed):
 
         """
 
-        if len(data_set.initial_list[0]) != self.rank_list_size:
-            raise ValueError("Input ranklist length must be equal to the one in bucket,"
+        if len(data_set.initial_list[0]) < self.rank_list_size:
+            raise ValueError("Input ranklist length must be no less than the required list size,"
                              " %d != %d." % (len(data_set.initial_list[0]), self.rank_list_size))
         length = len(data_set.initial_list)
         docid_inputs, letor_features, labels = [], [], []
@@ -132,7 +132,7 @@ class DirectLabelFeed(BasicInputFeed):
 
         return input_feed, info_map
 
-    def get_next_batch(self, index, data_set, check_validation=True):
+    def get_next_batch(self, index, data_set, check_validation=False):
         """Get the next batch of data from a specific index, prepare for step. 
            Typically used for validation.
 
@@ -150,8 +150,8 @@ class DirectLabelFeed(BasicInputFeed):
             info_map: a dictionary contain some basic information about the batch (for debugging).
 
         """
-        if len(data_set.initial_list[0]) != self.rank_list_size:
-            raise ValueError("Input ranklist length must be equal to the one in bucket,"
+        if len(data_set.initial_list[0]) < self.rank_list_size:
+            raise ValueError("Input ranklist length must be no less than the required list size,"
                              " %d != %d." % (len(data_set.initial_list[0]), self.rank_list_size))
         
         docid_inputs, letor_features, labels = [], [], []
@@ -206,8 +206,8 @@ class DirectLabelFeed(BasicInputFeed):
                     The triple (docid_inputs, decoder_inputs, target_weights) for
                     the constructed batch that has the proper format to call step(...) later.
                 """
-        if len(data_set.initial_list[0]) != self.rank_list_size:
-            raise ValueError("Input ranklist length must be equal to the one in bucket,"
+        if len(data_set.initial_list[0]) < self.rank_list_size:
+            raise ValueError("Input ranklist length must be no less than the required list size,"
                              " %d != %d." % (len(data_set.initial_list[0]), self.rank_list_size))
         
         docid_inputs, letor_features, labels = [], [], []

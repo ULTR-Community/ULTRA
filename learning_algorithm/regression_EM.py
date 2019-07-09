@@ -24,7 +24,7 @@ from six.moves import zip
 from tensorflow import dtypes
 
 from . import ranking_model
-from . import metrics
+
 from .BasicAlgorithm import BasicAlgorithm
 sys.path.append("..")
 import utils
@@ -72,7 +72,7 @@ class RegressionEM(BasicAlgorithm):
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
         self.exp_settings = exp_settings
 
-        self.rank_list_size = data_set.rank_list_size
+        self.max_candidate_num = exp_settings['max_candidate_num']
         self.feature_size = data_set.feature_size
         self.learning_rate = tf.Variable(float(self.hparams.learning_rate), trainable=False)
         
@@ -82,7 +82,7 @@ class RegressionEM(BasicAlgorithm):
         self.letor_features = tf.placeholder(tf.float32, shape=[None, self.feature_size], 
                                 name="letor_features") # the letor features for the documents
         self.labels = []  # the labels for the documents (e.g., clicks)
-        for i in range(self.rank_list_size):
+        for i in range(self.max_candidate_num):
             self.docid_inputs.append(tf.placeholder(tf.int64, shape=[None],
                                             name="docid_input{0}".format(i)))
             self.labels.append(tf.placeholder(tf.float32, shape=[None],
@@ -91,11 +91,19 @@ class RegressionEM(BasicAlgorithm):
         self.global_step = tf.Variable(0, trainable=False)
 
         # Build model
-        self.output = self.ranking_model(forward_only)
+        self.output = self.ranking_model(self.max_candidate_num, forward_only)
         
-        reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
+        reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [max_candidate_num, ?] to [?, max_candidate_num]
+        for metric in self.exp_settings['metrics']:
+            for topn in self.exp_settings['metrics_topn']:
+                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, None)
+                tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['eval'])
+
         if not forward_only:
             # Build EM graph only when it is training
+            self.rank_list_size = exp_settings['train_list_cutoff']
+            train_output = self.ranking_model(self.rank_list_size, forward_only)
+            train_labels = self.labels[:self.rank_list_size]
             self.propensity = tf.Variable(tf.ones([1, self.rank_list_size]) / self.rank_list_size, trainable=False)
 
             self.splitted_propensity = tf.split(self.propensity, self.rank_list_size, axis=1)
@@ -104,26 +112,26 @@ class RegressionEM(BasicAlgorithm):
 
             # Conduct estimation step.
             gamma = tf.sigmoid(self.output)
-            reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
+            reshaped_train_labels = tf.transpose(tf.convert_to_tensor(train_labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
             p_e1_r1_c1 = 1
             p_e1_r0_c0 = self.propensity * (1 - gamma) / (1 - self.propensity * gamma)
             p_e0_r1_c0 = (1 - self.propensity) * gamma / (1 - self.propensity * gamma)
             p_e0_r0_c0 = (1 - self.propensity) * (1 - gamma) / (1 - self.propensity * gamma)
             p_e1 = p_e1_r0_c0 + p_e1_r1_c1
-            p_r1 = reshaped_labels + (1-reshaped_labels) * p_e0_r1_c0
+            p_r1 = reshaped_train_labels + (1-reshaped_train_labels) * p_e0_r1_c0
 
             # Conduct maximization step
             # TODO add a learning rate here to avoid unstable EM process with small batches.
             self.update_propensity_op =  self.propensity.assign(
                 tf.reduce_mean(
-                    reshaped_labels + (1-reshaped_labels) * p_e1_r0_c0, axis=0, keep_dims=True
+                    reshaped_train_labels + (1-reshaped_train_labels) * p_e1_r0_c0, axis=0, keep_dims=True
                 )# / tf.reduce_sum(reshaped_labels, axis=0)
             )
 
             # Get Bernoulli samples and compute rank loss
             self.ranker_labels = get_bernoulli_sample(p_r1)
             self.loss = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(labels=self.ranker_labels, logits=self.output)
+                tf.nn.sigmoid_cross_entropy_with_logits(labels=self.ranker_labels, logits=train_output)
             )
             reshaped_propensity = self.propensity
             params = tf.trainable_variables()
@@ -146,23 +154,20 @@ class RegressionEM(BasicAlgorithm):
                                              global_step=self.global_step)
             tf.summary.scalar('Learning Rate', self.learning_rate, collections=['train'])
             tf.summary.scalar('Loss', tf.reduce_mean(self.loss), collections=['train'])
-            clipped_labels = tf.clip_by_value(reshaped_labels, clip_value_min=0, clip_value_max=1)
+            clipped_labels = tf.clip_by_value(reshaped_train_labels, clip_value_min=0, clip_value_max=1)
             for metric in self.exp_settings['metrics']:
                 for topn in self.exp_settings['metrics_topn']:
-                    list_weights = tf.reduce_mean(reshaped_propensity * clipped_labels, axis=1, keep_dims=True)
-                    metric_value = metrics.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, list_weights)
-                    tf.summary.scalar('Weighted_%s_%d' % (metric, topn), metric_value, collections=['train'])
-
-        for metric in self.exp_settings['metrics']:
-            for topn in self.exp_settings['metrics_topn']:
-                metric_value = metrics.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, None)
-                tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train', 'eval'])
+                    list_weights = tf.reduce_mean(self.propensity_weights * clipped_labels, axis=1, keep_dims=True)
+                    metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, train_output, None)
+                    tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train'])
+                    weighted_metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, train_output, list_weights)
+                    tf.summary.scalar('Weighted_%s_%d' % (metric, topn), weighted_metric_value, collections=['train'])
 
         self.train_summary = tf.summary.merge_all(key='train')
         self.eval_summary = tf.summary.merge_all(key='eval')
         self.saver = tf.train.Saver(tf.global_variables())
 
-    def ranking_model(self, forward_only=False, scope=None):
+    def ranking_model(self, list_size, forward_only=False, scope=None):
         with tf.variable_scope(scope or "ranking_model"):
             PAD_embed = tf.zeros([1,self.feature_size],dtype=tf.float32)
             letor_features = tf.concat(axis=0,values=[self.letor_features, PAD_embed])
@@ -171,7 +176,7 @@ class RegressionEM(BasicAlgorithm):
 
             model = utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
 
-            for i in range(self.rank_list_size):
+            for i in range(list_size):
                 input_feature_list.append(tf.nn.embedding_lookup(letor_features, self.docid_inputs[i]))
             output_scores = model.build(input_feature_list, is_training=self.is_training)
 
