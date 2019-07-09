@@ -94,7 +94,7 @@ class DLA(BasicAlgorithm):
         if self.hparams.logits_to_prob == 'sigmoid':
             self.logits_to_prob = sigmoid_prob
 
-        self.output = self.ranking_model(self.max_candidate_num, forward_only)
+        self.output = self.ranking_model(self.max_candidate_num, scope='ranking_model')
         reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [max_candidate_num, ?] to [?, max_candidate_num]
         for metric in self.exp_settings['metrics']:
             for topn in self.exp_settings['metrics_topn']:
@@ -104,7 +104,7 @@ class DLA(BasicAlgorithm):
         if not forward_only:
             # Build model
             self.rank_list_size = exp_settings['train_list_cutoff']
-            train_output = self.ranking_model(self.rank_list_size, forward_only)
+            train_output = self.ranking_model(self.rank_list_size, scope='ranking_model')
             self.propensity = self.DenoisingNet(self.rank_list_size, forward_only)
             train_labels = self.labels[:self.rank_list_size]
 
@@ -189,21 +189,6 @@ class DLA(BasicAlgorithm):
 
         self.updates = tf.group(denoise_updates, ranker_updates)
 
-    def ranking_model(self, list_size, forward_only=False, scope=None):
-        with tf.variable_scope(scope or "ranking_model"):
-            PAD_embed = tf.zeros([1,self.feature_size],dtype=tf.float32)
-            letor_features = tf.concat(axis=0,values=[self.letor_features, PAD_embed])
-            input_feature_list = []
-            output_scores = []
-
-            model = utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
-
-            for i in range(list_size):
-                input_feature_list.append(tf.nn.embedding_lookup(letor_features, self.docid_inputs[i]))
-            output_scores = model.build(input_feature_list, is_training=self.is_training)
-
-            return tf.concat(output_scores,1)
-
     def DenoisingNet(self, list_size, forward_only=False, scope=None):
         with tf.variable_scope(scope or "denoising_model"):
             # If we are in testing, do not compute propensity
@@ -277,7 +262,6 @@ class DLA(BasicAlgorithm):
         else:
             return None, outputs[1], outputs[0]    # no loss, outputs, summary.
 
-    # TODO Move to BasicAlgorithm.py
     def softmax_loss(self, output, labels, propensity=None, name=None):
         """Computes listwise softmax loss without propensity weighting.
 
@@ -300,7 +284,6 @@ class DLA(BasicAlgorithm):
             loss = tf.nn.softmax_cross_entropy_with_logits(logits=output, labels=label_dis) * tf.reduce_sum(labels, 1)
         return tf.reduce_sum(loss) / tf.reduce_sum(labels), propensity_weights
 
-    # TODO Move to BasicAlgorithm.py
     def click_weighted_softmax_cross_entropy_loss(self, output, labels, propensity, name=None):
         """Computes listwise softmax loss with propensity weighting.
 
@@ -327,7 +310,6 @@ class DLA(BasicAlgorithm):
             loss = tf.nn.softmax_cross_entropy_with_logits(logits=output, labels=label_dis) * tf.reduce_sum(labels*propensity_weights, 1)
         return tf.reduce_sum(loss) / tf.reduce_sum(labels*propensity_weights), propensity_weights
 
-    # TODO Move to BasicAlgorithm.py
     def click_weighted_log_loss(self, output, labels, propensity, name=None):
         """Computes pointwise sigmoid loss with propensity weighting.
 

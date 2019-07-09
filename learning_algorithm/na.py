@@ -12,7 +12,6 @@ import random
 import sys
 import tensorflow as tf
 import tensorflow_ranking as tfr
-from . import ranking_model
 
 from .BasicAlgorithm import BasicAlgorithm
 sys.path.append("..")
@@ -62,7 +61,7 @@ class NavieAlgorithm(BasicAlgorithm):
         self.global_step = tf.Variable(0, trainable=False)
 
         # Build model
-        self.output = self.ranking_model(self.max_candidate_num, forward_only)
+        self.output = self.ranking_model(self.max_candidate_num, scope='ranking_model')
         
         reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [max_candidate_num, ?] to [?, max_candidate_num]
         for metric in self.exp_settings['metrics']:
@@ -73,10 +72,11 @@ class NavieAlgorithm(BasicAlgorithm):
         if not forward_only:
             # Build model
             self.rank_list_size = exp_settings['train_list_cutoff']
-            train_output = self.ranking_model(self.rank_list_size, forward_only)
+            train_output = self.ranking_model(self.rank_list_size, scope='ranking_model')
             train_labels = self.labels[:self.rank_list_size]
+            reshaped_train_labels = tf.transpose(tf.convert_to_tensor(train_labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
 
-            self.loss = self.softmax_loss(train_output, train_labels)
+            self.loss = self.softmax_loss(train_output, reshaped_train_labels)
             params = tf.trainable_variables()
             if self.hparams.l2_loss > 0:
                 for p in params:
@@ -106,22 +106,6 @@ class NavieAlgorithm(BasicAlgorithm):
         self.eval_summary = tf.summary.merge_all(key='eval')
         self.saver = tf.train.Saver(tf.global_variables())
 
-    def ranking_model(self, list_size, forward_only=False, scope=None):
-        with tf.variable_scope(scope or "ranking_model"):
-            PAD_embed = tf.zeros([1,self.feature_size],dtype=tf.float32)
-            letor_features = tf.concat(axis=0,values=[self.letor_features, PAD_embed])
-            input_feature_list = []
-            output_scores = []
-
-            model = utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
-
-            for i in range(list_size):
-                input_feature_list.append(tf.nn.embedding_lookup(letor_features, self.docid_inputs[i]))
-            output_scores = model.build(input_feature_list, is_training=self.is_training)
-
-            return tf.concat(output_scores,1)
-
-    # TODO Move to BasicAlgorithm.py
     def softmax_loss(self, output, labels, name=None):
         """Computes listwise softmax loss without propensity weighting.
 

@@ -23,6 +23,7 @@ class BasicAlgorithm(ABC):
         implementation of an unbiased learning to rank algorithm.
 
     """
+    PADDING_SCORE = -80
 
     @abstractmethod
     def __init__(self, data_set, exp_settings, forward_only=False):
@@ -58,6 +59,100 @@ class BasicAlgorithm(ABC):
         """
         pass
 
+    def ranking_model(self, list_size, scope=None):
+        """Construct ranking model with the given list size.
+
+        Args:
+            list_size: (int) The top number of documents to consider in the input docids.
+            scope: (string) The name of the variable scope.
+
+        Returns:
+            A tensor with the same shape of input_docids.
+
+        """
+        output_scores = self.get_ranking_scores(self.docid_inputs[:list_size], self.is_training, scope)
+        return tf.concat(output_scores,1)
+    
+    def get_ranking_scores(self, input_id_list, is_training=False, scope=None):
+        """Compute ranking scores with the given inputs.
+
+        Args:
+            input_id_list: (list<tf.Tensor>) A list of tensors containing document ids. 
+                            Each tensor must have a shape of [None].
+            is_training: (bool) A flag indicating whether the model is running in training mode.
+            scope: (string) The name of the variable scope.
+
+        Returns:
+            A tensor with the same shape of input_docids.
+
+        """
+        with tf.variable_scope(scope or "ranking_model"):
+            # Build feature padding
+            PAD_embed = tf.zeros([1,self.feature_size],dtype=tf.float32)
+            letor_features = tf.concat(axis=0,values=[self.letor_features, PAD_embed])
+            valid_flags = tf.cast(
+                tf.concat(values=[tf.ones([tf.shape(self.letor_features)[0]]), tf.zeros([1])], axis=0), 
+                tf.bool
+            )
+            input_feature_list = []
+            input_flag_list = []
+
+            model = utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
+
+            for i in range(len(input_id_list)):
+                input_feature_list.append(tf.nn.embedding_lookup(letor_features, input_id_list[i]))
+                input_flag_list.append(tf.nn.embedding_lookup(valid_flags, input_id_list[i]))
+            output_scores = model.build(input_feature_list, is_training)
+
+            # Mask padding documents
+            for i in range(len(input_id_list)):
+                output_scores[i] = tf.where(
+                    tf.expand_dims(input_flag_list[i], axis=-1), 
+                    output_scores[i], 
+                    tf.ones_like(output_scores[i]) * self.PADDING_SCORE
+                )
+            return output_scores
+    
+    def get_ranking_scores_with_noise(self, input_id_list, is_training=False, scope=None):
+        """Run a step of the model feeding the given inputs.
+
+        Args:
+            input_id_list: (list<tf.Tensor>) A list of tensors containing document ids. 
+                            Each tensor must have a shape of [None].
+            is_training: (bool) A flag indicating whether the model is running in training mode.
+            scope: (string) The name of the variable scope.
+
+        Returns:
+            A tensor with the same shape of input_docids.
+            A list of (tf.Tensor, tf.Tensor) containing the random noise and the parameters it is designed for.
+
+        """
+        with tf.variable_scope(scope or "ranking_model"):
+            PAD_embed = tf.zeros([1,self.feature_size],dtype=tf.float32)
+            letor_features = tf.concat(axis=0,values=[self.letor_features, PAD_embed])
+            valid_flags = tf.cast(
+                tf.concat(values=[tf.ones([tf.shape(self.letor_features)[0]]), tf.zeros([1])], axis=0), 
+                tf.bool
+            )
+            input_feature_list = []
+            input_flag_list = []
+
+            model = utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
+
+            for i in range(len(input_id_list)):
+                input_feature_list.append(tf.nn.embedding_lookup(letor_features, input_id_list[i]))
+                input_flag_list.append(tf.nn.embedding_lookup(valid_flags, input_id_list[i]))
+            output_scores = model.build_with_random_noise(input_feature_list, self.hparams.noise_rate, is_training)
+
+            # Mask padding documents
+            for i in range(len(input_id_list)):
+                output_scores[i] = tf.where(
+                    tf.expand_dims(input_flag_list[i], axis=-1), 
+                    output_scores[i], 
+                    tf.ones_like(output_scores[i]) * self.PADDING_SCORE
+                )
+            return output_scores
+
     def pairwise_cross_entropy_loss(self, pos_scores, neg_scores, name=None):
         """Computes pairwise softmax loss without propensity weighting.
 
@@ -80,5 +175,3 @@ class BasicAlgorithm(ABC):
             )
         return tf.reduce_mean(loss)
     
-    
-        

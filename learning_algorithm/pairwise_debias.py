@@ -23,8 +23,6 @@ import itertools
 from six.moves import zip
 from tensorflow import dtypes
 
-from . import ranking_model
-
 from .BasicAlgorithm import BasicAlgorithm
 sys.path.append("..")
 import utils
@@ -91,7 +89,7 @@ class PairDebias(BasicAlgorithm):
 
         self.global_step = tf.Variable(0, trainable=False)
 
-        self.output = self.ranking_model(self.max_candidate_num, forward_only)
+        self.output = self.ranking_model(self.max_candidate_num, scope='ranking_model')
         reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [max_candidate_num, ?] to [?, max_candidate_num]
         for metric in self.exp_settings['metrics']:
             for topn in self.exp_settings['metrics_topn']:
@@ -101,7 +99,7 @@ class PairDebias(BasicAlgorithm):
         # Build unbiased pairwise loss only when it is training
         if not forward_only:
             self.rank_list_size = exp_settings['train_list_cutoff']
-            train_output = self.ranking_model(self.rank_list_size, forward_only)
+            train_output = self.ranking_model(self.rank_list_size, scope='ranking_model')
             train_labels = self.labels[:self.rank_list_size]
             # Build propensity parameters
             self.t_plus = tf.Variable(tf.ones([1, self.rank_list_size]), trainable=False)
@@ -170,21 +168,6 @@ class PairDebias(BasicAlgorithm):
         self.train_summary = tf.summary.merge_all(key='train')
         self.eval_summary = tf.summary.merge_all(key='eval')
         self.saver = tf.train.Saver(tf.global_variables())
-
-    def ranking_model(self, list_size, forward_only=False, scope=None):
-        with tf.variable_scope(scope or "ranking_model"):
-            PAD_embed = tf.zeros([1,self.feature_size],dtype=tf.float32)
-            letor_features = tf.concat(axis=0,values=[self.letor_features, PAD_embed])
-            input_feature_list = []
-            output_scores = []
-
-            model = utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
-
-            for i in range(list_size):
-                input_feature_list.append(tf.nn.embedding_lookup(letor_features, self.docid_inputs[i]))
-            output_scores = model.build(input_feature_list, is_training=self.is_training)
-
-            return tf.concat(output_scores,1)
 
     def step(self, session, input_feed, forward_only):
         """Run a step of the model feeding the given inputs.

@@ -23,8 +23,6 @@ import itertools
 from six.moves import zip
 from tensorflow import dtypes
 
-from . import ranking_model
-
 from .BasicAlgorithm import BasicAlgorithm
 sys.path.append("..")
 import utils
@@ -122,30 +120,6 @@ class PDGD(BasicAlgorithm):
         self.train_summary = tf.summary.merge_all(key='train')
         self.eval_summary = tf.summary.merge_all(key='eval')
         self.saver = tf.train.Saver(tf.global_variables())
-
-    def get_ranking_scores(self, input_id_list, is_training=False, scope=None):
-        """Run a step of the model feeding the given inputs.
-
-        Args:
-            input_id_list: (list<tf.Tensor>) A list of tensors containing document ids. 
-                            Each tensor must have a shape of [None].
-            is_training: (bool) A flag indicating whether the model is running in training mode.
-            scope: (string) The name of the variable scope.
-
-        Returns:
-            A tensor with the same shape of input_docids.
-
-        """
-        with tf.variable_scope(scope or "ranking_model"):
-            PAD_embed = tf.zeros([1,self.feature_size],dtype=tf.float32)
-            letor_features = tf.concat(axis=0,values=[self.letor_features, PAD_embed])
-            input_feature_list = []
-
-            model = utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
-
-            for i in range(len(input_id_list)):
-                input_feature_list.append(tf.nn.embedding_lookup(letor_features, input_id_list[i]))
-            return model.build(input_feature_list, is_training)
 
     def step(self, session, input_feed, forward_only):
         """Run a step of the model feeding the given inputs.

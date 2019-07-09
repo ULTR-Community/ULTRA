@@ -44,6 +44,8 @@ tf.app.flags.DEFINE_integer("max_train_iteration", 0,
 tf.app.flags.DEFINE_integer("steps_per_checkpoint", 200,
                             "How many training steps to do per checkpoint.")
 
+tf.app.flags.DEFINE_boolean("test_while_train", False,
+                            "Set to True to test models during the training process.")
 tf.app.flags.DEFINE_boolean("test_only", False,
                             "Set to True for testing models only.")
 
@@ -80,11 +82,18 @@ def train(exp_settings):
     print("Train Rank list size %d" % train_set.rank_list_size)
     print("Valid Rank list size %d" % valid_set.rank_list_size)
     exp_settings['max_candidate_num'] = max(train_set.rank_list_size, valid_set.rank_list_size)
+    test_set = None
+    if FLAGS.test_while_train:
+        test_set = utils.read_data(FLAGS.data_dir, 'test', FLAGS.max_list_cutoff)
+        print("Test Rank list size %d" % test_set.rank_list_size)
+        exp_settings['max_candidate_num'] = max(test_set.rank_list_size, exp_settings['max_candidate_num'])
     exp_settings['train_list_cutoff'] = min(FLAGS.train_list_cutoff, exp_settings['max_candidate_num']) if FLAGS.train_list_cutoff > 0 else exp_settings['max_candidate_num']
     
     # Pad data
     train_set.pad(exp_settings['max_candidate_num'])
     valid_set.pad(exp_settings['max_candidate_num'])
+    if FLAGS.test_while_train:
+        test_set.pad(exp_settings['max_candidate_num'])
 
     config = tf.ConfigProto()
     #config.gpu_options.allow_growth = True
@@ -97,11 +106,17 @@ def train(exp_settings):
         # Create data feed
         train_input_feed = utils.find_class(exp_settings['train_input_feed'])(model, FLAGS.batch_size, exp_settings['train_input_hparams'], sess)
         valid_input_feed = utils.find_class(exp_settings['valid_input_feed'])(model, FLAGS.batch_size, exp_settings['valid_input_hparams'], sess)
+        test_input_feed = None
+        if FLAGS.test_while_train:
+            test_input_feed = utils.find_class(exp_settings['test_input_feed'])(model, FLAGS.batch_size, exp_settings['test_input_hparams'], sess)
 
         # Create tensorboard summarizations.
         train_writer = tf.summary.FileWriter(FLAGS.model_dir + '/train_log',
                                         sess.graph)
         valid_writer = tf.summary.FileWriter(FLAGS.model_dir + '/valid_log')
+        test_writer = None
+        if FLAGS.test_while_train:
+            test_writer = tf.summary.FileWriter(FLAGS.model_dir + '/test_log')
 
         # This is the training loop.
         step_time, loss = 0.0, 0.0
@@ -126,22 +141,32 @@ def train(exp_settings):
                                                  step_time, loss))
                 previous_losses.append(loss)
                 # Validate model
-                it = 0
-                count_batch = 0.0
-                summary_list = []
-                batch_size_list = []
-                while it < len(valid_set.initial_list):
-                    input_feed, info_map = valid_input_feed.get_next_batch(it, valid_set, check_validation=False)
-                    _, _, summary = model.step(sess, input_feed, True)
-                    summary_list.append(summary)
-                    batch_size_list.append(len(info_map['input_list']))
-                    it += batch_size_list[-1]
-                    count_batch += 1.0
-                valid_summary = utils.merge_TFSummary(summary_list, batch_size_list)
+                def validate_model(data_set, data_input_feed):
+                    it = 0
+                    count_batch = 0.0
+                    summary_list = []
+                    batch_size_list = []
+                    while it < len(data_set.initial_list):
+                        input_feed, info_map = data_input_feed.get_next_batch(it, data_set, check_validation=False)
+                        _, _, summary = model.step(sess, input_feed, True)
+                        summary_list.append(summary)
+                        batch_size_list.append(len(info_map['input_list']))
+                        it += batch_size_list[-1]
+                        count_batch += 1.0
+                    return utils.merge_TFSummary(summary_list, batch_size_list)
+                    
+                valid_summary = validate_model(valid_set, valid_input_feed)
                 valid_writer.add_summary(valid_summary, current_step)
-                print("  eval: %s" % (
+                print("  valid: %s" % (
                     ' '.join(['%s:%.3f' % (x.tag, x.simple_value) for x in valid_summary.value])
                 ))
+
+                if FLAGS.test_while_train:
+                    test_summary = validate_model(test_set, test_input_feed)
+                    test_writer.add_summary(test_summary, current_step)
+                    print("  test: %s" % (
+                    ' '.join(['%s:%.3f' % (x.tag, x.simple_value) for x in test_summary.value])
+                    ))
 
                 # Save checkpoint if the objective metric on the validation set is better
                 if "objective_metric" in exp_settings:
@@ -151,6 +176,7 @@ def train(exp_settings):
                                 checkpoint_path = os.path.join(FLAGS.model_dir, "%s.ckpt" % exp_settings['learning_algorithm'])
                                 model.saver.save(sess, checkpoint_path, global_step=model.global_step)
                                 best_perf = x.simple_value
+                                print('Save model, valid %s:%.3f' % (x.tag, best_perf))
                                 break
                 # Save checkpoint if there is no objective metic
                 if best_perf == None:
@@ -205,6 +231,13 @@ def test(exp_settings):
             it += batch_size_list[-1]
             count_batch += 1.0
             print("Testing {:.0%} finished".format(float(it)/len(test_set.initial_list)), end="\r", flush=True)
+            ''' Debug
+            print(output_logits[0])
+            test_summary = utils.parse_TFSummary_from_bytes(summary)
+            print("  test: %s" % (
+                    ' '.join(['%s:%.3f' % (x, test_summary[x]) for x in test_summary])
+                    ))
+            '''
         print("\n[Done]")
         test_summary = utils.merge_TFSummary(summary_list, batch_size_list)
         test_writer.add_summary(test_summary, it)

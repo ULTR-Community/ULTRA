@@ -88,7 +88,7 @@ class IPWrank(BasicAlgorithm):
         self.PAD_embed = tf.zeros([1,self.feature_size],dtype=tf.float32)
 
         # Build model
-        self.output = self.ranking_model(self.max_candidate_num, forward_only)
+        self.output = self.ranking_model(self.max_candidate_num, scope='ranking_model')
         reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [max_candidate_num, ?] to [?, max_candidate_num]
         for metric in self.exp_settings['metrics']:
             for topn in self.exp_settings['metrics_topn']:
@@ -99,7 +99,7 @@ class IPWrank(BasicAlgorithm):
         if not forward_only:
             # Training outputs and losses.
             self.rank_list_size = exp_settings['train_list_cutoff']
-            train_output = self.ranking_model(self.rank_list_size, forward_only)
+            train_output = self.ranking_model(self.rank_list_size, scope='ranking_model')
             train_labels = self.labels[:self.rank_list_size]
             self.propensity_weights = []
             for i in range(self.rank_list_size):
@@ -140,7 +140,7 @@ class IPWrank(BasicAlgorithm):
             clipped_labels = tf.clip_by_value(reshaped_train_labels, clip_value_min=0, clip_value_max=1)
             for metric in self.exp_settings['metrics']:
                 for topn in self.exp_settings['metrics_topn']:
-                    list_weights = tf.reduce_mean(self.propensity_weights * clipped_labels, axis=1, keep_dims=True)
+                    list_weights = tf.reduce_mean(reshaped_propensity * clipped_labels, axis=1, keep_dims=True)
                     metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, train_output, None)
                     tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train'])
                     weighted_metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, train_output, list_weights)
@@ -149,23 +149,6 @@ class IPWrank(BasicAlgorithm):
         self.train_summary = tf.summary.merge_all(key='train')
         self.eval_summary = tf.summary.merge_all(key='eval')
         self.saver = tf.train.Saver(tf.global_variables())
-
-
-    def ranking_model(self, list_size, forward_only=False, scope=None):
-        with tf.variable_scope(scope or "ranking_model"):
-            PAD_embed = tf.zeros([1,self.feature_size],dtype=tf.float32)
-            letor_features = tf.concat(axis=0,values=[self.letor_features, PAD_embed])
-            input_feature_list = []
-            output_scores = []
-
-            model = utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
-
-            for i in range(list_size):
-                input_feature_list.append(tf.nn.embedding_lookup(letor_features, self.docid_inputs[i]))
-            output_scores = model.build(input_feature_list, is_training=self.is_training)
-
-            return tf.concat(output_scores,1)
-
 
     def step(self, session, input_feed, forward_only):
         """Run a step of the model feeding the given inputs.
@@ -251,7 +234,6 @@ class IPWrank(BasicAlgorithm):
             loss = tf.nn.softmax_cross_entropy_with_logits(logits=output, labels=label_dis) * tf.reduce_sum(labels, 1)
         return tf.reduce_sum(loss) / tf.reduce_sum(labels)
 
-    # TODO Move to BasicAlgorithm.py
     def click_weighted_softmax_loss(self, output, labels, propensity, name=None):
         """Computes listwise softmax loss with propensity weighting.
 
