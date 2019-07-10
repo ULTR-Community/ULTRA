@@ -23,7 +23,7 @@ class BasicAlgorithm(ABC):
         implementation of an unbiased learning to rank algorithm.
 
     """
-    PADDING_SCORE = -80
+    PADDING_SCORE = -100000
 
     @abstractmethod
     def __init__(self, data_set, exp_settings, forward_only=False):
@@ -59,6 +59,27 @@ class BasicAlgorithm(ABC):
         """
         pass
 
+    def remove_padding_for_metric_eval(self, input_id_list, model_output):
+        output_scores = tf.unstack(model_output, axis=1)
+        if len(output_scores) > len(input_id_list):
+            raise AssertionError('Input id list is shorter than output score list when remove padding.')
+        # Build mask
+        valid_flags = tf.cast(
+            tf.concat(values=[tf.ones([tf.shape(self.letor_features)[0]]), tf.zeros([1])], axis=0), 
+            tf.bool
+        )
+        input_flag_list = []
+        for i in range(len(output_scores)):
+            input_flag_list.append(tf.nn.embedding_lookup(valid_flags, input_id_list[i]))
+        # Mask padding documents
+        for i in range(len(output_scores)):
+            output_scores[i] = tf.where(
+                input_flag_list[i], 
+                output_scores[i], 
+                tf.ones_like(output_scores[i]) * self.PADDING_SCORE
+            )
+        return tf.stack(output_scores, axis=1)
+
     def ranking_model(self, list_size, scope=None):
         """Construct ranking model with the given list size.
 
@@ -90,28 +111,13 @@ class BasicAlgorithm(ABC):
             # Build feature padding
             PAD_embed = tf.zeros([1,self.feature_size],dtype=tf.float32)
             letor_features = tf.concat(axis=0,values=[self.letor_features, PAD_embed])
-            valid_flags = tf.cast(
-                tf.concat(values=[tf.ones([tf.shape(self.letor_features)[0]]), tf.zeros([1])], axis=0), 
-                tf.bool
-            )
             input_feature_list = []
-            input_flag_list = []
 
             model = utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
 
             for i in range(len(input_id_list)):
                 input_feature_list.append(tf.nn.embedding_lookup(letor_features, input_id_list[i]))
-                input_flag_list.append(tf.nn.embedding_lookup(valid_flags, input_id_list[i]))
-            output_scores = model.build(input_feature_list, is_training)
-
-            # Mask padding documents
-            for i in range(len(input_id_list)):
-                output_scores[i] = tf.where(
-                    tf.expand_dims(input_flag_list[i], axis=-1), 
-                    output_scores[i], 
-                    tf.ones_like(output_scores[i]) * self.PADDING_SCORE
-                )
-            return output_scores
+            return model.build(input_feature_list, is_training)
     
     def get_ranking_scores_with_noise(self, input_id_list, is_training=False, scope=None):
         """Run a step of the model feeding the given inputs.
@@ -130,28 +136,13 @@ class BasicAlgorithm(ABC):
         with tf.variable_scope(scope or "ranking_model"):
             PAD_embed = tf.zeros([1,self.feature_size],dtype=tf.float32)
             letor_features = tf.concat(axis=0,values=[self.letor_features, PAD_embed])
-            valid_flags = tf.cast(
-                tf.concat(values=[tf.ones([tf.shape(self.letor_features)[0]]), tf.zeros([1])], axis=0), 
-                tf.bool
-            )
             input_feature_list = []
-            input_flag_list = []
 
             model = utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
 
             for i in range(len(input_id_list)):
                 input_feature_list.append(tf.nn.embedding_lookup(letor_features, input_id_list[i]))
-                input_flag_list.append(tf.nn.embedding_lookup(valid_flags, input_id_list[i]))
-            output_scores = model.build_with_random_noise(input_feature_list, self.hparams.noise_rate, is_training)
-
-            # Mask padding documents
-            for i in range(len(input_id_list)):
-                output_scores[i] = tf.where(
-                    tf.expand_dims(input_flag_list[i], axis=-1), 
-                    output_scores[i], 
-                    tf.ones_like(output_scores[i]) * self.PADDING_SCORE
-                )
-            return output_scores
+            return model.build_with_random_noise(input_feature_list, self.hparams.noise_rate, is_training)
 
     def pairwise_cross_entropy_loss(self, pos_scores, neg_scores, name=None):
         """Computes pairwise softmax loss without propensity weighting.

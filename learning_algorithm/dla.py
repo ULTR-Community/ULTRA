@@ -95,10 +95,11 @@ class DLA(BasicAlgorithm):
             self.logits_to_prob = sigmoid_prob
 
         self.output = self.ranking_model(self.max_candidate_num, scope='ranking_model')
+        pad_removed_output = self.remove_padding_for_metric_eval(self.docid_inputs, self.output)
         reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [max_candidate_num, ?] to [?, max_candidate_num]
         for metric in self.exp_settings['metrics']:
             for topn in self.exp_settings['metrics_topn']:
-                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, None)
+                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, pad_removed_output, None)
                 tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['eval'])
 
         if not forward_only:
@@ -148,12 +149,13 @@ class DLA(BasicAlgorithm):
             tf.summary.scalar('Final Loss', tf.reduce_mean(self.loss), collections=['train'])
         
             clipped_labels = tf.clip_by_value(reshaped_train_labels, clip_value_min=0, clip_value_max=1)
+            pad_removed_train_output = self.remove_padding_for_metric_eval(self.docid_inputs, train_output)
             for metric in self.exp_settings['metrics']:
                 for topn in self.exp_settings['metrics_topn']:
                     list_weights = tf.reduce_mean(self.propensity_weights * clipped_labels, axis=1, keep_dims=True)
-                    metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, train_output, None)
+                    metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, None)
                     tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train'])
-                    weighted_metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, train_output, list_weights)
+                    weighted_metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, list_weights)
                     tf.summary.scalar('Weighted_%s_%d' % (metric, topn), weighted_metric_value, collections=['train'])
 
         self.train_summary = tf.summary.merge_all(key='train')

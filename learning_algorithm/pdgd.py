@@ -78,9 +78,10 @@ class PDGD(BasicAlgorithm):
         self.output = tf.concat(self.get_ranking_scores(self.docid_inputs, is_training=self.is_training, scope='ranking_model'),1)
 
         reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
+        pad_removed_output = self.remove_padding_for_metric_eval(self.docid_inputs, self.output)
         for metric in self.exp_settings['metrics']:
             for topn in self.exp_settings['metrics_topn']:
-                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, None)
+                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, pad_removed_output, None)
                 tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['eval'])
                 
         # Build model

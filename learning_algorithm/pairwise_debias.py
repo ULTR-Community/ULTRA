@@ -91,9 +91,10 @@ class PairDebias(BasicAlgorithm):
 
         self.output = self.ranking_model(self.max_candidate_num, scope='ranking_model')
         reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [max_candidate_num, ?] to [?, max_candidate_num]
+        pad_removed_output = self.remove_padding_for_metric_eval(self.docid_inputs, self.output)
         for metric in self.exp_settings['metrics']:
             for topn in self.exp_settings['metrics_topn']:
-                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, None)
+                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, pad_removed_output, None)
                 tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['eval'])
 
         # Build unbiased pairwise loss only when it is training
@@ -159,9 +160,12 @@ class PairDebias(BasicAlgorithm):
                                              global_step=self.global_step)
             tf.summary.scalar('Learning Rate', self.learning_rate, collections=['train'])
             tf.summary.scalar('Loss', tf.reduce_mean(self.loss), collections=['train'])
+
+            reshaped_train_labels = tf.transpose(tf.convert_to_tensor(train_labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
+            pad_removed_train_output = self.remove_padding_for_metric_eval(self.docid_inputs, train_output)
             for metric in self.exp_settings['metrics']:
                 for topn in self.exp_settings['metrics_topn']:
-                    metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, train_output, None)
+                    metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, None)
                     tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train'])
         
 

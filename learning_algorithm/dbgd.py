@@ -79,9 +79,10 @@ class DBGD(BasicAlgorithm):
         self.global_step = tf.Variable(0, trainable=False)
         self.output = tf.concat(self.get_ranking_scores(self.docid_inputs, is_training=self.is_training, scope='ranking_model'),1)
         reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [max_candidate_num, ?] to [?, max_candidate_num]
+        pad_removed_output = self.remove_padding_for_metric_eval(self.docid_inputs, self.output)
         for metric in self.exp_settings['metrics']:
             for topn in self.exp_settings['metrics_topn']:
-                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, self.output, None)
+                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, pad_removed_output, None)
                 tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['eval'])
 
         # Build model
@@ -118,9 +119,10 @@ class DBGD(BasicAlgorithm):
                                              global_step=self.global_step)                 
             tf.summary.scalar('Learning Rate', self.learning_rate, collections=['train'])
             tf.summary.scalar('Loss', self.loss, collections=['train'])
+            pad_removed_train_output = self.remove_padding_for_metric_eval(self.docid_inputs, train_output)
             for metric in self.exp_settings['metrics']:
                 for topn in self.exp_settings['metrics_topn']:
-                    metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, train_output, None)
+                    metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, None)
                     tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train'])
 
         self.train_summary = tf.summary.merge_all(key='train')
