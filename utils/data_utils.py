@@ -83,6 +83,8 @@ class Raw_data:
             with open(data_path + file_prefix + '/' + file_prefix + '.initial_scores') as fin:
                 for line in fin:
                     self.initial_scores.append([float(x) for x in line.strip().split(' ')[1:]])
+        
+        self.initial_list_lengths = [len(self.initial_list[i]) for i in range(len(self.initial_list))]
 
     def pad(self, rank_list_size, pad_tails = True):
         """
@@ -97,6 +99,7 @@ class Raw_data:
         """
         self.rank_list_size = rank_list_size
         self.features.append(np.zeros(self.feature_size))  # vector for pad
+
         for i in range(len(self.initial_list)):
             if len(self.initial_list[i]) < self.rank_list_size:
                 if pad_tails: # pad tails

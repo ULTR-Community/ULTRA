@@ -17,13 +17,14 @@ import sys
 import time
 import json
 import numpy as np
+from .BasicInputFeed import BasicInputFeed
 from . import click_models as cm
 
 import tensorflow as tf
 # We disable pylint because we need python3 compatibility.
 from six.moves import zip     # pylint: disable=redefined-builtin
 
-class OnlineSimulationFeed:
+class OnlineSimulationFeed(BasicInputFeed):
     """Simulate online learning to rank and click data based on human annotations.
 
     This class implements a input layer for online learning to rank experiments
@@ -44,7 +45,7 @@ class OnlineSimulationFeed:
             click_model_json='./example/ClickModel/pbm_0.1_1.0_4_1.0.json', # the setting file for the predefined click models.
         )
         
-        print('Create simluated clicks feed')
+        print('Create online simluation feed')
         print(hparam_str)
         self.hparams.parse(hparam_str)
         self.click_model = None
@@ -77,6 +78,17 @@ class OnlineSimulationFeed:
         labels.append(label_list)
 
     def simulate_clicks_online(self, input_feed, check_validation=False):
+        """Simulate online environment by reranking documents and collect clicks.
+
+        Args:
+            input_feed: (dict) The input_feed data.
+            check_validation: (bool) Set True to ignore data with no positive labels.
+
+        Returns:
+            input_feed: a feed dictionary for the next step
+            info_map: a dictionary contain some basic information about the batch (for debugging).
+
+        """
         # Compute ranking scores with input_feed
         input_feed[self.model.is_training.name] = False
         rank_scores = self.session.run([self.model.output], input_feed)[0]
@@ -101,7 +113,7 @@ class OnlineSimulationFeed:
             # Collect clicks online
             click_list, _, _ = self.click_model.sampleClicksForOneList(new_label_list[:self.rank_list_size])
             sample_count = 0
-            while check_validation and sum(click_list) == 0 and sample_count < 100:
+            while check_validation and sum(click_list) == 0 and sample_count < self.MAX_SAMPLE_ROUND_NUM:
                 click_list, _, _ = self.click_model.sampleClicksForOneList(new_label_list[:self.rank_list_size])
                 sample_count += 1
             # update input_feed
@@ -111,7 +123,7 @@ class OnlineSimulationFeed:
                     input_feed[self.model.labels[j].name][i] = click_list[j] 
                 else:
                     input_feed[self.model.labels[j].name][i] = 0
-                    
+
         return input_feed
         
     
@@ -169,7 +181,7 @@ class OnlineSimulationFeed:
             input_feed[self.model.labels[l].name] = batch_labels[l]
         
         # Simulate online environment and collect clicks.
-        input_feed = self.simulate_clicks_online(input_feed)
+        input_feed = self.simulate_clicks_online(input_feed, check_validation)
 
         # Create info_map to store other information
         info_map = {
@@ -181,7 +193,7 @@ class OnlineSimulationFeed:
 
         return input_feed, info_map
 
-    def get_next_batch(self, index, data_set, check_validation=True):
+    def get_next_batch(self, index, data_set, check_validation=False):
         """Get the next batch of data from a specific index, prepare for step. 
            Typically used for validation.
 
@@ -237,7 +249,7 @@ class OnlineSimulationFeed:
             input_feed[self.model.labels[l].name] = batch_labels[l]
 
         # Simulate online environment and collect clicks.
-        input_feed = self.simulate_clicks_online(input_feed)
+        input_feed = self.simulate_clicks_online(input_feed, check_validation)
 
         # Create others_map to store other information
         others_map = {
@@ -292,7 +304,7 @@ class OnlineSimulationFeed:
             input_feed[self.model.labels[l].name] = batch_labels[l]
 
         # Simulate online environment and collect clicks.
-        input_feed = self.simulate_clicks_online(input_feed)
+        input_feed = self.simulate_clicks_online(input_feed, check_validation)
 
         # Create others_map to store other information
         others_map = {

@@ -24,6 +24,7 @@ class BasicInputFeed(ABC):
 
     This class implements a input layer for unbiased learning to rank experiments.
     """
+    MAX_SAMPLE_ROUND_NUM = 100
     
     @abstractmethod
     def __init__(self, model, batch_size, hparam_str, session):
@@ -38,7 +39,7 @@ class BasicInputFeed(ABC):
         pass
     
     @abstractmethod
-    def get_batch(self, data_set, check_validation=True):
+    def get_batch(self, data_set, check_validation=False):
         """Get a random batch of data, prepare for step. Typically used for training.
 
         To feed data in step(..) it must be a list of batch-major vectors, while
@@ -57,7 +58,7 @@ class BasicInputFeed(ABC):
         pass
 
     @abstractmethod
-    def get_next_batch(self, index, data_set, check_validation=True):
+    def get_next_batch(self, index, data_set, check_validation=False):
         """Get the next batch of data from a specific index, prepare for step. 
            Typically used for validation.
 

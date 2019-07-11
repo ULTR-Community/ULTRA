@@ -66,7 +66,7 @@ class ClickSimulationFeed(BasicInputFeed):
         label_list = [0 if data_set.initial_list[i][x] < 0 else data_set.labels[i][x] for x in range(self.rank_list_size)]
         click_list, _, _ = self.click_model.sampleClicksForOneList(list(label_list))
         sample_count = 0
-        while check_validation and sum(click_list) == 0 and sample_count < 100:
+        while check_validation and sum(click_list) == 0 and sample_count < self.MAX_SAMPLE_ROUND_NUM:
             click_list, _, _ = self.click_model.sampleClicksForOneList(list(label_list))
             sample_count += 1
 
