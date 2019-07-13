@@ -40,8 +40,11 @@ class DNN(BasicRankingModel):
                 expand_b = tf.get_variable("dnn_b_%d" % j, [output_sizes[j]])
                 output_data = tf.nn.bias_add(tf.matmul(output_data, expand_W), expand_b)
                 output_data = tf.compat.v1.layers.batch_normalization(output_data, training=is_training, name="batch_normalization_%d" % j)
-                output_data = tf.nn.elu(output_data)
+                # Add activation if it is a hidden layer
+                if j != len(output_sizes)-1:
+                    output_data = tf.nn.elu(output_data)
                 current_size = output_sizes[j]
+                
             return tf.split(output_data, len(input_list), axis=0)
     
     def build_with_random_noise(self, input_list, noise_rate, is_training=False):
@@ -78,6 +81,8 @@ class DNN(BasicRankingModel):
                 # Run dnn
                 output_data = tf.nn.bias_add(tf.matmul(output_data, expand_W), expand_b)
                 output_data = tf.compat.v1.layers.batch_normalization(output_data, training=is_training, name="batch_normalization_%d" % j)
-                output_data = tf.nn.elu(output_data)
+                # Add activation if it is a hidden layer
+                if j != len(output_sizes)-1: 
+                    output_data = tf.nn.elu(output_data)
                 current_size = output_sizes[j]
             return tf.split(output_data, len(input_list), axis=0), noise_tensor_list
