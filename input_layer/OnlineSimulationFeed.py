@@ -176,7 +176,7 @@ class OnlineSimulationFeed(BasicInputFeed):
         # Create input feed map
         input_feed = {}
         input_feed[self.model.letor_features.name] = np.array(letor_features)
-        for l in range(self.model.rank_list_size):
+        for l in range(self.max_candidate_num):
             input_feed[self.model.docid_inputs[l].name] = batch_docid_inputs[l]
             input_feed[self.model.labels[l].name] = batch_labels[l]
         
