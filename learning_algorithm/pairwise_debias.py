@@ -129,13 +129,12 @@ class PairDebias(BasicAlgorithm):
                     self.loss += pair_loss / self.splitted_t_plus[i] / self.splitted_t_minus[j]
 
             # Update propensity
-            # TODO add a learning rate here to avoid unstable EM process with small batches.
             self.update_propensity_op = tf.group(
                 self.t_plus.assign(
-                    tf.pow(tf.concat(t_minus_loss_list, axis=1) / t_minus_loss_list[0], 1/(self.hparams.regulation_p + 1))
+                    (1 - self.hparams.learning_rate) * self.t_plus + self.hparams.learning_rate * tf.pow(tf.concat(t_minus_loss_list, axis=1) / t_minus_loss_list[0], 1/(self.hparams.regulation_p + 1))
                     ), 
                 self.t_minus.assign(
-                    tf.pow(tf.concat(t_plus_loss_list, axis=1) / t_plus_loss_list[0], 1/(self.hparams.regulation_p + 1))
+                    (1 - self.hparams.learning_rate) * self.t_minus + self.hparams.learning_rate * tf.pow(tf.concat(t_plus_loss_list, axis=1) / t_plus_loss_list[0], 1/(self.hparams.regulation_p + 1))
                 )
             )
 

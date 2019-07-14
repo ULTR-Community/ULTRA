@@ -131,7 +131,7 @@ def train(exp_settings):
             step_time += (time.time() - start_time) / FLAGS.steps_per_checkpoint
             loss += step_loss / FLAGS.steps_per_checkpoint
             current_step += 1
-            train_writer.add_summary(summary, current_step)
+            train_writer.add_summary(summary, model.global_step.eval())
 
             # Once in a while, we save checkpoint, print statistics, and run evals.
             if current_step % FLAGS.steps_per_checkpoint == 0:
@@ -156,14 +156,14 @@ def train(exp_settings):
                     return utils.merge_TFSummary(summary_list, batch_size_list)
                     
                 valid_summary = validate_model(valid_set, valid_input_feed)
-                valid_writer.add_summary(valid_summary, current_step)
+                valid_writer.add_summary(valid_summary, model.global_step.eval())
                 print("  valid: %s" % (
                     ' '.join(['%s:%.3f' % (x.tag, x.simple_value) for x in valid_summary.value])
                 ))
 
                 if FLAGS.test_while_train:
                     test_summary = validate_model(test_set, test_input_feed)
-                    test_writer.add_summary(test_summary, current_step)
+                    test_writer.add_summary(test_summary, model.global_step.eval())
                     print("  test: %s" % (
                     ' '.join(['%s:%.3f' % (x.tag, x.simple_value) for x in test_summary.value])
                     ))

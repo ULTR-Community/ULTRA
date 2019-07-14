@@ -48,6 +48,10 @@ class RegressionEM(BasicAlgorithm):
     
     * Wang, Xuanhui, Nadav Golbandi, Michael Bendersky, Donald Metzler, and Marc Najork. "Position bias estimation for unbiased learning to rank in personal search." In Proceedings of the Eleventh ACM International Conference on Web Search and Data Mining, pp. 610-618. ACM, 2018.
     
+    In particular, we use the online EM algorithm for the parameter estimations:
+
+    * Cappé, Olivier, and Eric Moulines. "Online expectation–maximization algorithm for latent data models." Journal of the Royal Statistical Society: Series B (Statistical Methodology) 71.3 (2009): 593-613.
+
     """
 
     def __init__(self, data_set, exp_settings, forward_only=False):
@@ -61,6 +65,7 @@ class RegressionEM(BasicAlgorithm):
         print('Build Regression-based EM algorithm.')
 
         self.hparams = tf.contrib.training.HParams(
+            EM_step_size=0.05,                  # Step size for EM algorithm.
             learning_rate=0.05,                 # Learning rate.
             max_gradient_norm=5.0,            # Clip gradients to this norm.
             l2_loss=0.0,                    # Set strength for L2 regularization.
@@ -101,16 +106,18 @@ class RegressionEM(BasicAlgorithm):
         if not forward_only:
             # Build EM graph only when it is training
             self.rank_list_size = exp_settings['train_list_cutoff']
+            sigmoid_prob_b = tf.Variable(tf.ones([1]) - 1.0)
             train_output = self.ranking_model(self.rank_list_size, scope='ranking_model')
+            train_output = train_output + sigmoid_prob_b
             train_labels = self.labels[:self.rank_list_size]
-            self.propensity = tf.Variable(tf.ones([1, self.rank_list_size]) / self.rank_list_size, trainable=False)
+            self.propensity = tf.Variable(tf.ones([1, self.rank_list_size]) * 0.9, trainable=False)
 
             self.splitted_propensity = tf.split(self.propensity, self.rank_list_size, axis=1)
             for i in range(self.rank_list_size):
                 tf.summary.scalar('Examination Probability %d' % i, tf.reduce_max(self.splitted_propensity[i]), collections=['train'])
 
             # Conduct estimation step.
-            gamma = tf.sigmoid(self.output)
+            gamma = tf.sigmoid(train_output)
             reshaped_train_labels = tf.transpose(tf.convert_to_tensor(train_labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
             p_e1_r1_c1 = 1
             p_e1_r0_c0 = self.propensity * (1 - gamma) / (1 - self.propensity * gamma)
@@ -120,18 +127,26 @@ class RegressionEM(BasicAlgorithm):
             p_r1 = reshaped_train_labels + (1-reshaped_train_labels) * p_e0_r1_c0
 
             # Conduct maximization step
-            # TODO add a learning rate here to avoid unstable EM process with small batches.
             self.update_propensity_op =  self.propensity.assign(
-                tf.reduce_mean(
+                (1 - self.hparams.EM_step_size) * self.propensity + self.hparams.EM_step_size * tf.reduce_mean(
                     reshaped_train_labels + (1-reshaped_train_labels) * p_e1_r0_c0, axis=0, keep_dims=True
-                )# / tf.reduce_sum(reshaped_labels, axis=0)
+                )#
             )
 
             # Get Bernoulli samples and compute rank loss
             self.ranker_labels = get_bernoulli_sample(p_r1)
             self.loss = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(labels=self.ranker_labels, logits=train_output)
+                tf.reduce_sum(
+                    tf.nn.sigmoid_cross_entropy_with_logits(labels=self.ranker_labels, logits=train_output),
+                    axis=1
+                )
             )
+            # record additional positive instance from sampling
+            split_ranker_labels = tf.split(self.ranker_labels, self.rank_list_size, axis=1)
+            for i in range(self.rank_list_size):  
+                additional_postive_instance = (tf.reduce_sum(split_ranker_labels[i]) - tf.reduce_sum(train_labels[i])) / (tf.reduce_sum(tf.ones_like(train_labels[i])) - tf.reduce_sum(train_labels[i]))
+                tf.summary.scalar('Additional pseudo clicks %d' % i, additional_postive_instance, collections=['train'])
+
             self.propensity_weights = 1.0/self.propensity
             params = tf.trainable_variables()
             if self.hparams.l2_loss > 0:
