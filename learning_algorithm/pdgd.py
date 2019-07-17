@@ -87,16 +87,31 @@ class PDGD(BasicAlgorithm):
         # Build model
         if not forward_only:
             self.rank_list_size = exp_settings['train_list_cutoff']
+            self.train_output = self.ranking_model(self.rank_list_size, scope='ranking_model')
+            train_labels = self.labels[:self.rank_list_size]
+            reshaped_train_labels = tf.transpose(tf.convert_to_tensor(train_labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
+            pad_removed_output = self.remove_padding_for_metric_eval(self.docid_inputs, self.train_output)
+            for metric in self.exp_settings['metrics']:
+                for topn in self.exp_settings['metrics_topn']:
+                    metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_output, None)
+                    tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train_eval'])
+
             # Build training pair inputs only when it is training
             self.positive_docid_inputs = tf.placeholder(tf.int64, shape=[None], name="positive_docid_input")
             self.negative_docid_inputs = tf.placeholder(tf.int64, shape=[None], name="negative_docid_input")
             self.pair_weights = tf.placeholder(tf.float32, shape=[None], name="pair_weight")
-            
             # Build ranking loss
             pair_scores = self.get_ranking_scores(
                 [self.positive_docid_inputs, self.negative_docid_inputs], is_training=self.is_training, scope='ranking_model'
                 )
-            self.loss = self.pairwise_cross_entropy_loss(pair_scores[0], pair_scores[1])
+            
+            self.loss = tf.reduce_sum(
+                    tf.math.multiply(
+                        #self.pairwise_cross_entropy_loss(pair_scores[0], pair_scores[1]),
+                        -tf.exp(pair_scores[0]) / (tf.exp(pair_scores[0]) + tf.exp(pair_scores[1])),
+                        self.pair_weights
+                    )
+                )
             params = tf.trainable_variables()
             if self.hparams.l2_loss > 0:
                 for p in params:
@@ -119,6 +134,7 @@ class PDGD(BasicAlgorithm):
             tf.summary.scalar('Loss', self.loss, collections=['train'])
 
         self.train_summary = tf.summary.merge_all(key='train')
+        self.train_eval_summary = tf.summary.merge_all(key='train_eval')
         self.eval_summary = tf.summary.merge_all(key='eval')
         self.saver = tf.train.Saver(tf.global_variables())
 
@@ -139,42 +155,52 @@ class PDGD(BasicAlgorithm):
         if not forward_only:
             # Run the model to get ranking scores
             input_feed[self.is_training.name] = False
-            rank_outputs = session.run([self.output,self.eval_summary], input_feed)
+            #rank_outputs = session.run([self.train_output, self.train_eval_summary], input_feed)
+            rank_outputs = session.run([self.output, self.eval_summary], input_feed)
             
             # reduce value to avoid numerical problems
             rank_outputs[0] = np.array(rank_outputs[0])
-            for i in range(len(rank_outputs[0])):
-                rank_outputs[0][i] = rank_outputs[0][i] - np.amax(rank_outputs[0][i])
+            rank_outputs[0] = rank_outputs[0] - np.amax(rank_outputs[0], axis=1, keepdims=True)
+            #for i in range(len(rank_outputs[0])):
+            #    rank_outputs[0][i] = rank_outputs[0][i] - np.amax(rank_outputs[0][i])
             exp_ranking_scores = np.exp(rank_outputs[0])
-
+            # Remove scores for padding documents
+            letor_features_length = len(input_feed[self.letor_features.name])
+            for i in range(len(input_feed[self.labels[0].name])):
+                for j in range(self.rank_list_size):
+                    if input_feed[self.docid_inputs[j].name][i] == letor_features_length: # not a valid doc
+                        exp_ranking_scores[i][j] = 0.0
+            # Compute denominator for each position
+            denominators = np.cumsum(exp_ranking_scores[::-1], axis=1)[::-1]
+            sum_log_denominators = np.sum(np.log(denominators, out=np.zeros_like(denominators), where=denominators>0), axis=1)
             # Create training pairs based on the ranking scores and the labels
             positive_docids, negative_docids, pair_weights = [], [], []
-            for i in range(len(input_feed[self.labels[0].name])):
-                # Compute denominator
-                p_r = np.ones(self.rank_list_size+1)
-                denominators = np.zeros(self.rank_list_size+1)
-                exp_scores = exp_ranking_scores[i]
-                for j in range(self.rank_list_size):
-                    idx = self.rank_list_size - 1 - j
-                    if input_feed[self.docid_inputs[idx].name][i] < 0: # not a valid doc
-                        continue
-                    denominators[idx] = exp_scores[idx] + denominators[idx+1]
-                    p_r[idx] = exp_scores[idx]/denominators[idx] * p_r[idx+1]
-                
+            for i in range(len(input_feed[self.labels[0].name])):                
                 # Generate pairs and compute weights
                 for j in range(self.rank_list_size):
                     l = self.rank_list_size - 1 - j
+                    if input_feed[self.docid_inputs[l].name][i] == letor_features_length: # not a valid doc
+                        continue
                     if input_feed[self.labels[l].name][i] > 0: # a clicked doc
-                        for k in range(l+1):
-                            if input_feed[self.labels[k].name][i] == 0: # find a negative/unclicked doc
+                        for k in range(l+2):
+                            if k < self.rank_list_size and input_feed[self.labels[k].name][i] < input_feed[self.labels[l].name][i]: # find a negative/unclicked doc
+                                if input_feed[self.docid_inputs[k].name][i] == letor_features_length: # not a valid doc
+                                    continue
                                 positive_docids.append(input_feed[self.docid_inputs[l].name][i])
                                 negative_docids.append(input_feed[self.docid_inputs[k].name][i])
-                                p_r_k_l = p_r[k] / p_r[min(l+1, self.rank_list_size-1)]
-                                p_rs_k_l = 1.0
-                                for x in range(l-k+1): # bug
-                                    y = l-x
-                                    p_rs_k_l *= exp_scores[y] / (denominators[y] - exp_scores[l] + exp_scores[k])
-                                weight = p_rs_k_l / (p_r_k_l + p_rs_k_l)
+                                flipped_exp_scores = exp_ranking_scores[i]
+                                flipped_exp_scores[k] = exp_ranking_scores[i][l]
+                                exp_ranking_scores[l] = exp_ranking_scores[i][k]
+                                flipped_denominator = np.cumsum(flipped_exp_scores[::-1])[::-1]
+                                sum_log_flipped_denominator = np.sum(np.log(flipped_denominator, out=np.zeros_like(flipped_denominator), where=flipped_denominator>0))
+                                #p_r = np.prod(rank_prob[i][min_i:max_i+1])
+                                #p_rs = np.prod(flipped_rank_prob[min_i:max_i+1])
+                                #weight = p_rs / (p_r + p_rs) = 1 / (1 + (d_rs/d_r)) = 1 / (1 + exp(log_drs - log_dr)) 
+                                weight = 1.0 / (1.0 + np.exp(min(sum_log_flipped_denominator - sum_log_denominators[i], 200)))
+                                if np.isnan(weight):
+                                    print('SOMETHING WRONG!!!!!!!')
+                                    print('sum_log_denominators[i] is nan: ' + str(np.isnan(sum_log_denominators[i])))
+                                    print('sum_log_flipped_denominator is nan ' + str(np.isnan(sum_log_flipped_denominator)))
                                 pair_weights.append(weight) 
             input_feed[self.positive_docid_inputs.name] = positive_docids
             input_feed[self.negative_docid_inputs.name] = negative_docids

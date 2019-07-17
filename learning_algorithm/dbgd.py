@@ -51,7 +51,7 @@ class DBGD(BasicAlgorithm):
         print('Build Dueling Bandit Gradient Descent (DBGD) algorithm.')
 
         self.hparams = tf.contrib.training.HParams(
-            noise_rate=1,               # The update rate for randomly sampled weights.
+            noise_rate=0.5,               # The update rate for randomly sampled weights.
             learning_rate=0.01,                 # Learning rate.
             max_gradient_norm=5.0,            # Clip gradients to this norm.
             l2_loss=0.01,                    # Set strength for L2 regularization.
@@ -70,7 +70,7 @@ class DBGD(BasicAlgorithm):
         self.letor_features = tf.placeholder(tf.float32, shape=[None, self.feature_size], 
                                 name="letor_features") # the letor features for the documents
         self.labels = []  # the labels for the documents (e.g., clicks)
-        for i in range(self.rank_list_size):
+        for i in range(self.max_candidate_num):
             self.docid_inputs.append(tf.placeholder(tf.int64, shape=[None],
                                             name="docid_input{0}".format(i)))
             self.labels.append(tf.placeholder(tf.float32, shape=[None],

@@ -6,6 +6,8 @@ def loadModelFromJson(model_desc):
     click_model = PositionBiasedModel()
     if model_desc['model_name'] == 'user_browsing_model':
         click_model = UserBrowsingModel()
+    elif model_desc['model_name'] == 'cascade_model':
+        click_model = CascadeModel()
     click_model.eta = model_desc['eta']
     click_model.click_prob = model_desc['click_prob']
     click_model.exam_prob = model_desc['exam_prob']
@@ -160,6 +162,53 @@ class UserBrowsingModel(ClickModel):
                 idx = distance-1 if distance < len(self.exam_prob[-1])-1 else -2
                 exam_p = self.exam_prob[-1][idx]
         return exam_p
+
+class CascadeModel(ClickModel):
+
+    @property
+    def model_name(self):
+        return 'cascade_model'
+
+    def setExamProb(self,eta):
+        self.eta = eta
+        self.exam_prob = [1.0 for _ in range(10)]
+
+    def sampleClicksForOneList(self, label_list):
+        click_list, exam_p_list, click_p_list = [], [], []
+        has_click = False
+        for rank in range(len(label_list)):
+            click, exam_p, click_p = self.sampleClick(rank, label_list[rank])
+            if has_click:
+                click_list.append(0.0)
+                exam_p_list.append(0.0)
+            else:
+                click_list.append(click)
+                exam_p_list.append(exam_p)
+            click_p_list.append(click_p)
+            if click > 0:
+                has_click = True
+        return click_list, exam_p_list, click_p_list
+
+    def estimatePropensityWeightsForOneList(self, click_list, use_non_clicked_data=False):
+        propensity_weights = []
+        for r in range(len(click_list)):
+            pw = 0.0
+            if use_non_clicked_data | click_list[r] > 0:
+                pw = 1.0/self.getExamProb(r) * self.getExamProb(0)
+            propensity_weights.append(pw)
+        return propensity_weights
+
+    def sampleClick(self, rank, relevance_label):
+        if not relevance_label == int(relevance_label):
+            print('RELEVANCE LABEL MUST BE INTEGER!')
+        relevance_label = int(relevance_label) if relevance_label > 0 else 0
+        exam_p = self.getExamProb(rank)
+        click_p = self.click_prob[relevance_label if relevance_label < len(self.click_prob) else -1]
+        click = 1 if random.random() < exam_p * click_p else 0
+        return click, exam_p, click_p
+
+    def getExamProb(self, rank):
+        return self.exam_prob[rank if rank < len(self.exam_prob) else -1]
 
 
 def test_initialization():
