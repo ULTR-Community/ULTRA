@@ -18,10 +18,17 @@ source venv/bin/activate
 ```
 git clone https://github.com/QingyaoAi/ULTRA.git
 cd ULTRA
-python setup.py install
+python setup.py install #use setup-gpu.py for GPU support
+```
+
+**Run toy example:**
+```
+cd example/toy
+bash offline_exp_pipeline.sh
 ```
 
 ## Get Started
+
 
 ## Algorithms
 
