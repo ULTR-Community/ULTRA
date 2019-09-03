@@ -48,4 +48,26 @@ bash offline_exp_pipeline.sh
 
 ## Citation
 
+If you use ULTRA in your research, please use the following BibTex entry.
+
+```
+@inproceedings{Ai:2018:ULR:3269206.3274274,
+ author = {Ai, Qingyao and Mao, Jiaxin and Liu, Yiqun and Croft, W. Bruce},
+ title = {Unbiased Learning to Rank: Theory and Practice},
+ booktitle = {Proceedings of the 27th ACM International Conference on Information and Knowledge Management},
+ series = {CIKM '18},
+ year = {2018},
+ isbn = {978-1-4503-6014-2},
+ location = {Torino, Italy},
+ pages = {2305--2306},
+ numpages = {2},
+ url = {http://doi.acm.org/10.1145/3269206.3274274},
+ doi = {10.1145/3269206.3274274},
+ acmid = {3274274},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {click model, counterfactual learning, unbiased learning to rank, user bias},
+} 
+```
+
 ## Project Organizers
