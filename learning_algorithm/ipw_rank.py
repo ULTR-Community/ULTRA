@@ -1,6 +1,6 @@
 """Training and testing the inverse propensity weighting algorithm for unbiased learning to rank.
 
-See the following paper for more information on the dual learning algorithm.
+See the following paper for more information on the inverse propensity weighting algorithm.
     
     * Xuanhui Wang, Michael Bendersky, Donald Metzler, Marc Najork. 2016. Learning to Rank with Selection Bias in Personal Search. In Proceedings of SIGIR '16
     * Thorsten Joachims, Adith Swaminathan, Tobias Schnahel. 2017. Unbiased Learning-to-Rank with Biased Feedback. In Proceedings of WSDM '17
