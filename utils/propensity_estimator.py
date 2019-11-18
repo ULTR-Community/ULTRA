@@ -1,6 +1,6 @@
 import os,sys
 import json, copy, random
-from . import data_utils
+import data_utils
 sys.path.append("..")
 from input_layer import click_models as CM
 
@@ -172,7 +172,7 @@ class OraclePropensityEstimator(BasicPropensityEstimator):
 def main():
     click_model_json_file = sys.argv[1]
     data_dir = sys.argv[2]
-    output_file = sys.argv[3]
+    output_path = sys.argv[3]
     
     print("Load data from " + data_dir)
     train_set = data_utils.read_data(data_dir, 'train')
@@ -184,6 +184,7 @@ def main():
     estimator = RandomizedPropensityEstimator()
     estimator.estimateParametersFromModel(click_model, train_set)
     print("Output results...")
+    output_file = output_path + '/randomized_' + click_model_json_file.split('/')[-1][:-5] + '.json'
     estimator.outputEstimatorToFile(output_file)
 
 

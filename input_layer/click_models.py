@@ -1,7 +1,6 @@
 import os,sys
 import random, json
 
-
 def loadModelFromJson(model_desc):
     click_model = PositionBiasedModel()
     if model_desc['model_name'] == 'user_browsing_model':
@@ -248,19 +247,23 @@ def test_load_from_file():
     print(click_model.estimatePropensityWeightsForOneList(click_list))
 
 def main():
+    MODELS = {
+    'pbm' : PositionBiasedModel,
+    'cascade' : CascadeModel,
+    'ubm' : UserBrowsingModel,
+    }
+
     model_name = sys.argv[1]
     neg_click_prob=float(sys.argv[2])
     pos_click_prob=float(sys.argv[3])
-    relevance_grading_num=int(sys.argv[4])
+    max_relevance_grade=int(sys.argv[4])
     eta=float(sys.argv[5])
+    output_path = sys.argv[6]
 
-    click_model = PositionBiasedModel(neg_click_prob, pos_click_prob, 
-                            relevance_grading_num, eta)
-    if model_name == 'ubm':
-        click_model = UserBrowsingModel(neg_click_prob, pos_click_prob, 
-                            relevance_grading_num, eta)
+    click_model = MODELS[model_name](neg_click_prob, pos_click_prob, 
+                            max_relevance_grade, eta)
 
-    with open('./' + '_'.join(sys.argv[1:6]) + '.json', 'w') as fout:
+    with open(output_path + '/' + '_'.join(sys.argv[1:6]) + '.json', 'w') as fout:
         fout.write(json.dumps(click_model.getModelJson(), indent=4, sort_keys=True))
 
 

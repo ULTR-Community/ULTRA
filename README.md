@@ -46,6 +46,21 @@ bash offline_exp_pipeline.sh
 
 7. [NA](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/na.py): this model is an implementation of the naive algorithm that directly train models with clicks.
 
+## Click Simulation Guideline
+
+**Create click models for click simulations**
+```
+python input_layer/click_models.py pbm 0.1 1 4 1.0 example/ClickModel
+```
+\* The output is a json file containing the click mode that could be used for click simulation. More details could be found in the code.
+
+**(Optional) Estimate examination propensity with result randomization**
+```
+cd utils
+python propensity_estimator.py ../example/ClickModel/pbm_0.1_1.0_4_1.0.json <DATA_DIR> ../example/PropensityEstimator/
+```
+\* The output is a json file containing the estimated examination propensity (used for IPW). More details could be found in the code.
+
 ## Citation
 
 If you use ULTRA in your research, please use the following BibTex entry.

@@ -64,6 +64,9 @@ def create_model(session, exp_settings, data_set, forward_only):
     
     model = utils.find_class(exp_settings['learning_algorithm'])(data_set, exp_settings, forward_only)
 
+    if not os.path.exists(FLAGS.model_dir):
+        os.makedirs(FLAGS.model_dir)
+
     ckpt = tf.train.get_checkpoint_state(FLAGS.model_dir)
     if ckpt:
         print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
@@ -96,7 +99,7 @@ def train(exp_settings):
         test_set.pad(exp_settings['max_candidate_num'])
 
     config = tf.ConfigProto()
-    #config.gpu_options.allow_growth = True
+    config.gpu_options.allow_growth = True
     with tf.Session(config=config) as sess:
         # Create model based on the input layer.
         print("Creating model...")

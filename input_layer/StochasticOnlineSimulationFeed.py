@@ -52,7 +52,6 @@ class StochasticOnlineSimulationFeed(BasicInputFeed):
         with open(self.hparams.click_model_json) as fin:
             model_desc = json.load(fin)
             self.click_model = cm.loadModelFromJson(model_desc)
-        self.setting=setting
         self.start_index = 0
         self.count = 1
         self.rank_list_size = model.rank_list_size
