@@ -24,7 +24,7 @@ import tensorflow as tf
 # We disable pylint because we need python3 compatibility.
 from six.moves import zip     # pylint: disable=redefined-builtin
 
-class OnlineSimulationFeed(BasicInputFeed):
+class DeterministicOnlineSimulationFeed(BasicInputFeed):
     """Simulate online learning to rank and click data based on human annotations.
 
     This class implements a input layer for online learning to rank experiments

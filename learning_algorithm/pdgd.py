@@ -49,8 +49,8 @@ class PDGD(BasicAlgorithm):
 
         self.hparams = tf.contrib.training.HParams(
             learning_rate=0.05,                 # Learning rate.
-            max_gradient_norm=5.0,            # Clip gradients to this norm.
-            l2_loss=0.0,                    # Set strength for L2 regularization.
+            max_gradient_norm=1.0,            # Clip gradients to this norm.
+            l2_loss=0.005,                    # Set strength for L2 regularization.
             grad_strategy='ada',            # Select gradient strategy
         )
         print(exp_settings['learning_algorithm_hparams'])
@@ -108,7 +108,7 @@ class PDGD(BasicAlgorithm):
             self.loss = tf.reduce_sum(
                     tf.math.multiply(
                         #self.pairwise_cross_entropy_loss(pair_scores[0], pair_scores[1]),
-                        -tf.exp(pair_scores[0]) / (tf.exp(pair_scores[0]) + tf.exp(pair_scores[1])),
+                      tf.reduce_sum( -tf.exp(pair_scores[0]) / (tf.exp(pair_scores[0]) + tf.exp(pair_scores[1])),1),
                         self.pair_weights
                     )
                 )
@@ -156,7 +156,7 @@ class PDGD(BasicAlgorithm):
             # Run the model to get ranking scores
             input_feed[self.is_training.name] = False
             #rank_outputs = session.run([self.train_output, self.train_eval_summary], input_feed)
-            rank_outputs = session.run([self.output, self.eval_summary], input_feed)
+            rank_outputs = session.run([self.train_output, self.train_eval_summary], input_feed)
             
             # reduce value to avoid numerical problems
             rank_outputs[0] = np.array(rank_outputs[0])
@@ -171,7 +171,7 @@ class PDGD(BasicAlgorithm):
                     if input_feed[self.docid_inputs[j].name][i] == letor_features_length: # not a valid doc
                         exp_ranking_scores[i][j] = 0.0
             # Compute denominator for each position
-            denominators = np.cumsum(exp_ranking_scores[::-1], axis=1)[::-1]
+            denominators = np.cumsum(exp_ranking_scores[:,::-1], axis=1)[:,::-1]
             sum_log_denominators = np.sum(np.log(denominators, out=np.zeros_like(denominators), where=denominators>0), axis=1)
             # Create training pairs based on the ranking scores and the labels
             positive_docids, negative_docids, pair_weights = [], [], []
@@ -188,15 +188,16 @@ class PDGD(BasicAlgorithm):
                                     continue
                                 positive_docids.append(input_feed[self.docid_inputs[l].name][i])
                                 negative_docids.append(input_feed[self.docid_inputs[k].name][i])
-                                flipped_exp_scores = exp_ranking_scores[i]
+                                flipped_exp_scores = np.copy(exp_ranking_scores[i])
                                 flipped_exp_scores[k] = exp_ranking_scores[i][l]
-                                exp_ranking_scores[l] = exp_ranking_scores[i][k]
+                                flipped_exp_scores[l] = exp_ranking_scores[i][k]
                                 flipped_denominator = np.cumsum(flipped_exp_scores[::-1])[::-1]
+                                
                                 sum_log_flipped_denominator = np.sum(np.log(flipped_denominator, out=np.zeros_like(flipped_denominator), where=flipped_denominator>0))
                                 #p_r = np.prod(rank_prob[i][min_i:max_i+1])
                                 #p_rs = np.prod(flipped_rank_prob[min_i:max_i+1])
                                 #weight = p_rs / (p_r + p_rs) = 1 / (1 + (d_rs/d_r)) = 1 / (1 + exp(log_drs - log_dr)) 
-                                weight = 1.0 / (1.0 + np.exp(min(sum_log_flipped_denominator - sum_log_denominators[i], 200)))
+                                weight = 1.0 / (1.0 + np.exp(min(sum_log_flipped_denominator - sum_log_denominators[i], 20)))
                                 if np.isnan(weight):
                                     print('SOMETHING WRONG!!!!!!!')
                                     print('sum_log_denominators[i] is nan: ' + str(np.isnan(sum_log_denominators[i])))
