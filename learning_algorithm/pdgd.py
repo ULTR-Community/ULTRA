@@ -48,7 +48,8 @@ class PDGD(BasicAlgorithm):
         print('Build Pairwise Differentiable Gradient Descent (PDGD) algorithm.')
 
         self.hparams = tf.contrib.training.HParams(
-            learning_rate=0.05,                 # Learning rate.
+            learning_rate=0.05,                 # Learning rate (\mu).
+            tau=10,                             # Scalar for the probability distribution.
             max_gradient_norm=1.0,            # Clip gradients to this norm.
             l2_loss=0.005,                    # Set strength for L2 regularization.
             grad_strategy='ada',            # Select gradient strategy
@@ -155,15 +156,13 @@ class PDGD(BasicAlgorithm):
         if not forward_only:
             # Run the model to get ranking scores
             input_feed[self.is_training.name] = False
-            #rank_outputs = session.run([self.train_output, self.train_eval_summary], input_feed)
             rank_outputs = session.run([self.train_output, self.train_eval_summary], input_feed)
             
             # reduce value to avoid numerical problems
             rank_outputs[0] = np.array(rank_outputs[0])
             rank_outputs[0] = rank_outputs[0] - np.amax(rank_outputs[0], axis=1, keepdims=True)
-            #for i in range(len(rank_outputs[0])):
-            #    rank_outputs[0][i] = rank_outputs[0][i] - np.amax(rank_outputs[0][i])
-            exp_ranking_scores = np.exp(rank_outputs[0])
+            exp_ranking_scores = np.exp(self.hparams.tau * rank_outputs[0])
+            
             # Remove scores for padding documents
             letor_features_length = len(input_feed[self.letor_features.name])
             for i in range(len(input_feed[self.labels[0].name])):
