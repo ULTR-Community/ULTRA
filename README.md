@@ -30,7 +30,17 @@ bash offline_exp_pipeline.sh
 ## Get Started
 
 
-## Algorithms
+## Ranking Algorithms
+
+1. [Linear](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/ranking_model/Linear.py): this is a linear ranking algorithm that compute ranking scores with a linear function.
+
+2. [DNN](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/ranking_model/DNN.py): this is neural ranking algorithm that compute ranking scores with a multi-layer perceptron network (with non-linear activation functions).
+
+3. [DLCM](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/DLCM.py): this is an implementation of the Deep Listwise Context Model in <a href="https://arxiv.org/pdf/1804.05936.pdf">*Learning a Deep Listwise Context Model for Ranking Refinement*</a>.
+
+4. [GFS](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/GFS.py): this is an implementation of the Groupwise Scoring Function in <a href="https://arxiv.org/pdf/1811.04415.pdf">*Learning Groupwise Multivariate Scoring Functions Using Deep Neural Networks*</a>.
+
+## Learning Algorithms
 
 1. [DLA](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/dla.py): this is an implementation of the Dual Learning Algorithm in <a href="https://arxiv.org/pdf/1804.05938.pdf">*Unbiased Learning to Rank with Unbiased Propensity Estimation*</a>.
 
@@ -44,7 +54,7 @@ bash offline_exp_pipeline.sh
 
 6. [DBGD](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/dbgd.py): this model is an implementation of the Dual Bandit Gradient Descent algorithm in <a href="https://arxiv.org/abs/1503.03244">*Interactively optimizing information retrieval systems as a dueling bandits problem*</a>
 
-7. [NA](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/na.py): this model is an implementation of the naive algorithm that directly train models with clicks.
+7. [NA](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/na.py): this model is an implementation of the naive algorithm that directly train models with input labels (e.g., clicks).
 
 ## Click Simulation Guideline
 
