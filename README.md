@@ -30,7 +30,7 @@ bash offline_exp_pipeline.sh
 ## Get Started
 
 
-## Ranking Algorithms
+## Ranking Models
 
 1. [Linear](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/ranking_model/Linear.py): this is a linear ranking algorithm that compute ranking scores with a linear function.
 
