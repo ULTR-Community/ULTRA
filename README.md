@@ -36,9 +36,9 @@ bash offline_exp_pipeline.sh
 
 2. [DNN](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/ranking_model/DNN.py): this is neural ranking algorithm that compute ranking scores with a multi-layer perceptron network (with non-linear activation functions).
 
-3. [DLCM](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/DLCM.py): this is an implementation of the Deep Listwise Context Model in <a href="https://arxiv.org/pdf/1804.05936.pdf">*Learning a Deep Listwise Context Model for Ranking Refinement*</a>.
+3. [DLCM](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/DLCM.py): this is an implementation of the Deep Listwise Context Model in <a href="https://arxiv.org/pdf/1804.05936.pdf">*Learning a Deep Listwise Context Model for Ranking Refinement*</a>. (TODO)
 
-4. [GFS](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/GFS.py): this is an implementation of the Groupwise Scoring Function in <a href="https://arxiv.org/pdf/1811.04415.pdf">*Learning Groupwise Multivariate Scoring Functions Using Deep Neural Networks*</a>.
+4. [GFS](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/GFS.py): this is an implementation of the Groupwise Scoring Function in <a href="https://arxiv.org/pdf/1811.04415.pdf">*Learning Groupwise Multivariate Scoring Functions Using Deep Neural Networks*</a>. (TODO)
 
 ## Learning Algorithms
 
