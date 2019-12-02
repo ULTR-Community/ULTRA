@@ -25,6 +25,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import tensorflow as tf
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
@@ -35,6 +36,10 @@ class RankingMetricKey(object):
   """Ranking metric key strings."""
   # Mean Receiprocal Rank. For binary relevance.
   MRR = 'mrr'
+
+  # Expected Reciprocal Rank
+  ERR = 'err'
+  MAX_LABEL = None
 
   # Average Relvance Position.
   ARP = 'arp'
@@ -83,6 +88,11 @@ def make_ranking_metric_fn(metric_key,
     """Returns mean reciprocal rank as the metric."""
     return mean_reciprocal_rank(
         labels, predictions, weights=weights, name=name)
+  
+  def _expected_reciprocal_rank_fn(labels, predictions, weights):
+    """Returns expected reciprocal rank as the metric."""
+    return expected_reciprocal_rank(
+        labels, predictions, weights=weights, topn=topn, name=name)
 
   def _normalized_discounted_cumulative_gain_fn(labels, predictions, weights):
     """Returns normalized discounted cumulative gain as the metric."""
@@ -119,6 +129,7 @@ def make_ranking_metric_fn(metric_key,
   metric_fn_dict = {
       RankingMetricKey.ARP: _average_relevance_position_fn,
       RankingMetricKey.MRR: _mean_reciprocal_rank_fn,
+      RankingMetricKey.ERR: _expected_reciprocal_rank_fn,
       RankingMetricKey.NDCG: _normalized_discounted_cumulative_gain_fn,
       RankingMetricKey.DCG: _discounted_cumulative_gain_fn,
       RankingMetricKey.PRECISION: _precision_fn,
@@ -250,6 +261,40 @@ def mean_reciprocal_rank(labels, predictions, weights=None, name=None):
     mrr = math_ops.reduce_max(
         relevance * reciprocal_rank, axis=1, keepdims=True)
     return math_ops.reduce_mean(mrr * array_ops.ones_like(weights) * weights)
+
+def expected_reciprocal_rank(labels, predictions, weights=None, topn=None, name=None):
+  """Computes expected reciprocal rank (ERR).
+
+  Args:
+    labels: A `Tensor` of the same shape as `predictions`. A value >= 1 means a
+      relevant example.
+    predictions: A `Tensor` with shape [batch_size, list_size]. Each value is
+      the ranking score of the corresponding example.
+    weights: A `Tensor` of the same shape of predictions or [batch_size, 1]. The
+      former case is per-example and the latter case is per-list.
+    topn: A cutoff for how many examples to consider for this metric.
+    name: A string used as the name for this metric.
+
+  Returns:
+    A metric for the weighted expected reciprocal rank of the batch.
+  """
+  with ops.name_scope(name, 'expected_reciprocal_rank',
+                      (labels, predictions, weights)):
+    labels, predictions, weights, topn = _prepare_and_validate_params(
+        labels, predictions, weights, topn)
+    sorted_labels, sorted_weights = utils.sort_by_scores(
+        predictions, [labels, weights], topn=topn)
+    _, list_size = array_ops.unstack(array_ops.shape(sorted_labels))
+
+    relevance = (math_ops.pow(2.0, sorted_labels) - 1) / math_ops.pow(2.0, RankingMetricKey.MAX_LABEL)
+    non_rel = tf.math.cumprod(1.0 - relevance, axis=1) / (1.0-relevance)
+    reciprocal_rank = 1.0 / math_ops.to_float(math_ops.range(1, list_size + 1))
+    mask = math_ops.to_float(math_ops.greater_equal(reciprocal_rank, 1.0/(topn+1)))
+    reciprocal_rank = reciprocal_rank * mask
+    # ERR has a shape of [batch_size, 1]
+    err = math_ops.reduce_sum(
+        relevance * non_rel * reciprocal_rank * sorted_weights, axis=1, keepdims=True)
+    return math_ops.reduce_mean(err)
 
 
 def average_relevance_position(labels, predictions, weights=None, name=None):

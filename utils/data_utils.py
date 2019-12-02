@@ -17,6 +17,7 @@ import numpy as np
 import json
 import random
 import os
+from . import metrics
 import tensorflow as tf
 from tensorflow.core.framework import summary_pb2
 
@@ -44,6 +45,7 @@ class Raw_data:
 
         settings = json.load(open(data_path + 'settings.json'))
         self.feature_size = settings['feature_size']
+        metrics.RankingMetricKey.MAX_LABEL = settings['max_label']
 
         self.features = []
         self.dids = []
