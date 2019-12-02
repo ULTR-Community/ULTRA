@@ -56,6 +56,8 @@ bash offline_exp_pipeline.sh
 
 7. [NA](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/na.py): this model is an implementation of the naive algorithm that directly train models with input labels (e.g., clicks).
 
+## Supported Evaluation Metrics
+
 ## Click Simulation Guideline
 
 **Create click models for click simulations**
