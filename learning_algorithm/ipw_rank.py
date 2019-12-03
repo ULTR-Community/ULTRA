@@ -59,7 +59,7 @@ class IPWrank(BasicAlgorithm):
         self.hparams = tf.contrib.training.HParams(
             propensity_estimator_type='utils.propensity_estimator.RandomizedPropensityEstimator',
             propensity_estimator_json='./example/PropensityEstimator/randomized_pbm_0.1_1.0_4_1.0.json', # the setting file for the predefined click models.
-            learning_rate=0.5,                 # Learning rate.
+            learning_rate=0.05,                 # Learning rate.
             max_gradient_norm=5.0,            # Clip gradients to this norm.
             loss_func='click_weighted_softmax_cross_entropy',      # Select Loss function
             l2_loss=0.0,                    # Set strength for L2 regularization.

@@ -43,7 +43,7 @@ class StochasticOnlineSimulationFeed(BasicInputFeed):
         """
         self.hparams = tf.contrib.training.HParams(
             click_model_json='./example/ClickModel/pbm_0.1_1.0_4_1.0.json', # the setting file for the predefined click models.
-            tau=10,                                                         # Scalar for the probability distribution.
+            tau=1,                                                         # Scalar for the probability distribution.
         )
         
         print('Create online simluation feed')
@@ -102,7 +102,7 @@ class StochasticOnlineSimulationFeed(BasicInputFeed):
                     break
                 valid_idx -= 1
             list_len = valid_idx + 1
-            # Rerank documents
+            # Sample document ranking
             scores = np.array(rank_scores[i][:list_len])
             scores = scores - max(scores)
             exp_scores=np.exp(self.hparams.tau * scores)
@@ -110,7 +110,15 @@ class StochasticOnlineSimulationFeed(BasicInputFeed):
             rerank_list= np.random.choice(np.arange(list_len),
                                                     replace=False,
                                                     p=probs,
-                                                    size=list_len)
+                                                    size=np.count_nonzero(probs))
+            # Append unselected documents to the end
+            used_indexs = set(rerank_list)
+            unused_indexs = []
+            for tmp_index in range(list_len):
+                if tmp_index not in used_indexs:
+                    unused_indexs.append(tmp_index)
+            rerank_list = np.append(rerank_list, unused_indexs)
+            # Rerank documents
             new_docid_list = np.zeros(list_len)
             new_label_list = np.zeros(list_len)
             for j in range(list_len):

@@ -49,7 +49,7 @@ class PDGD(BasicAlgorithm):
 
         self.hparams = tf.contrib.training.HParams(
             learning_rate=0.05,                 # Learning rate (\mu).
-            tau=10,                             # Scalar for the probability distribution.
+            tau=1,                             # Scalar for the probability distribution.
             max_gradient_norm=1.0,            # Clip gradients to this norm.
             l2_loss=0.005,                    # Set strength for L2 regularization.
             grad_strategy='ada',            # Select gradient strategy
