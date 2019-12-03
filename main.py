@@ -96,7 +96,7 @@ def train(exp_settings):
         test_set.pad(exp_settings['max_candidate_num'])
 
     config = tf.ConfigProto()
-    #config.gpu_options.allow_growth = True
+    config.gpu_options.allow_growth = True
     with tf.Session(config=config) as sess:
         # Create model based on the input layer.
         print("Creating model...")
@@ -195,7 +195,7 @@ def train(exp_settings):
 
 def test(exp_settings):
     config = tf.ConfigProto()
-    #config.gpu_options.allow_growth = True
+    config.gpu_options.allow_growth = True
     with tf.Session(config=config) as sess:
         # Load test data.
         print("Reading data in %s" % FLAGS.data_dir)
@@ -231,13 +231,7 @@ def test(exp_settings):
             it += batch_size_list[-1]
             count_batch += 1.0
             print("Testing {:.0%} finished".format(float(it)/len(test_set.initial_list)), end="\r", flush=True)
-            ''' Debug
-            print(output_logits[0])
-            test_summary = utils.parse_TFSummary_from_bytes(summary)
-            print("  test: %s" % (
-                    ' '.join(['%s:%.3f' % (x, test_summary[x]) for x in test_summary])
-                    ))
-            '''
+            
         print("\n[Done]")
         test_summary = utils.merge_TFSummary(summary_list, batch_size_list)
         test_writer.add_summary(test_summary, it)

@@ -4,7 +4,7 @@ import math
 import json
 
 list_lengths = []
-MAX_LABEL = 0
+max_label = 0
 
 def read_one_instance(feature_fin, rank_score_fin):
     feature_line = feature_fin.readline()
@@ -39,8 +39,8 @@ def prepare_one_set(feature_path, rank_score_path, output_path ,set_name):
         qid_feature_map[qid].append(feature)
         qid_label_map[qid].append(label)
         qid_score_map[qid].append(score)
+        max_label = max(max_label, label)
         qid, feature, label, score = read_one_instance(feature_fin, rank_score_fin)
-        MAX_LABEL = max(MAX_LABEL, label)
         line_num += 1
     feature_fin.close()
     rank_score_fin.close()
@@ -115,7 +115,7 @@ def main():
 
     settings = {}
     settings['feature_size'] = FEATURE_SIZE
-    settings['max_label'] = MAX_LABEL
+    settings['max_label'] = max_label
     set_fout = open(OUTPUT_PATH + 'settings.json','w')
     json.dump(settings, set_fout)
     set_fout.close()

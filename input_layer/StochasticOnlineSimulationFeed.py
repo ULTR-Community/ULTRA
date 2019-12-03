@@ -44,6 +44,7 @@ class StochasticOnlineSimulationFeed(BasicInputFeed):
         self.hparams = tf.contrib.training.HParams(
             click_model_json='./example/ClickModel/pbm_0.1_1.0_4_1.0.json', # the setting file for the predefined click models.
             tau=1,                                                         # Scalar for the probability distribution.
+            oracle_mode=False                                               # Set True to feed relevance labels instead of simulated clicks.
         )
         
         print('Create online simluation feed')
@@ -117,7 +118,7 @@ class StochasticOnlineSimulationFeed(BasicInputFeed):
             for tmp_index in range(list_len):
                 if tmp_index not in used_indexs:
                     unused_indexs.append(tmp_index)
-            rerank_list = np.append(rerank_list, unused_indexs)
+            rerank_list = np.append(rerank_list, unused_indexs).astype(int)
             # Rerank documents
             new_docid_list = np.zeros(list_len)
             new_label_list = np.zeros(list_len)
@@ -125,11 +126,15 @@ class StochasticOnlineSimulationFeed(BasicInputFeed):
                 new_docid_list[j] = input_feed[self.model.docid_inputs[rerank_list[j]].name][i]
                 new_label_list[j] = input_feed[self.model.labels[rerank_list[j]].name][i]
             # Collect clicks online
-            click_list, _, _ = self.click_model.sampleClicksForOneList(new_label_list[:self.rank_list_size])
-            sample_count = 0
-            while check_validation and sum(click_list) == 0 and sample_count < self.MAX_SAMPLE_ROUND_NUM:
+            click_list = None
+            if self.hparams.oracle_mode:
+                click_list = new_label_list[:self.rank_list_size]
+            else:
                 click_list, _, _ = self.click_model.sampleClicksForOneList(new_label_list[:self.rank_list_size])
-                sample_count += 1
+                sample_count = 0
+                while check_validation and sum(click_list) == 0 and sample_count < self.MAX_SAMPLE_ROUND_NUM:
+                    click_list, _, _ = self.click_model.sampleClicksForOneList(new_label_list[:self.rank_list_size])
+                    sample_count += 1
             # update input_feed
             for j in range(list_len):
                 input_feed[self.model.docid_inputs[j].name][i] = new_docid_list[j]

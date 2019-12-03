@@ -42,6 +42,7 @@ class ClickSimulationFeed(BasicInputFeed):
         """
         self.hparams = tf.contrib.training.HParams(
             click_model_json='./example/ClickModel/pbm_0.1_1.0_4_1.0.json', # the setting file for the predefined click models.
+            oracle_mode=False                                               # Set True to feed relevance labels instead of simulated clicks.
         )
         
         print('Create simluated clicks feed')
@@ -64,11 +65,15 @@ class ClickSimulationFeed(BasicInputFeed):
 
         # Generate clicks with click models.
         label_list = [0 if data_set.initial_list[i][x] < 0 else data_set.labels[i][x] for x in range(self.rank_list_size)]
-        click_list, _, _ = self.click_model.sampleClicksForOneList(list(label_list))
-        sample_count = 0
-        while check_validation and sum(click_list) == 0 and sample_count < self.MAX_SAMPLE_ROUND_NUM:
+        click_list = None
+        if self.hparams.oracle_mode:
+            click_list = label_list
+        else:
             click_list, _, _ = self.click_model.sampleClicksForOneList(list(label_list))
-            sample_count += 1
+            sample_count = 0
+            while check_validation and sum(click_list) == 0 and sample_count < self.MAX_SAMPLE_ROUND_NUM:
+                click_list, _, _ = self.click_model.sampleClicksForOneList(list(label_list))
+                sample_count += 1
 
         # Check if data is valid
         if check_validation and sum(click_list) == 0:
