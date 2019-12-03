@@ -39,9 +39,9 @@ tf.app.flags.DEFINE_integer("train_list_cutoff", 10,
                             "The number of top documents to consider in each rank list during training (0: no limit).")
 tf.app.flags.DEFINE_integer("max_list_cutoff", 0,
                             "The maximum number of top documents to consider in each rank list (0: no limit).")
-tf.app.flags.DEFINE_integer("max_train_iteration", 0,
+tf.app.flags.DEFINE_integer("max_train_iteration", 10000,
                             "Limit on the iterations of training (0: no limit).")
-tf.app.flags.DEFINE_integer("steps_per_checkpoint", 200,
+tf.app.flags.DEFINE_integer("steps_per_checkpoint", 50,
                             "How many training steps to do per checkpoint.")
 
 tf.app.flags.DEFINE_boolean("test_while_train", False,
@@ -63,9 +63,6 @@ def create_model(session, exp_settings, data_set, forward_only):
     """
     
     model = utils.find_class(exp_settings['learning_algorithm'])(data_set, exp_settings, forward_only)
-
-    if not os.path.exists(FLAGS.model_dir):
-        os.makedirs(FLAGS.model_dir)
 
     ckpt = tf.train.get_checkpoint_state(FLAGS.model_dir)
     if ckpt:
@@ -99,7 +96,7 @@ def train(exp_settings):
         test_set.pad(exp_settings['max_candidate_num'])
 
     config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
+    #config.gpu_options.allow_growth = True
     with tf.Session(config=config) as sess:
         # Create model based on the input layer.
         print("Creating model...")
