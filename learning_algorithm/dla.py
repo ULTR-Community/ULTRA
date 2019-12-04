@@ -116,6 +116,8 @@ class DLA(BasicAlgorithm):
                 self.loss_func = self.click_weighted_softmax_cross_entropy_loss
             elif self.hparams.loss_func == 'click_weighted_log_loss':
                 self.loss_func = self.click_weighted_log_loss
+            elif self.hparams.loss_func == 'click_weighted_pairwise_loss':
+                self.loss_func = self.click_weighted_pairwise_loss
             else: # softmax loss without weighting
                 self.loss_func = self.softmax_loss
 
@@ -311,6 +313,37 @@ class DLA(BasicAlgorithm):
             label_dis = labels*propensity_weights / tf.reduce_sum(labels*propensity_weights, 1, keep_dims=True)
             loss = tf.nn.softmax_cross_entropy_with_logits(logits=output, labels=label_dis) * tf.reduce_sum(labels*propensity_weights, 1)
         return tf.reduce_sum(loss) / tf.reduce_sum(labels*propensity_weights), propensity_weights
+
+    def click_weighted_pairwise_loss(self, output, labels, propensity, name=None):
+        """Computes pairwise entropy loss with propensity weighting.
+
+        Args:
+            output: (tf.Tensor) A tensor with shape [batch_size, list_size]. Each value is
+            the ranking score of the corresponding example.
+            labels: (tf.Tensor) A tensor of the same shape as `output`. A value >= 1 means a
+                relevant example.
+            propensity: (tf.Tensor) A tensor of the same shape as `output` containing the weight of each element. 
+            name: A string used as the name for this variable scope.
+
+        Returns:
+            (tf.Tensor) A single value tensor containing the loss.
+        """
+        loss = None
+        with tf.name_scope(name, "click_weighted_pairwise_loss",[output]):
+            sliced_output = tf.unstack(output, axis=1)
+            sliced_label = tf.unstack(labels, axis=1)
+            sliced_propensity = tf.unstack(propensity, axis=1)
+            for i in range(len(sliced_output)):
+                for j in range(i+1, len(sliced_output)):
+                    cur_label_weight = tf.math.sign(sliced_label[i] - sliced_label[j])
+                    cur_propensity = sliced_propensity[i] * sliced_label[i] + sliced_propensity[j] * sliced_label[j]
+                    cur_pair_loss = -tf.exp(sliced_output[i]) / (tf.exp(sliced_output[i]) + tf.exp(sliced_output[j]))
+                    if loss == None:
+                        loss = cur_label_weight * cur_pair_loss * cur_propensity
+                    loss += cur_label_weight * cur_pair_loss * cur_propensity
+        batch_size = tf.shape(labels[0])[0]
+        return tf.reduce_sum(loss) / tf.cast(batch_size, dtypes.float32) #/ (tf.reduce_sum(propensity_weights)+1)
+
 
     def click_weighted_log_loss(self, output, labels, propensity, name=None):
         """Computes pointwise sigmoid loss with propensity weighting.

@@ -12,6 +12,7 @@ import random
 import sys
 import tensorflow as tf
 import tensorflow_ranking as tfr
+from tensorflow import dtypes
 
 from .BasicAlgorithm import BasicAlgorithm
 sys.path.append("..")
@@ -81,6 +82,8 @@ class NavieAlgorithm(BasicAlgorithm):
             self.loss = None
             if self.hparams.loss_func == 'sigmoid_cross_entropy':
                 self.loss = self.sigmoid_loss(train_output, reshaped_train_labels)
+            elif self.hparams.loss_func == 'pairwise_loss':
+                self.loss = self.pairwise_loss(train_output, reshaped_train_labels)
             else:
                 self.loss = self.softmax_loss(train_output, reshaped_train_labels)
             params = tf.trainable_variables()
@@ -133,6 +136,34 @@ class NavieAlgorithm(BasicAlgorithm):
             label_dis = tf.math.minimum(labels, 1)
             loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=label_dis, logits=output)
         return tf.reduce_mean(tf.reduce_sum(loss, axis=1))
+
+    def pairwise_loss(self, output, labels, name=None):
+        """Computes pairwise entropy loss.
+
+        Args:
+            output: (tf.Tensor) A tensor with shape [batch_size, list_size]. Each value is
+            the ranking score of the corresponding example.
+            labels: (tf.Tensor) A tensor of the same shape as `output`. A value >= 1 means a
+                relevant example.
+            name: A string used as the name for this variable scope.
+
+        Returns:
+            (tf.Tensor) A single value tensor containing the loss.
+        """
+        loss = None
+        with tf.name_scope(name, "pairwise_loss",[output]):
+            sliced_output = tf.unstack(output, axis=1)
+            sliced_label = tf.unstack(labels, axis=1)
+            for i in range(len(sliced_output)):
+                for j in range(i+1, len(sliced_output)):
+                    cur_label_weight = tf.math.sign(sliced_label[i] - sliced_label[j])
+                    cur_pair_loss = -tf.exp(sliced_output[i]) / (tf.exp(sliced_output[i]) + tf.exp(sliced_output[j]))
+                    if loss == None:
+                        loss = cur_label_weight * cur_pair_loss
+                    loss += cur_label_weight * cur_pair_loss
+        batch_size = tf.shape(labels[0])[0]
+        return tf.reduce_sum(loss) / tf.cast(batch_size, dtypes.float32) #/ (tf.reduce_sum(propensity_weights)+1)
+
 
     def softmax_loss(self, output, labels, name=None):
         """Computes listwise softmax loss without propensity weighting.
