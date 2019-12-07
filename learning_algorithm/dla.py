@@ -279,6 +279,7 @@ class DLA(BasicAlgorithm):
 
         Returns:
             (tf.Tensor) A single value tensor containing the loss.
+            (tf.Tensor) A tensor containing the propensity weights.
         """
 
         loss = None
@@ -301,6 +302,7 @@ class DLA(BasicAlgorithm):
 
         Returns:
             (tf.Tensor) A single value tensor containing the loss.
+            (tf.Tensor) A tensor containing the propensity weights.
         """
         loss = None
         with tf.name_scope(name, "click_softmax_cross_entropy",[output]):
@@ -327,12 +329,18 @@ class DLA(BasicAlgorithm):
 
         Returns:
             (tf.Tensor) A single value tensor containing the loss.
+            (tf.Tensor) A tensor containing the propensity weights.
         """
         loss = None
         with tf.name_scope(name, "click_weighted_pairwise_loss",[output]):
             sliced_output = tf.unstack(output, axis=1)
             sliced_label = tf.unstack(labels, axis=1)
-            sliced_propensity = tf.unstack(propensity, axis=1)
+            propensity_list = tf.unstack(self.logits_to_prob(propensity), axis=1) # Compute propensity weights
+            sliced_propensity = []
+            for i in range(len(propensity_list)):
+                pw_i = propensity_list[0] / propensity_list[i]
+                sliced_propensity.append(pw_i)
+            propensity_weights = tf.stack(sliced_propensity, axis=1)
             for i in range(len(sliced_output)):
                 for j in range(i+1, len(sliced_output)):
                     cur_label_weight = tf.math.sign(sliced_label[i] - sliced_label[j])
@@ -342,7 +350,7 @@ class DLA(BasicAlgorithm):
                         loss = cur_label_weight * cur_pair_loss * cur_propensity
                     loss += cur_label_weight * cur_pair_loss * cur_propensity
         batch_size = tf.shape(labels[0])[0]
-        return tf.reduce_sum(loss) / tf.cast(batch_size, dtypes.float32) #/ (tf.reduce_sum(propensity_weights)+1)
+        return tf.reduce_sum(loss) / tf.cast(batch_size, dtypes.float32), propensity_weights #/ (tf.reduce_sum(propensity_weights)+1)
 
 
     def click_weighted_log_loss(self, output, labels, propensity, name=None):
