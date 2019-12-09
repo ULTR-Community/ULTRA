@@ -63,6 +63,7 @@ class IPWrank(BasicAlgorithm):
             max_gradient_norm=5.0,            # Clip gradients to this norm.
             loss_func='click_weighted_softmax_cross_entropy',      # Select Loss function
             l2_loss=0.0,                    # Set strength for L2 regularization.
+            grad_strategy='ada',            # Select gradient strategy
         )
         print(exp_settings['learning_algorithm_hparams'])
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
@@ -126,7 +127,12 @@ class IPWrank(BasicAlgorithm):
                 for p in params:
                     self.loss += self.hparams.l2_loss * tf.nn.l2_loss(p)
 
-            opt = tf.train.AdagradOptimizer(self.hparams.learning_rate)
+            # Select optimizer
+            self.optimizer_func = tf.train.AdagradOptimizer
+            if self.hparams.grad_strategy == 'sgd':
+                self.optimizer_func = tf.train.GradientDescentOptimizer
+
+            opt = self.optimizer_func(self.hparams.learning_rate)
             self.gradients = tf.gradients(self.loss, params)
             if self.hparams.max_gradient_norm > 0:
                 self.clipped_gradients, self.norm = tf.clip_by_global_norm(self.gradients,

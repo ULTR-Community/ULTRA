@@ -41,6 +41,7 @@ class BasicAlgorithm(ABC):
         self.output = None # the ranking scores of the inputs
         self.rank_list_size = None # the number of documents considered in each rank list.
         self.max_candidate_num = None # the maximum number of candidates for each query.
+        self.optimizer_func = tf.train.AdagradOptimizer
         pass
 
     @abstractmethod
