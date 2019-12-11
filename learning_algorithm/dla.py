@@ -61,6 +61,7 @@ class DLA(BasicAlgorithm):
             ranker_learning_rate=-1.0,         # The learning rate for ranker (-1 means same with learning_rate).
             ranker_loss_weight=1.0,            # Set the weight of unbiased ranking loss
             l2_loss=0.0,                    # Set strength for L2 regularization.
+            max_propensity_weight = 20,      # Set maximum value for propensity weights
             grad_strategy='ada',            # Select gradient strategy
         )
         print(exp_settings['learning_algorithm_hparams'])
@@ -123,14 +124,16 @@ class DLA(BasicAlgorithm):
 
             # Compute rank loss
             reshaped_train_labels = tf.transpose(tf.convert_to_tensor(train_labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
-            self.rank_loss, self.propensity_weights = self.loss_func(train_output, reshaped_train_labels, self.propensity)
+            self.propensity_weights = self.get_normalized_weights(self.logits_to_prob(self.propensity))
+            self.rank_loss = self.loss_func(train_output, reshaped_train_labels, self.propensity_weights)
             pw_list = tf.unstack(self.propensity_weights, axis=1) # Compute propensity weights
             for i in range(len(pw_list)):
                 tf.summary.scalar('Inverse Propensity weights %d' % i, tf.reduce_mean(pw_list[i]), collections=['train'])
             tf.summary.scalar('Rank Loss', tf.reduce_mean(self.rank_loss), collections=['train'])
 
             # Compute examination loss
-            self.exam_loss, self.relevance_weights = self.loss_func(self.propensity, reshaped_train_labels, train_output)
+            self.relevance_weights = self.get_normalized_weights(self.logits_to_prob(train_output))
+            self.exam_loss = self.loss_func(self.propensity, reshaped_train_labels, train_output)
             rw_list = tf.unstack(self.relevance_weights, axis=1) # Compute propensity weights
             for i in range(len(rw_list)):
                 tf.summary.scalar('Relevance weights %d' % i, tf.reduce_mean(rw_list[i]), collections=['train'])
@@ -279,17 +282,32 @@ class DLA(BasicAlgorithm):
 
         Returns:
             (tf.Tensor) A single value tensor containing the loss.
-            (tf.Tensor) A tensor containing the propensity weights.
         """
 
         loss = None
         with tf.name_scope(name, "softmax_loss",[output]):
-            propensity_weights = tf.ones_like(output)
             label_dis = labels / tf.reduce_sum(labels, 1, keep_dims=True)
             loss = tf.nn.softmax_cross_entropy_with_logits(logits=output, labels=label_dis) * tf.reduce_sum(labels, 1)
-        return tf.reduce_sum(loss) / tf.reduce_sum(labels), propensity_weights
+        return tf.reduce_sum(loss) / tf.reduce_sum(labels)
 
-    def click_weighted_softmax_cross_entropy_loss(self, output, labels, propensity, name=None):
+    def get_normalized_weights(self, propensity):
+        """Computes listwise softmax loss with propensity weighting.
+
+        Args:
+            propensity: (tf.Tensor) A tensor of the same shape as `output` containing the weight of each element. 
+
+        Returns:
+            (tf.Tensor) A tensor containing the propensity weights.
+        """
+        propensity_list = tf.unstack(propensity, axis=1) # Compute propensity weights
+        pw_list = []
+        for i in range(len(propensity_list)):
+            pw_i = propensity_list[0] / propensity_list[i]
+            pw_list.append(pw_i)
+        propensity_weights = tf.stack(pw_list, axis=1)
+        return tf.clip_by_value(propensity_weights, clip_value_min=0, clip_value_max=self.hparams.max_propensity_weight)
+
+    def click_weighted_softmax_cross_entropy_loss(self, output, labels, propensity_weights, name=None):
         """Computes listwise softmax loss with propensity weighting.
 
         Args:
@@ -297,26 +315,19 @@ class DLA(BasicAlgorithm):
             the ranking score of the corresponding example.
             labels: (tf.Tensor) A tensor of the same shape as `output`. A value >= 1 means a
             relevant example.
-            propensity: (tf.Tensor) A tensor of the same shape as `output` containing the weight of each element. 
+            propensity_weights: (tf.Tensor) A tensor of the same shape as `output` containing the weight of each element. 
             name: A string used as the name for this variable scope.
 
         Returns:
             (tf.Tensor) A single value tensor containing the loss.
-            (tf.Tensor) A tensor containing the propensity weights.
         """
         loss = None
         with tf.name_scope(name, "click_softmax_cross_entropy",[output]):
-            propensity_list = tf.unstack(self.logits_to_prob(propensity), axis=1) # Compute propensity weights
-            pw_list = []
-            for i in range(len(propensity_list)):
-                pw_i = propensity_list[0] / propensity_list[i]
-                pw_list.append(pw_i)
-            propensity_weights = tf.stack(pw_list, axis=1)
             label_dis = labels*propensity_weights / tf.reduce_sum(labels*propensity_weights, 1, keep_dims=True)
             loss = tf.nn.softmax_cross_entropy_with_logits(logits=output, labels=label_dis) * tf.reduce_sum(labels*propensity_weights, 1)
-        return tf.reduce_sum(loss) / tf.reduce_sum(labels*propensity_weights), propensity_weights
+        return tf.reduce_sum(loss) / tf.reduce_sum(labels*propensity_weights)
 
-    def click_weighted_pairwise_loss(self, output, labels, propensity, name=None):
+    def click_weighted_pairwise_loss(self, output, labels, propensity_weights, name=None):
         """Computes pairwise entropy loss with propensity weighting.
 
         Args:
@@ -324,7 +335,7 @@ class DLA(BasicAlgorithm):
             the ranking score of the corresponding example.
             labels: (tf.Tensor) A tensor of the same shape as `output`. A value >= 1 means a
                 relevant example.
-            propensity: (tf.Tensor) A tensor of the same shape as `output` containing the weight of each element. 
+            propensity_weights: (tf.Tensor) A tensor of the same shape as `output` containing the weight of each element. 
             name: A string used as the name for this variable scope.
 
         Returns:
@@ -335,12 +346,7 @@ class DLA(BasicAlgorithm):
         with tf.name_scope(name, "click_weighted_pairwise_loss",[output]):
             sliced_output = tf.unstack(output, axis=1)
             sliced_label = tf.unstack(labels, axis=1)
-            propensity_list = tf.unstack(self.logits_to_prob(propensity), axis=1) # Compute propensity weights
-            sliced_propensity = []
-            for i in range(len(propensity_list)):
-                pw_i = propensity_list[0] / propensity_list[i]
-                sliced_propensity.append(pw_i)
-            propensity_weights = tf.stack(sliced_propensity, axis=1)
+            sliced_propensity = tf.unstack(propensity_weights, axis=1)
             for i in range(len(sliced_output)):
                 for j in range(i+1, len(sliced_output)):
                     cur_label_weight = tf.math.sign(sliced_label[i] - sliced_label[j])
@@ -350,10 +356,10 @@ class DLA(BasicAlgorithm):
                         loss = cur_label_weight * cur_pair_loss * cur_propensity
                     loss += cur_label_weight * cur_pair_loss * cur_propensity
         batch_size = tf.shape(labels[0])[0]
-        return tf.reduce_sum(loss) / tf.cast(batch_size, dtypes.float32), propensity_weights #/ (tf.reduce_sum(propensity_weights)+1)
+        return tf.reduce_sum(loss) / tf.cast(batch_size, dtypes.float32) #/ (tf.reduce_sum(propensity_weights)+1)
 
 
-    def click_weighted_log_loss(self, output, labels, propensity, name=None):
+    def click_weighted_log_loss(self, output, labels, propensity_weights, name=None):
         """Computes pointwise sigmoid loss with propensity weighting.
 
         Args:
@@ -361,7 +367,7 @@ class DLA(BasicAlgorithm):
             the ranking score of the corresponding example.
             labels: (tf.Tensor) A tensor of the same shape as `output`. A value >= 1 means a
             relevant example.
-            propensity: (tf.Tensor) A tensor of the same shape as `output` containing the weight of each element. 
+            propensity_weights: (tf.Tensor) A tensor of the same shape as `output` containing the weight of each element. 
             name: A string used as the name for this variable scope.
 
         Returns:
@@ -369,12 +375,6 @@ class DLA(BasicAlgorithm):
         """
         loss = None
         with tf.name_scope(name, "click_weighted_log_loss",[output]):
-            propensity_list = tf.unstack(self.logits_to_prob(propensity), axis=1) # Compute propensity weights
-            pw_list = []
-            for i in range(len(propensity_list)):
-                pw_i = propensity_list[0] / propensity_list[i]
-                pw_list.append(pw_i)
-            propensity_weights = tf.stack(pw_list, axis=1)
             click_prob = tf.sigmoid(output)
             loss = tf.losses.log_loss(labels, click_prob, propensity_weights)
-        return loss, propensity_weights
+        return loss
