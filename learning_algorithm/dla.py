@@ -61,7 +61,7 @@ class DLA(BasicAlgorithm):
             ranker_learning_rate=-1.0,         # The learning rate for ranker (-1 means same with learning_rate).
             ranker_loss_weight=1.0,            # Set the weight of unbiased ranking loss
             l2_loss=0.0,                    # Set strength for L2 regularization.
-            max_propensity_weight = 20,      # Set maximum value for propensity weights
+            max_propensity_weight = -1,      # Set maximum value for propensity weights
             grad_strategy='ada',            # Select gradient strategy
         )
         print(exp_settings['learning_algorithm_hparams'])
@@ -305,7 +305,9 @@ class DLA(BasicAlgorithm):
             pw_i = propensity_list[0] / propensity_list[i]
             pw_list.append(pw_i)
         propensity_weights = tf.stack(pw_list, axis=1)
-        return tf.clip_by_value(propensity_weights, clip_value_min=0, clip_value_max=self.hparams.max_propensity_weight)
+        if self.hparams.max_propensity_weight > 0:
+            propensity_weights = tf.clip_by_value(propensity_weights, clip_value_min=0, clip_value_max=self.hparams.max_propensity_weight)
+        return propensity_weights
 
     def click_weighted_softmax_cross_entropy_loss(self, output, labels, propensity_weights, name=None):
         """Computes listwise softmax loss with propensity weighting.
