@@ -36,7 +36,7 @@ with open(output_file,'w') as fout:
 			#TO DO: how to normalize? How to deal with empty value and the smallest value
 			scale = feature_scale[idx][1] - feature_scale[idx][0]
 			if scale > 0:
-				feature[idx] = (value - feature_scale[idx][0])/ scale
+				feature[idx] = (value - feature_scale[idx][0])/ scale * 2 - 1
 			else:
 				feature[idx] = value
 		for i in range(feature_num):
