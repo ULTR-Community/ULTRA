@@ -12,10 +12,13 @@ class Linear(BasicRankingModel):
             hparams_str: (String) The hyper-parameters used to build the network.
         """
 
-        #self.hparams = tf.contrib.training.HParams(
-        #    hidden_layer_sizes=[512, 256, 128],        # Number of neurons in each layer of a ranking_model. 
-        #)
-        #self.hparams.parse(hparams_str)
+        self.hparams = tf.contrib.training.HParams(
+            initializer='None'                         # Set parameter initializer
+        )
+        self.hparams.parse(hparams_str)
+        self.initializer = None
+        if self.hparams.initializer == 'constant':
+            self.initializer = tf.constant_initializer(0.001)
 
     def build(self, input_list, is_training=False):
         """ Create the model
@@ -29,7 +32,7 @@ class Linear(BasicRankingModel):
             A list of tf.Tensor containing the ranking scores for each instance in input_list.
 
         """
-        with tf.variable_scope(tf.get_variable_scope(),
+        with tf.variable_scope(tf.get_variable_scope(), initializer=self.initializer,
                                             reuse=tf.AUTO_REUSE):
             input_data = tf.concat(input_list, axis=0)
             output_data = tf.compat.v1.layers.batch_normalization(input_data, training=is_training, name="input_batch_normalization")
@@ -58,7 +61,7 @@ class Linear(BasicRankingModel):
 
         """
         noise_tensor_list = []
-        with tf.variable_scope(tf.get_variable_scope(),
+        with tf.variable_scope(tf.get_variable_scope(), initializer=self.initializer,
                                             reuse=tf.AUTO_REUSE):
             input_data = tf.concat(input_list, axis=0)
             output_data = tf.compat.v1.layers.batch_normalization(input_data, training=is_training, name="input_batch_normalization")

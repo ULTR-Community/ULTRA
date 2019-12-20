@@ -51,9 +51,10 @@ class ClickSimulationFeed(BasicInputFeed):
         print(hparam_str)
         self.hparams.parse(hparam_str)
         self.click_model = None
-        with open(self.hparams.click_model_json) as fin:
-            model_desc = json.load(fin)
-            self.click_model = cm.loadModelFromJson(model_desc)
+        if not self.hparams.oracle_mode:
+            with open(self.hparams.click_model_json) as fin:
+                model_desc = json.load(fin)
+                self.click_model = cm.loadModelFromJson(model_desc)
         
         self.start_index = 0
         self.count = 1
@@ -150,7 +151,7 @@ class ClickSimulationFeed(BasicInputFeed):
         }
 
         self.global_batch_count += 1
-        if self.hparams.dynamic_bias_eta_change != 0:
+        if self.hparams.dynamic_bias_eta_change != 0 and not self.hparams.oracle_mode:
             if self.global_batch_count % self.hparams.dynamic_bias_step_interval == 0:
                 self.click_model.eta += self.hparams.dynamic_bias_eta_change
                 self.click_model.setExamProb(self.click_model.eta)
@@ -217,7 +218,6 @@ class ClickSimulationFeed(BasicInputFeed):
             'input_list' : docid_inputs,
             'click_list' : labels,
         }
-
         return input_feed, others_map
 
     def get_data_by_index(self, data_set, index, check_validation=False): 

@@ -62,6 +62,7 @@ class DLA(BasicAlgorithm):
             ranker_loss_weight=1.0,            # Set the weight of unbiased ranking loss
             l2_loss=0.0,                    # Set strength for L2 regularization.
             max_propensity_weight = -1,      # Set maximum value for propensity weights
+            constant_propensity_initialization = False, # Set true to initialize propensity with constants.
             grad_strategy='ada',            # Select gradient strategy
         )
         print(exp_settings['learning_algorithm_hparams'])
@@ -133,7 +134,7 @@ class DLA(BasicAlgorithm):
 
             # Compute examination loss
             self.relevance_weights = self.get_normalized_weights(self.logits_to_prob(train_output))
-            self.exam_loss = self.loss_func(self.propensity, reshaped_train_labels, train_output)
+            self.exam_loss = self.loss_func(self.propensity, reshaped_train_labels, self.relevance_weights)
             rw_list = tf.unstack(self.relevance_weights, axis=1) # Compute propensity weights
             for i in range(len(rw_list)):
                 tf.summary.scalar('Relevance weights %d' % i, tf.reduce_mean(rw_list[i]), collections=['train'])
@@ -205,13 +206,14 @@ class DLA(BasicAlgorithm):
 
             def propensity_network(input_data, index):
                 reuse = None if index < 1 else True
-                with tf.variable_scope("propensity_network",
+                propensity_initializer = tf.constant_initializer(0.001) if self.hparams.constant_propensity_initialization else None
+                with tf.variable_scope("propensity_network", initializer=propensity_initializer,
                                                  reuse=reuse):
                     output_data = input_data
                     current_size = input_vec_size
                     output_sizes = [
-                        int((list_size+1)/2) + 1, 
-                        int((list_size+1)/4) + 1,
+                        #int((list_size+1)/2) + 1, 
+                        #int((list_size+1)/4) + 1,
                         1
                     ]
                     for i in range(len(output_sizes)):
