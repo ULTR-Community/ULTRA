@@ -22,6 +22,7 @@ def read_one_instance(feature_fin, rank_score_fin):
     return qid, features, label, score
 
 def prepare_one_set(feature_path, rank_score_path, output_path ,set_name):
+    global max_label
     #read raw data and build data map
     feature_fin = open(feature_path + set_name + '.txt')
     rank_score_fin = open(rank_score_path + set_name + '.predict')
@@ -102,6 +103,7 @@ def prepare_one_set(feature_path, rank_score_path, output_path ,set_name):
 
 
 def main():
+    global max_label
     DATA_PATH = sys.argv[1] + '/'
     INITIAL_RANK_PATH = sys.argv[2] # The path of the SVMrank outputs
     OUTPUT_PATH = sys.argv[3]
