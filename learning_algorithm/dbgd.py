@@ -55,6 +55,7 @@ class DBGD(BasicAlgorithm):
             learning_rate=0.01,                 # Learning rate.
             max_gradient_norm=5.0,            # Clip gradients to this norm.
             l2_loss=0.01,                    # Set strength for L2 regularization.
+            grad_strategy='ada',            # Select gradient strategy
         )
         print(exp_settings['learning_algorithm_hparams'])
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
@@ -105,8 +106,13 @@ class DBGD(BasicAlgorithm):
             params = [p[1] for p in noise_list]
             self.gradients = [p[0] * update_or_not for p in noise_list]
 
+            # Select optimizer
+            self.optimizer_func = tf.train.AdagradOptimizer
+            if self.hparams.grad_strategy == 'sgd':
+                self.optimizer_func = tf.train.GradientDescentOptimizer
+
             # Gradients and SGD update operation for training the model.
-            opt = tf.train.AdagradOptimizer(self.hparams.learning_rate)
+            opt = self.optimizer_func(self.hparams.learning_rate)
             if self.hparams.max_gradient_norm > 0:
                 self.clipped_gradients, self.norm = tf.clip_by_global_norm(self.gradients,
                                                                      self.hparams.max_gradient_norm)

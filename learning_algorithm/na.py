@@ -91,8 +91,13 @@ class NavieAlgorithm(BasicAlgorithm):
                 for p in params:
                     self.loss += self.hparams.l2_loss * tf.nn.l2_loss(p)
 
+            # Select optimizer
+            self.optimizer_func = tf.train.AdagradOptimizer
+            if self.hparams.grad_strategy == 'sgd':
+                self.optimizer_func = tf.train.GradientDescentOptimizer
+
             # Gradients and SGD update operation for training the model.
-            opt = tf.train.AdagradOptimizer(self.hparams.learning_rate)
+            opt = self.optimizer_func(self.hparams.learning_rate)
             self.gradients = tf.gradients(self.loss, params)
             if self.hparams.max_gradient_norm > 0:
                 self.clipped_gradients, self.norm = tf.clip_by_global_norm(self.gradients,

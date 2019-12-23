@@ -41,6 +41,8 @@ tf.app.flags.DEFINE_integer("max_list_cutoff", 0,
                             "The maximum number of top documents to consider in each rank list (0: no limit).")
 tf.app.flags.DEFINE_integer("max_train_iteration", 10000,
                             "Limit on the iterations of training (0: no limit).")
+tf.app.flags.DEFINE_integer("start_saving_iteration", 0,
+                            "The minimum number of iterations before starting to test and save models. (0: no limit).")
 tf.app.flags.DEFINE_integer("steps_per_checkpoint", 50,
                             "How many training steps to do per checkpoint.")
 
@@ -172,14 +174,15 @@ def train(exp_settings):
                 if "objective_metric" in exp_settings:
                     for x in valid_summary.value:
                         if x.tag == exp_settings["objective_metric"]:
-                            if best_perf == None or best_perf < x.simple_value:
-                                checkpoint_path = os.path.join(FLAGS.model_dir, "%s.ckpt" % exp_settings['learning_algorithm'])
-                                model.saver.save(sess, checkpoint_path, global_step=model.global_step)
-                                best_perf = x.simple_value
-                                print('Save model, valid %s:%.3f' % (x.tag, best_perf))
-                                break
+                            if current_step > FLAGS.start_saving_iteration:
+                                if best_perf == None or best_perf < x.simple_value:
+                                    checkpoint_path = os.path.join(FLAGS.model_dir, "%s.ckpt" % exp_settings['learning_algorithm'])
+                                    model.saver.save(sess, checkpoint_path, global_step=model.global_step)
+                                    best_perf = x.simple_value
+                                    print('Save model, valid %s:%.3f' % (x.tag, best_perf))
+                                    break
                 # Save checkpoint if there is no objective metic
-                if best_perf == None:
+                if best_perf == None and current_step > FLAGS.start_saving_iteration:
                     checkpoint_path = os.path.join(FLAGS.model_dir, "%s.ckpt" % exp_settings['learning_algorithm'])
                     model.saver.save(sess, checkpoint_path, global_step=model.global_step)
                 if loss == float('inf'):

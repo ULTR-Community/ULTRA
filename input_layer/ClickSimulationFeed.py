@@ -42,16 +42,19 @@ class ClickSimulationFeed(BasicInputFeed):
         """
         self.hparams = tf.contrib.training.HParams(
             click_model_json='./example/ClickModel/pbm_0.1_1.0_4_1.0.json', # the setting file for the predefined click models.
-            oracle_mode=False                                               # Set True to feed relevance labels instead of simulated clicks.
+            oracle_mode=False,                                              # Set True to feed relevance labels instead of simulated clicks.
+            dynamic_bias_eta_change=0.0,                                    # Set eta change step for dynamic bias severity in training, 0.0 means no change.
+            dynamic_bias_step_interval=1000,                                # Set how many steps to change eta for dynamic bias severity in training, 0.0 means no change.
         )
         
         print('Create simluated clicks feed')
         print(hparam_str)
         self.hparams.parse(hparam_str)
         self.click_model = None
-        with open(self.hparams.click_model_json) as fin:
-            model_desc = json.load(fin)
-            self.click_model = cm.loadModelFromJson(model_desc)
+        if not self.hparams.oracle_mode:
+            with open(self.hparams.click_model_json) as fin:
+                model_desc = json.load(fin)
+                self.click_model = cm.loadModelFromJson(model_desc)
         
         self.start_index = 0
         self.count = 1
@@ -59,6 +62,7 @@ class ClickSimulationFeed(BasicInputFeed):
         self.feature_size = model.feature_size
         self.batch_size = batch_size
         self.model = model
+        self.global_batch_count = 0
     
     def prepare_sim_clicks_with_index(self, data_set, index, docid_inputs, letor_features, labels, check_validation=True):
         i = index
@@ -146,6 +150,13 @@ class ClickSimulationFeed(BasicInputFeed):
             'letor_features' : letor_features
         }
 
+        self.global_batch_count += 1
+        if self.hparams.dynamic_bias_eta_change != 0 and not self.hparams.oracle_mode:
+            if self.global_batch_count % self.hparams.dynamic_bias_step_interval == 0:
+                self.click_model.eta += self.hparams.dynamic_bias_eta_change
+                self.click_model.setExamProb(self.click_model.eta)
+                print('Dynamically change bias severity eta to %.3f' % self.click_model.eta)
+
         return input_feed, info_map
 
     def get_next_batch(self, index, data_set, check_validation=False):
@@ -207,7 +218,6 @@ class ClickSimulationFeed(BasicInputFeed):
             'input_list' : docid_inputs,
             'click_list' : labels,
         }
-
         return input_feed, others_map
 
     def get_data_by_index(self, data_set, index, check_validation=False): 

@@ -61,6 +61,7 @@ class PairDebias(BasicAlgorithm):
         print('Build Pairwise Debiasing algorithm.')
 
         self.hparams = tf.contrib.training.HParams(
+            EM_step_size=0.05,                  # Step size for EM algorithm.
             learning_rate=0.005,                 # Learning rate.
             max_gradient_norm=5.0,            # Clip gradients to this norm.
             regulation_p=1,                 # An int specify the regularization term.
@@ -131,10 +132,10 @@ class PairDebias(BasicAlgorithm):
             # Update propensity
             self.update_propensity_op = tf.group(
                 self.t_plus.assign(
-                    (1 - self.hparams.learning_rate) * self.t_plus + self.hparams.learning_rate * tf.pow(tf.concat(t_plus_loss_list, axis=1) / t_plus_loss_list[0], 1/(self.hparams.regulation_p + 1))
+                    (1 - self.hparams.EM_step_size) * self.t_plus + self.hparams.EM_step_size * tf.pow(tf.concat(t_plus_loss_list, axis=1) / t_plus_loss_list[0], 1/(self.hparams.regulation_p + 1))
                     ), 
                 self.t_minus.assign(
-                    (1 - self.hparams.learning_rate) * self.t_minus + self.hparams.learning_rate * tf.pow(tf.concat(t_minus_loss_list, axis=1) / t_minus_loss_list[0], 1/(self.hparams.regulation_p + 1))
+                    (1 - self.hparams.EM_step_size) * self.t_minus + self.hparams.EM_step_size * tf.pow(tf.concat(t_minus_loss_list, axis=1) / t_minus_loss_list[0], 1/(self.hparams.regulation_p + 1))
                 )
             )
 
@@ -144,8 +145,13 @@ class PairDebias(BasicAlgorithm):
                 for p in params:
                     self.loss += self.hparams.l2_loss * tf.nn.l2_loss(p)
 
+            # Select optimizer
+            self.optimizer_func = tf.train.AdagradOptimizer
+            if self.hparams.grad_strategy == 'sgd':
+                self.optimizer_func = tf.train.GradientDescentOptimizer
+
             # Gradients and SGD update operation for training the model.
-            opt = tf.train.AdagradOptimizer(self.hparams.learning_rate)
+            opt = self.optimizer_func(self.hparams.learning_rate)
             self.gradients = tf.gradients(self.loss, params)
             if self.hparams.max_gradient_norm > 0:
                 self.clipped_gradients, self.norm = tf.clip_by_global_norm(self.gradients,
