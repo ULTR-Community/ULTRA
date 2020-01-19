@@ -5,5 +5,6 @@ from .ClickSimulationFeed import *
 from .DirectLabelFeed import *
 from .DeterministicOnlineSimulationFeed import *
 from .StochasticOnlineSimulationFeed import *
+from .InterleavingDeterministicOnlineSimulationFeed import *
 
 
