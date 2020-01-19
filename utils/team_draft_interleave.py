@@ -9,8 +9,8 @@ class TeamDraftInterleaving():
     def interleave(self, rankings):
         self.n_rankers = rankings.shape[0]
         k = rankings.shape[1]
-        teams = np.zeros(k)
-        multileaved = np.zeros(k)
+        teams = np.zeros(k, dtype=np.int32)
+        multileaved = np.zeros(k, dtype=np.int32)
 
         multi_i = 0
         while multi_i < k and np.all(rankings[1:, multi_i] == rankings[0, multi_i]):
