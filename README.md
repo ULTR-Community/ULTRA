@@ -5,7 +5,7 @@ Please cite the following paper when you use this toolbox:
 
 > Ai, Qingyao, Jiaxin Mao, Yiqun Liu, and W. Bruce Croft. "Unbiased learning to rank: Theory and practice." In Proceedings of the 27th ACM International Conference on Information and Knowledge Management, pp. 2305-2306. ACM, 2018.
 
-## Install
+## Get Started
 
 **Create virtual environment (optional):**
 ```
@@ -26,9 +26,6 @@ python setup.py install #use setup-gpu.py for GPU support
 cd example/toy
 bash offline_exp_pipeline.sh
 ```
-
-## Get Started
-
 
 ## Ranking Models
 
@@ -57,6 +54,22 @@ bash offline_exp_pipeline.sh
 7. [NA](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/na.py): this model is an implementation of the naive algorithm that directly train models with input labels (e.g., clicks).
 
 ## Supported Evaluation Metrics
+
+1. [MRR](https://github.com/QingyaoAi/ULTRA/blob/master/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Mean_reciprocal_rank">Mean Reciprocal Rank</a> (inherited from TF-Ranking).
+
+2. [ERR](https://github.com/QingyaoAi/ULTRA/blob/master/utils/metrics.py): the Expected Reciprocal Rank from <a href="http://olivier.chapelle.cc/pub/err.pdf">*Expected reciprocal rank for graded relevance*</a>.
+
+3. [ARP](https://github.com/QingyaoAi/ULTRA/blob/master/utils/metrics.py): the Average Relevance Position (inherited from TF-Ranking).
+
+4. [NDCG](https://github.com/QingyaoAi/ULTRA/blob/master/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Discounted_cumulative_gain">Normalized Discounted Cumulative Gain</a> (inherited from TF-Ranking).
+
+5. [DCG](https://github.com/QingyaoAi/ULTRA/blob/master/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Discounted_cumulative_gain">Discounted Cumulative Gain</a> (inherited from TF-Ranking).
+
+6. [Precision](https://github.com/QingyaoAi/ULTRA/blob/master/utils/metrics.py): the Precision (inherited from TF-Ranking).
+
+7. [MAP](https://github.com/QingyaoAi/ULTRA/blob/master/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision">Mean Average Precision</a> (inherited from TF-Ranking).
+
+8. [Ordered_Pair_Accuracy](https://github.com/QingyaoAi/ULTRA/blob/master/utils/metrics.py): the percentage of correctedly ordered pair (inherited from TF-Ranking).
 
 ## Click Simulation Guideline
 
