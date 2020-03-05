@@ -8,7 +8,26 @@ from abc import ABC, abstractmethod
 import os,sys
 import tensorflow as tf
 
+class ActivationFunctions(object):
+  """Activation Functions key strings."""
+
+  ELU = 'elu'
+
+  RELU = 'relu'
+
+  TANH = 'tanh'
+
+  SIGMOID = 'sigmoid'
+
+
 class BasicRankingModel(ABC):
+
+    ACT_FUNC_DIC = {
+        ActivationFunctions.ELU: tf.nn.elu,
+        ActivationFunctions.RELU: tf.nn.relu,
+        ActivationFunctions.TANH: tf.nn.tanh,
+        ActivationFunctions.SIGMOID: tf.nn.sigmoid
+    }
 
     @abstractmethod
     def __init__(self, hparams_str):

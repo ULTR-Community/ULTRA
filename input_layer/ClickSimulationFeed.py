@@ -19,6 +19,8 @@ import json
 import numpy as np
 from .BasicInputFeed import BasicInputFeed
 from . import click_models as cm
+sys.path.append("..")
+import utils
 
 import tensorflow as tf
 # We disable pylint because we need python3 compatibility.
@@ -40,7 +42,7 @@ class ClickSimulationFeed(BasicInputFeed):
             batch_size: the size of the batches generated in each iteration.
             hparam_str: the hyper-parameters for the input layer.
         """
-        self.hparams = tf.contrib.training.HParams(
+        self.hparams = utils.hparams.HParams(
             click_model_json='./example/ClickModel/pbm_0.1_1.0_4_1.0.json', # the setting file for the predefined click models.
             oracle_mode=False,                                              # Set True to feed relevance labels instead of simulated clicks.
             dynamic_bias_eta_change=0.0,                                    # Set eta change step for dynamic bias severity in training, 0.0 means no change.
@@ -74,14 +76,15 @@ class ClickSimulationFeed(BasicInputFeed):
             click_list = label_list
         else:
             click_list, _, _ = self.click_model.sampleClicksForOneList(list(label_list))
-            sample_count = 0
-            while check_validation and sum(click_list) == 0 and sample_count < self.MAX_SAMPLE_ROUND_NUM:
-                click_list, _, _ = self.click_model.sampleClicksForOneList(list(label_list))
-                sample_count += 1
+            #sample_count = 0
+            #while check_validation and sum(click_list) == 0 and sample_count < self.MAX_SAMPLE_ROUND_NUM:
+            #    click_list, _, _ = self.click_model.sampleClicksForOneList(list(label_list))
+            #    sample_count += 1
 
         # Check if data is valid
-        if check_validation and sum(click_list) == 0:
-            return
+        if check_validation:
+            if sum(click_list) == 0:
+                return
         base = len(letor_features)
         for x in range(self.rank_list_size):
             if data_set.initial_list[i][x] >= 0:
@@ -112,11 +115,23 @@ class ClickSimulationFeed(BasicInputFeed):
         length = len(data_set.initial_list)
         docid_inputs, letor_features, labels = [], [], []
         rank_list_idxs = []
+        '''
         for _ in range(self.batch_size):
             i = int(random.random() * length)
             rank_list_idxs.append(i)
             self.prepare_sim_clicks_with_index(data_set, i,
                                 docid_inputs, letor_features, labels, check_validation)
+        '''
+        batch_num = len(docid_inputs)
+        while len(docid_inputs) < self.batch_size:
+            i = int(random.random() * length)
+            self.prepare_sim_clicks_with_index(data_set, i,
+                                docid_inputs, letor_features, labels, check_validation)
+            if batch_num < len(docid_inputs): # new list added
+                rank_list_idxs.append(i)
+                batch_num = len(docid_inputs)
+
+
         local_batch_size = len(docid_inputs)
         letor_features_length = len(letor_features)
         for i in range(local_batch_size):

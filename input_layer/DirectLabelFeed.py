@@ -38,20 +38,20 @@ class DirectLabelFeed(BasicInputFeed):
             batch_size: the size of the batches generated in each iteration.
             hparam_str: the hyper-parameters for the input layer.
         """
-        #self.hparams = tf.contrib.training.HParams(
-        #    click_model_json='', # the setting file for the predefined click models.
-        #)
+        self.hparams = tf.contrib.training.HParams(
+            use_max_candidate_num=True, # Set to use the maximum number of candidate documents instead of a limited list size.
+        )
         
-        print('Create direct label feed')
         #print(hparam_str)
-        #self.hparams.parse(hparam_str)
+        self.hparams.parse(hparam_str)
         
         self.start_index = 0
         self.count = 1
-        self.rank_list_size = model.max_candidate_num
+        self.rank_list_size = model.max_candidate_num if self.hparams.use_max_candidate_num else model.rank_list_size
         self.feature_size = model.feature_size
         self.batch_size = batch_size
         self.model = model
+        print('Create direct label feed with list size %d with feature size %d' % (self.rank_list_size, self.feature_size))
         
     def prepare_true_labels_with_index(self, data_set, index, docid_inputs, letor_features, labels, check_validation=True):
         i = index
@@ -67,6 +67,7 @@ class DirectLabelFeed(BasicInputFeed):
                 letor_features.append(data_set.features[data_set.initial_list[i][x]])
         docid_inputs.append(list([-1 if data_set.initial_list[i][x] < 0 else base+x for x in range(self.rank_list_size)]))
         labels.append(label_list)
+        return
     
     def get_batch(self, data_set, check_validation=False):
         """Get a random batch of data, prepare for step. Typically used for training.
@@ -103,7 +104,6 @@ class DirectLabelFeed(BasicInputFeed):
             for j in range(self.rank_list_size):
                 if docid_inputs[i][j] < 0:
                     docid_inputs[i][j] = letor_features_length
-
 
         batch_docid_inputs = []
         batch_labels = []

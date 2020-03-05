@@ -3,8 +3,12 @@ from __future__ import absolute_import
 import os,sys
 import tensorflow as tf
 from .BasicRankingModel import BasicRankingModel
+from .BasicRankingModel import ActivationFunctions
+
 
 class DNN(BasicRankingModel):
+
+
     def __init__(self, hparams_str):
         """Create the network.
     
@@ -14,10 +18,14 @@ class DNN(BasicRankingModel):
 
         self.hparams = tf.contrib.training.HParams(
             hidden_layer_sizes=[512, 256, 128],        # Number of neurons in each layer of a ranking_model. 
+            activation_func='elu',                     # Type for activation function, which could be elu, relu, sigmoid, or tanh
             initializer='None'                         # Set parameter initializer
         )
         self.hparams.parse(hparams_str)
         self.initializer = None
+        self.act_func = None
+        if self.hparams.activation_func in BasicRankingModel.ACT_FUNC_DIC:
+            self.act_func = BasicRankingModel.ACT_FUNC_DIC[self.hparams.activation_func]
         if self.hparams.initializer == 'constant':
             self.initializer = tf.constant_initializer(0.001)
 
@@ -46,7 +54,7 @@ class DNN(BasicRankingModel):
                 output_data = tf.compat.v1.layers.batch_normalization(output_data, training=is_training, name="batch_normalization_%d" % j)
                 # Add activation if it is a hidden layer
                 if j != len(output_sizes)-1:
-                    output_data = tf.nn.elu(output_data)
+                    output_data = self.act_func(output_data)
                 current_size = output_sizes[j]
                 
             return tf.split(output_data, len(input_list), axis=0)
@@ -87,6 +95,6 @@ class DNN(BasicRankingModel):
                 output_data = tf.compat.v1.layers.batch_normalization(output_data, training=is_training, name="batch_normalization_%d" % j)
                 # Add activation if it is a hidden layer
                 if j != len(output_sizes)-1: 
-                    output_data = tf.nn.elu(output_data)
+                    output_data = self.act_func(output_data)
                 current_size = output_sizes[j]
             return tf.split(output_data, len(input_list), axis=0), noise_tensor_list

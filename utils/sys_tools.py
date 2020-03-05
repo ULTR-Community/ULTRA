@@ -3,6 +3,13 @@ import sys
 import traceback
 
 def find_class(class_str):
+    """Find the corresponding class based on a string of class name.
+
+      Args:
+        class_str: a string containing the name of the class
+      Raises:
+        ValueError: If there is no class with the name.
+    """
     mod_str, _sep, class_str = class_str.rpartition('.')
     __import__(mod_str)
     try:
@@ -13,4 +20,12 @@ def find_class(class_str):
                     traceback.format_exception(*sys.exc_info())))
 
 def create_object(class_str, *args, **kwargs):
+    """Find the corresponding class based on a string of class name and create an object.
+
+      Args:
+        class_str: a string containing the name of the class
+      Raises:
+        ValueError: If there is no class with the name.
+    """
     return find_class(class_str)(*args, **kwargs)
+

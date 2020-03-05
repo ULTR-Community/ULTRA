@@ -10,7 +10,6 @@ def loadModelFromJson(model_desc):
     click_model.eta = model_desc['eta']
     click_model.click_prob = model_desc['click_prob']
     click_model.exam_prob = model_desc['exam_prob']
-    click_model.setExamProb(click_model.eta)
     return click_model
 
 class ClickModel:
