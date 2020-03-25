@@ -19,7 +19,6 @@ class ActivationFunctions(object):
 
   SIGMOID = 'sigmoid'
 
-
 class BasicRankingModel(ABC):
 
     ACT_FUNC_DIC = {

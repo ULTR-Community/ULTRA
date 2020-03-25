@@ -22,18 +22,14 @@ import copy
 import itertools
 from six.moves import zip
 from tensorflow import dtypes
-
-from . import ranking_model
-
-from .BasicAlgorithm import BasicAlgorithm
-sys.path.append("..")
-import utils
+from ultra.learning_algorithm.base_algorithm import BaseAlgorithm
+import ultra.utils
 
 
 def sigmoid_prob(logits):
     return tf.sigmoid(logits - tf.reduce_mean(logits, -1, keep_dims=True))
 
-class DLA(BasicAlgorithm):
+class DLA(BaseAlgorithm):
     """The Dual Learning Algorithm for unbiased learning to rank.
 
     This class implements the Dual Learning Algorithm (DLA) based on the input layer 
@@ -53,7 +49,7 @@ class DLA(BasicAlgorithm):
         """
         print('Build DLA')
 
-        self.hparams = tf.contrib.training.HParams(
+        self.hparams = ultra.utils.hparams.HParams(
             learning_rate=0.05,                 # Learning rate.
             max_gradient_norm=5.0,            # Clip gradients to this norm.
             loss_func='click_weighted_softmax_cross_entropy',            # Select Loss function
@@ -101,7 +97,7 @@ class DLA(BasicAlgorithm):
         reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [max_candidate_num, ?] to [?, max_candidate_num]
         for metric in self.exp_settings['metrics']:
             for topn in self.exp_settings['metrics_topn']:
-                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, pad_removed_output, None)
+                metric_value = ultra.utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, pad_removed_output, None)
                 tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['eval'])
 
         if not forward_only:
@@ -159,9 +155,9 @@ class DLA(BasicAlgorithm):
             for metric in self.exp_settings['metrics']:
                 for topn in self.exp_settings['metrics_topn']:
                     list_weights = tf.reduce_mean(self.propensity_weights * clipped_labels, axis=1, keep_dims=True)
-                    metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, None)
+                    metric_value = ultra.utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, None)
                     tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train'])
-                    weighted_metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, list_weights)
+                    weighted_metric_value = ultra.utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, list_weights)
                     tf.summary.scalar('Weighted_%s_%d' % (metric, topn), weighted_metric_value, collections=['train'])
 
         self.train_summary = tf.summary.merge_all(key='train')

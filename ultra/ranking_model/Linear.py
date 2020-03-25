@@ -12,7 +12,7 @@ class Linear(BasicRankingModel):
             hparams_str: (String) The hyper-parameters used to build the network.
         """
 
-        self.hparams = tf.contrib.training.HParams(
+        self.hparams = ultra.utils.hparams.HParams(
             initializer='None'                         # Set parameter initializer
         )
         self.hparams.parse(hparams_str)

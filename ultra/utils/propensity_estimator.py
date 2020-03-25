@@ -1,8 +1,7 @@
 import os,sys
 import json, copy, random
-sys.path.append("..")
-from utils import data_utils
-from input_layer import click_models as CM
+from ultra.utils import data_utils
+from ultra.input_layer import click_models as CM
 
 class BasicPropensityEstimator:
     def __init__(self, file_name=None):

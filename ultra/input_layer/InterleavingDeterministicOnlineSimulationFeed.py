@@ -17,9 +17,9 @@ import sys
 import time
 import json
 import numpy as np
-from .BasicInputFeed import BasicInputFeed
-from . import click_models as cm
-from utils.team_draft_interleave import TeamDraftInterleaving
+from ultra.input_layer.BasicInputFeed import BasicInputFeed
+from ultra.input_layer import click_models as cm
+from ultra.utils.team_draft_interleave import TeamDraftInterleaving
 
 import tensorflow as tf
 # We disable pylint because we need python3 compatibility.
@@ -42,7 +42,7 @@ class InterleavingDeterministicOnlineSimulationFeed(BasicInputFeed):
             hparam_str: the hyper-parameters for the input layer.
             session: the current tensorflow Session (used for online learning).
         """
-        self.hparams = tf.contrib.training.HParams(
+        self.hparams = ultra.utils.hparams.HParams(
             click_model_json='./example/ClickModel/pbm_0.1_1.0_4_1.0.json', # the setting file for the predefined click models.
             oracle_mode=False,                                              # Set True to feed relevance labels instead of simulated clicks.
             dynamic_bias_eta_change=0.0,                                    # Set eta change step for dynamic bias severity in training, 0.0 means no change.

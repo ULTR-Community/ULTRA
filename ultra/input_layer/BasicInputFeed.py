@@ -14,7 +14,7 @@ import sys
 import time
 import json
 import numpy as np
-from . import click_models as cm
+import ultra.input_layer.click_models as cm
 import tensorflow as tf
 # We disable pylint because we need python3 compatibility.
 from six.moves import zip     # pylint: disable=redefined-builtin
@@ -25,7 +25,7 @@ class BasicInputFeed(ABC):
     This class implements a input layer for unbiased learning to rank experiments.
     """
     MAX_SAMPLE_ROUND_NUM = 100
-
+    
     @staticmethod
     def preprocess_data(data_set, hparam_str, exp_settings):
         """Preprocess the data for model creation based on the input feed.
@@ -36,7 +36,7 @@ class BasicInputFeed(ABC):
             exp_settings: (dictionary) The dictionary containing the model settings.
         """
         return
-    
+
     @abstractmethod
     def __init__(self, model, batch_size, hparam_str, session):
         """Create the model.

@@ -23,14 +23,10 @@ import copy
 import itertools
 from six.moves import zip
 from tensorflow import dtypes
+from ultra.learning_algorithm.base_algorithm import BaseAlgorithm
+import ultra.utils
 
-from . import ranking_model
-
-from .BasicAlgorithm import BasicAlgorithm
-sys.path.append("..")
-import utils
-
-class DBGD(BasicAlgorithm):
+class DBGD(BaseAlgorithm):
     """The Dueling Bandit Gradient Descent (DBGD) algorithm for unbiased learning to rank.
 
     This class implements the Dueling Bandit Gradient Descent (DBGD) algorithm based on the input layer 
@@ -50,7 +46,7 @@ class DBGD(BasicAlgorithm):
         """
         print('Build Dueling Bandit Gradient Descent (DBGD) algorithm.')
 
-        self.hparams = tf.contrib.training.HParams(
+        self.hparams = ultra.utils.hparams.HParams(
             noise_rate=0.5,               # The update rate for randomly sampled weights.
             learning_rate=0.01,                 # Learning rate.
             max_gradient_norm=5.0,            # Clip gradients to this norm.
@@ -83,7 +79,7 @@ class DBGD(BasicAlgorithm):
         pad_removed_output = self.remove_padding_for_metric_eval(self.docid_inputs, self.output)
         for metric in self.exp_settings['metrics']:
             for topn in self.exp_settings['metrics_topn']:
-                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, pad_removed_output, None)
+                metric_value = ultra.utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, pad_removed_output, None)
                 tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['eval'])
 
         # Build model
@@ -97,8 +93,8 @@ class DBGD(BasicAlgorithm):
             # Compute NDCG for the old ranking scores and new ranking scores
             reshaped_train_labels = tf.transpose(tf.convert_to_tensor(train_labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
             self.new_output = tf.concat(new_output_list,1)
-            previous_ndcg = utils.make_ranking_metric_fn('ndcg', self.rank_list_size)(reshaped_train_labels, train_output, None)
-            new_ndcg = utils.make_ranking_metric_fn('ndcg', self.rank_list_size)(reshaped_train_labels, self.new_output, None)
+            previous_ndcg = ultra.utils.make_ranking_metric_fn('ndcg', self.rank_list_size)(reshaped_train_labels, train_output, None)
+            new_ndcg = ultra.utils.make_ranking_metric_fn('ndcg', self.rank_list_size)(reshaped_train_labels, self.new_output, None)
             update_or_not = tf.ceil(new_ndcg - previous_ndcg)
             self.loss = 1.0 - new_ndcg
 
@@ -128,7 +124,7 @@ class DBGD(BasicAlgorithm):
             pad_removed_train_output = self.remove_padding_for_metric_eval(self.docid_inputs, train_output)
             for metric in self.exp_settings['metrics']:
                 for topn in self.exp_settings['metrics_topn']:
-                    metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, None)
+                    metric_value = ultra.utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, None)
                     tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train'])
 
         self.train_summary = tf.summary.merge_all(key='train')

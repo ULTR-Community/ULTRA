@@ -421,7 +421,8 @@ def mean_average_precision(labels,
     per_list_map = tf.math.divide_no_nan(total_precision, total_relevance)
     # per_list_weights are computed from the whole list to avoid the problem of
     # 0 when there is no relevant example in topn.
-    per_list_weights = _per_example_weights_to_per_list_weights(weights, tf.cast(tf.greater_equal(labels, 1.0), dtype=tf.float32))
+    per_list_weights = _per_example_weights_to_per_list_weights(
+        weights, tf.cast(tf.greater_equal(labels, 1.0), dtype=tf.float32))
     return tf.compat.v1.metrics.mean(per_list_map, per_list_weights)
 
 def normalized_discounted_cumulative_gain(labels,

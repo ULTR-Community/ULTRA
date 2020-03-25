@@ -28,4 +28,3 @@ def create_object(class_str, *args, **kwargs):
         ValueError: If there is no class with the name.
     """
     return find_class(class_str)(*args, **kwargs)
-

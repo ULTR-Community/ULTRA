@@ -23,12 +23,8 @@ import copy
 import itertools
 from six.moves import zip
 from tensorflow import dtypes
-
-from . import ranking_model
-
-from .BasicAlgorithm import BasicAlgorithm
-sys.path.append("..")
-import utils
+from ultra.learning_algorithm.base_algorithm import BaseAlgorithm
+import ultra.utils
 
 def selu(x):
     with tf.name_scope('selu') as scope:
@@ -36,7 +32,7 @@ def selu(x):
         scale = 1.0507009873554804934193349852946
         return scale*tf.where(x>=0.0, x, alpha*tf.nn.elu(x))
 
-class IPWrank(BasicAlgorithm):
+class IPWrank(BaseAlgorithm):
     """This class implements the training and testing of the inverse propensity weighting 
         algorithm for unbiased learning to rank.
 
@@ -56,7 +52,7 @@ class IPWrank(BasicAlgorithm):
             forward_only: Set true to conduct prediction only, false to conduct training.
         """
 
-        self.hparams = tf.contrib.training.HParams(
+        self.hparams = ultra.utils.hparams.HParams(
             propensity_estimator_type='utils.propensity_estimator.RandomizedPropensityEstimator',
             propensity_estimator_json='./example/PropensityEstimator/randomized_pbm_0.1_1.0_4_1.0.json', # the setting file for the predefined click models.
             learning_rate=0.05,                 # Learning rate.
@@ -68,7 +64,7 @@ class IPWrank(BasicAlgorithm):
         print(exp_settings['learning_algorithm_hparams'])
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
         self.exp_settings = exp_settings
-        self.propensity_estimator = utils.find_class(self.hparams.propensity_estimator_type)(self.hparams.propensity_estimator_json)
+        self.propensity_estimator = ultra.utils.find_class(self.hparams.propensity_estimator_type)(self.hparams.propensity_estimator_json)
 
         self.max_candidate_num = exp_settings['max_candidate_num']
         self.feature_size = data_set.feature_size
@@ -94,7 +90,7 @@ class IPWrank(BasicAlgorithm):
         pad_removed_output = self.remove_padding_for_metric_eval(self.docid_inputs, self.output)
         for metric in self.exp_settings['metrics']:
             for topn in self.exp_settings['metrics_topn']:
-                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, pad_removed_output, None)
+                metric_value = ultra.utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, pad_removed_output, None)
                 tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['eval'])
 
         # Gradients and SGD update operation for training the model.
@@ -151,9 +147,9 @@ class IPWrank(BasicAlgorithm):
             for metric in self.exp_settings['metrics']:
                 for topn in self.exp_settings['metrics_topn']:
                     list_weights = tf.reduce_mean(reshaped_propensity * clipped_labels, axis=1, keep_dims=True)
-                    metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, None)
+                    metric_value = ultra.utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, None)
                     tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train'])
-                    weighted_metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, list_weights)
+                    weighted_metric_value = ultra.utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, list_weights)
                     tf.summary.scalar('Weighted_%s_%d' % (metric, topn), weighted_metric_value, collections=['train'])
 
         self.train_summary = tf.summary.merge_all(key='train')

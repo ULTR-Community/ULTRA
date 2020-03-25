@@ -1,4 +1,4 @@
-"""Simulate online learning process and click data based on human annotations.
+"""Create batch data directly based on labels.
 
 See the following paper for more information on the simulation data.
     
@@ -17,123 +17,58 @@ import sys
 import time
 import json
 import numpy as np
-from .BasicInputFeed import BasicInputFeed
-from . import click_models as cm
-
 import tensorflow as tf
 # We disable pylint because we need python3 compatibility.
 from six.moves import zip     # pylint: disable=redefined-builtin
+from ultra.input_layer.BasicInputFeed import BasicInputFeed
+from ultra.input_layer import click_models as cm
+import ultra.utils
 
-class DeterministicOnlineSimulationFeed(BasicInputFeed):
-    """Simulate online learning to rank and click data based on human annotations.
+class DirectLabelFeed(BasicInputFeed):
+    """Feed data with human annotations.
 
-    This class implements a input layer for online learning to rank experiments
-    by simulating click data based on both the human relevance annotation of
-    each query-document pair and a predefined click model.
+    This class implements a input layer for unbiased learning to rank experiments
+    by directly feeding the model with the true labels of each query-document pair.
     """
 
-    def __init__(self, model, batch_size, hparam_str, session):
+    def __init__(self, model, batch_size, hparam_str, session=None):
         """Create the model.
     
         Args:
             model: (BasicModel) The model we are going to train.
             batch_size: the size of the batches generated in each iteration.
             hparam_str: the hyper-parameters for the input layer.
-            session: the current tensorflow Session (used for online learning).
         """
-        self.hparams = tf.contrib.training.HParams(
-            click_model_json='./example/ClickModel/pbm_0.1_1.0_4_1.0.json', # the setting file for the predefined click models.
-            oracle_mode=False,                                              # Set True to feed relevance labels instead of simulated clicks.
-            dynamic_bias_eta_change=0.0,                                    # Set eta change step for dynamic bias severity in training, 0.0 means no change.
-            dynamic_bias_step_interval=1000,                                # Set how many steps to change eta for dynamic bias severity in training, 0.0 means no change.
+        self.hparams = ultra.utils.hparams.HParams(
+            use_max_candidate_num=True, # Set to use the maximum number of candidate documents instead of a limited list size.
         )
         
-        print('Create online simluation feed')
-        print(hparam_str)
         self.hparams.parse(hparam_str)
-        self.click_model = None
-        with open(self.hparams.click_model_json) as fin:
-            model_desc = json.load(fin)
-            self.click_model = cm.loadModelFromJson(model_desc)
         
         self.start_index = 0
         self.count = 1
-        self.rank_list_size = model.rank_list_size
-        self.max_candidate_num = model.max_candidate_num
+        self.rank_list_size = model.max_candidate_num if self.hparams.use_max_candidate_num else model.rank_list_size
         self.feature_size = model.feature_size
         self.batch_size = batch_size
         self.model = model
-        self.session = session
-        self.global_batch_count = 0
-    
-    def prepare_true_labels_with_index(self, data_set, index, docid_inputs, letor_features, labels, check_validation=False):
+        print('Create direct label feed with list size %d with feature size %d' % (self.rank_list_size, self.feature_size))
+
+        
+    def prepare_true_labels_with_index(self, data_set, index, docid_inputs, letor_features, labels, check_validation=True):
         i = index
         # Generate label list.
-        label_list = [0 if data_set.initial_list[i][x] < 0 else data_set.labels[i][x] for x in range(self.max_candidate_num)]
+        label_list = [0 if data_set.initial_list[i][x] < 0 else data_set.labels[i][x] for x in range(self.rank_list_size)]
 
         # Check if data is valid
         if check_validation and sum(label_list) == 0:
             return
         base = len(letor_features)
-        for x in range(self.max_candidate_num):
+        for x in range(self.rank_list_size):
             if data_set.initial_list[i][x] >= 0:
                 letor_features.append(data_set.features[data_set.initial_list[i][x]])
-        docid_inputs.append(list([-1 if data_set.initial_list[i][x] < 0 else base+x for x in range(self.max_candidate_num)]))
+        docid_inputs.append(list([-1 if data_set.initial_list[i][x] < 0 else base+x for x in range(self.rank_list_size)]))
         labels.append(label_list)
-
-    def simulate_clicks_online(self, input_feed, check_validation=False):
-        """Simulate online environment by reranking documents and collect clicks.
-
-        Args:
-            input_feed: (dict) The input_feed data.
-            check_validation: (bool) Set True to ignore data with no positive labels.
-
-        Returns:
-            input_feed: a feed dictionary for the next step
-            info_map: a dictionary contain some basic information about the batch (for debugging).
-
-        """
-        # Compute ranking scores with input_feed
-        input_feed[self.model.is_training.name] = False
-        rank_scores = self.session.run([self.model.output], input_feed)[0]
-        # Rerank documents and collect clicks
-        letor_features_length = len(input_feed[self.model.letor_features.name])
-        for i in range(len(input_feed[self.model.docid_inputs[0].name])):
-            # Get valid doc index
-            valid_idx = self.max_candidate_num - 1
-            while valid_idx > -1:
-                if input_feed[self.model.docid_inputs[valid_idx].name][i] < letor_features_length: # a valid doc
-                    break
-                valid_idx -= 1
-            list_len = valid_idx + 1
-            # Rerank documents
-            scores = rank_scores[i][:list_len]
-            rerank_list = sorted(range(len(scores)), key=lambda k: scores[k], reverse=True)
-            new_docid_list = np.zeros(list_len)
-            new_label_list = np.zeros(list_len)
-            for j in range(list_len):
-                new_docid_list[j] = input_feed[self.model.docid_inputs[rerank_list[j]].name][i]
-                new_label_list[j] = input_feed[self.model.labels[rerank_list[j]].name][i]
-            # Collect clicks online
-            click_list = None
-            if self.hparams.oracle_mode:
-                click_list = new_label_list[:self.rank_list_size]
-            else:
-                click_list, _, _ = self.click_model.sampleClicksForOneList(new_label_list[:self.rank_list_size])
-                sample_count = 0
-                while check_validation and sum(click_list) == 0 and sample_count < self.MAX_SAMPLE_ROUND_NUM:
-                    click_list, _, _ = self.click_model.sampleClicksForOneList(new_label_list[:self.rank_list_size])
-                    sample_count += 1
-            # update input_feed
-            for j in range(list_len):
-                input_feed[self.model.docid_inputs[j].name][i] = new_docid_list[j]
-                if j < self.rank_list_size:
-                    input_feed[self.model.labels[j].name][i] = click_list[j] 
-                else:
-                    input_feed[self.model.labels[j].name][i] = 0
-
-        return input_feed
-        
+        return
     
     def get_batch(self, data_set, check_validation=False):
         """Get a random batch of data, prepare for step. Typically used for training.
@@ -163,16 +98,17 @@ class DeterministicOnlineSimulationFeed(BasicInputFeed):
             rank_list_idxs.append(i)
             self.prepare_true_labels_with_index(data_set, i,
                                 docid_inputs, letor_features, labels, check_validation)
+
         local_batch_size = len(docid_inputs)
         letor_features_length = len(letor_features)
         for i in range(local_batch_size):
-            for j in range(self.max_candidate_num):
+            for j in range(self.rank_list_size):
                 if docid_inputs[i][j] < 0:
                     docid_inputs[i][j] = letor_features_length
 
         batch_docid_inputs = []
         batch_labels = []
-        for length_idx in range(self.max_candidate_num):
+        for length_idx in range(self.rank_list_size):
             # Batch encoder inputs are just re-indexed docid_inputs.
             batch_docid_inputs.append(
                 np.array([docid_inputs[batch_idx][length_idx]
@@ -184,13 +120,9 @@ class DeterministicOnlineSimulationFeed(BasicInputFeed):
         # Create input feed map
         input_feed = {}
         input_feed[self.model.letor_features.name] = np.array(letor_features)
-        for l in range(self.max_candidate_num):
+        for l in range(self.rank_list_size):
             input_feed[self.model.docid_inputs[l].name] = batch_docid_inputs[l]
             input_feed[self.model.labels[l].name] = batch_labels[l]
-        
-        # Simulate online environment and collect clicks.
-        input_feed = self.simulate_clicks_online(input_feed, check_validation)
-
         # Create info_map to store other information
         info_map = {
             'rank_list_idxs' : rank_list_idxs,
@@ -198,13 +130,6 @@ class DeterministicOnlineSimulationFeed(BasicInputFeed):
             'click_list' : labels,
             'letor_features' : letor_features
         }
-
-        self.global_batch_count += 1
-        if self.hparams.dynamic_bias_eta_change != 0:
-            if self.global_batch_count % self.hparams.dynamic_bias_step_interval == 0:
-                self.click_model.eta += self.hparams.dynamic_bias_eta_change
-                self.click_model.setExamProb(self.click_model.eta)
-                print('Dynamically change bias severity eta to %.3f' % self.click_model.eta)
 
         return input_feed, info_map
 
@@ -240,14 +165,14 @@ class DeterministicOnlineSimulationFeed(BasicInputFeed):
         local_batch_size = len(docid_inputs)
         letor_features_length = len(letor_features)
         for i in range(local_batch_size):
-            for j in range(self.max_candidate_num):
+            for j in range(self.rank_list_size):
                 if docid_inputs[i][j] < 0:
                     docid_inputs[i][j] = letor_features_length
 
 
         batch_docid_inputs = []
         batch_labels = []
-        for length_idx in range(self.max_candidate_num):
+        for length_idx in range(self.rank_list_size):
             # Batch encoder inputs are just re-indexed docid_inputs.
             batch_docid_inputs.append(
                 np.array([docid_inputs[batch_idx][length_idx]
@@ -259,13 +184,9 @@ class DeterministicOnlineSimulationFeed(BasicInputFeed):
         # Create input feed map
         input_feed = {}
         input_feed[self.model.letor_features.name] = np.array(letor_features)
-        for l in range(self.max_candidate_num):
+        for l in range(self.rank_list_size):
             input_feed[self.model.docid_inputs[l].name] = batch_docid_inputs[l]
             input_feed[self.model.labels[l].name] = batch_labels[l]
-
-        # Simulate online environment and collect clicks.
-        input_feed = self.simulate_clicks_online(input_feed, check_validation)
-
         # Create others_map to store other information
         others_map = {
             'input_list' : docid_inputs,
@@ -296,13 +217,13 @@ class DeterministicOnlineSimulationFeed(BasicInputFeed):
         self.prepare_true_labels_with_index(data_set, i, docid_inputs, letor_features, labels, check_validation)
 
         letor_features_length = len(letor_features)
-        for j in range(self.max_candidate_num):
+        for j in range(self.rank_list_size):
             if docid_inputs[-1][j] < 0:
                 docid_inputs[-1][j] = letor_features_length
 
         batch_docid_inputs = []
         batch_labels = []
-        for length_idx in range(self.max_candidate_num):
+        for length_idx in range(self.rank_list_size):
             # Batch encoder inputs are just re-indexed docid_inputs.
             batch_docid_inputs.append(
                 np.array([docid_inputs[batch_idx][length_idx]
@@ -314,13 +235,9 @@ class DeterministicOnlineSimulationFeed(BasicInputFeed):
         # Create input feed map
         input_feed = {}
         input_feed[self.model.letor_features.name] = np.array(letor_features)
-        for l in range(self.max_candidate_num):
+        for l in range(self.rank_list_size):
             input_feed[self.model.docid_inputs[l].name] = batch_docid_inputs[l]
             input_feed[self.model.labels[l].name] = batch_labels[l]
-
-        # Simulate online environment and collect clicks.
-        input_feed = self.simulate_clicks_online(input_feed, check_validation)
-
         # Create others_map to store other information
         others_map = {
             'input_list' : docid_inputs,

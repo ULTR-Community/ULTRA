@@ -2,13 +2,11 @@ from __future__ import print_function
 from __future__ import absolute_import
 import os,sys
 import tensorflow as tf
-from .BasicRankingModel import BasicRankingModel
-from .BasicRankingModel import ActivationFunctions
-
+from ultra.ranking_model.BasicRankingModel import BasicRankingModel
+from ultra.ranking_model.BasicRankingModel import ActivationFunctions
+import ultra.utils
 
 class DNN(BasicRankingModel):
-
-
     def __init__(self, hparams_str):
         """Create the network.
     
@@ -16,7 +14,7 @@ class DNN(BasicRankingModel):
             hparams_str: (String) The hyper-parameters used to build the network.
         """
 
-        self.hparams = tf.contrib.training.HParams(
+        self.hparams = ultra.utils.hparams.HParams(
             hidden_layer_sizes=[512, 256, 128],        # Number of neurons in each layer of a ranking_model. 
             activation_func='elu',                     # Type for activation function, which could be elu, relu, sigmoid, or tanh
             initializer='None'                         # Set parameter initializer

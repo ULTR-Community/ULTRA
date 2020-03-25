@@ -1,8 +1,4 @@
-"""Training and testing the Pairwise Debiasing algorithm for unbiased learning to rank.
-
-See the following paper for more information on the Pairwise Debiasing algorithm.
-    
-    * Hu, Ziniu, Yang Wang, Qu Peng, and Hang Li. "Unbiased LambdaMART: An Unbiased Pairwise Learning-to-Rank Algorithm." In The World Wide Web Conference, pp. 2830-2836. ACM, 2019.
+"""The navie algorithm that directly trains ranking models with clicks.
     
 """
 
@@ -14,40 +10,15 @@ import math
 import os
 import random
 import sys
-import time
-import numpy as np
 import tensorflow as tf
 import tensorflow_ranking as tfr
-import copy
-import itertools
-from six.moves import zip
 from tensorflow import dtypes
+from ultra.learning_algorithm.base_algorithm import BaseAlgorithm
+import ultra.utils
 
-from .BasicAlgorithm import BasicAlgorithm
-sys.path.append("..")
-import utils
+class NavieAlgorithm(BaseAlgorithm):
+    """The input_layer class that directly trains ranking models with clicks.
 
-
-def get_bernoulli_sample(probs):
-    """Conduct Bernoulli sampling according to a specific probability distribution.
-
-        Args:
-            prob: (tf.Tensor) A tensor in which each element denotes a probability of 1 in a Bernoulli distribution.
-
-        Returns:
-            A Tensor of binary samples (0 or 1) with the same shape of probs.
-
-        """
-    return tf.ceil(probs - tf.random_uniform(tf.shape(probs)))
-
-class PairDebias(BasicAlgorithm):
-    """The Pairwise Debiasing algorithm for unbiased learning to rank.
-
-    This class implements the Pairwise Debiasing algorithm based on the input layer 
-    feed. See the following paper for more information.
-    
-    * Hu, Ziniu, Yang Wang, Qu Peng, and Hang Li. "Unbiased LambdaMART: An Unbiased Pairwise Learning-to-Rank Algorithm." In The World Wide Web Conference, pp. 2830-2836. ACM, 2019.
-    
     """
 
     def __init__(self, data_set, exp_settings, forward_only=False):
@@ -58,13 +29,12 @@ class PairDebias(BasicAlgorithm):
             exp_settings: (dictionary) The dictionary containing the model settings.
             forward_only: Set true to conduct prediction only, false to conduct training.
         """
-        print('Build Pairwise Debiasing algorithm.')
+        print('Build NavieAlgorithm')
 
-        self.hparams = tf.contrib.training.HParams(
-            EM_step_size=0.05,                  # Step size for EM algorithm.
-            learning_rate=0.005,                 # Learning rate.
+        self.hparams = ultra.utils.hparams.HParams(
+            learning_rate=0.05,                 # Learning rate.
             max_gradient_norm=5.0,            # Clip gradients to this norm.
-            regulation_p=1,                 # An int specify the regularization term.
+            loss_func='softmax_cross_entropy',            # Select Loss function
             l2_loss=0.0,                    # Set strength for L2 regularization.
             grad_strategy='ada',            # Select gradient strategy
         )
@@ -90,60 +60,45 @@ class PairDebias(BasicAlgorithm):
 
         self.global_step = tf.Variable(0, trainable=False)
 
+        # Build model
         self.output = self.ranking_model(self.max_candidate_num, scope='ranking_model')
+        
         reshaped_labels = tf.transpose(tf.convert_to_tensor(self.labels)) # reshape from [max_candidate_num, ?] to [?, max_candidate_num]
         pad_removed_output = self.remove_padding_for_metric_eval(self.docid_inputs, self.output)
         for metric in self.exp_settings['metrics']:
             for topn in self.exp_settings['metrics_topn']:
-                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, pad_removed_output, None)
+                metric_value = ultra.utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, pad_removed_output, None)
                 tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['eval'])
 
-        # Build unbiased pairwise loss only when it is training
         if not forward_only:
+            # Build model
             self.rank_list_size = exp_settings['train_list_cutoff']
             train_output = self.ranking_model(self.rank_list_size, scope='ranking_model')
             train_labels = self.labels[:self.rank_list_size]
-            # Build propensity parameters
-            self.t_plus = tf.Variable(tf.ones([1, self.rank_list_size]), trainable=False)
-            self.t_minus = tf.Variable(tf.ones([1, self.rank_list_size]), trainable=False)
-            self.splitted_t_plus = tf.split(self.t_plus, self.rank_list_size, axis=1)
-            self.splitted_t_minus = tf.split(self.t_minus, self.rank_list_size, axis=1)
-            for i in range(self.rank_list_size):
-                tf.summary.scalar('t_plus Probability %d' % i, tf.reduce_max(self.splitted_t_plus[i]), collections=['train'])
-                tf.summary.scalar('t_minus Probability %d' % i, tf.reduce_max(self.splitted_t_minus[i]), collections=['train'])
 
-            # Build pairwise loss based on clicks (0 for unclick, 1 for click)
-            output_list = tf.split(train_output, self.rank_list_size, axis=1)
-            t_plus_loss_list = [0.0 for _ in range(self.rank_list_size)]
-            t_minus_loss_list = [0.0 for _ in range(self.rank_list_size)]
-            self.loss = 0.0
-            for i in range(self.rank_list_size):
-                for j in range(self.rank_list_size):
-                    if i == j:
-                        continue
-                    valid_pair_mask = tf.math.minimum(tf.ones_like(self.labels[i]), tf.nn.relu(self.labels[i] - self.labels[j]))
-                    pair_loss = tf.reduce_sum(
-                        valid_pair_mask * self.pairwise_cross_entropy_loss(output_list[i], output_list[j])
-                    )
-                    t_plus_loss_list[i] += pair_loss / self.splitted_t_minus[j]
-                    t_minus_loss_list[j] += pair_loss / self.splitted_t_plus[i]
-                    self.loss += pair_loss / self.splitted_t_plus[i] / self.splitted_t_minus[j]
+            tf.summary.scalar('Max_output_score', tf.reduce_max(train_output), collections=['train'])
+            tf.summary.scalar('Min_output_score', tf.reduce_min(train_output), collections=['train'])
 
-            # Update propensity
-            self.update_propensity_op = tf.group(
-                self.t_plus.assign(
-                    (1 - self.hparams.EM_step_size) * self.t_plus + self.hparams.EM_step_size * tf.pow(tf.concat(t_plus_loss_list, axis=1) / t_plus_loss_list[0], 1/(self.hparams.regulation_p + 1))
-                    ), 
-                self.t_minus.assign(
-                    (1 - self.hparams.EM_step_size) * self.t_minus + self.hparams.EM_step_size * tf.pow(tf.concat(t_minus_loss_list, axis=1) / t_minus_loss_list[0], 1/(self.hparams.regulation_p + 1))
-                )
-            )
+            reshaped_train_labels = tf.transpose(tf.convert_to_tensor(train_labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
+            pad_removed_train_output = self.remove_padding_for_metric_eval(self.docid_inputs, train_output)
 
-            # Add l2 loss
+            tf.summary.scalar('Max_output_score_without_pad', tf.reduce_max(pad_removed_train_output), collections=['train'])
+            tf.summary.scalar('Min_output_score_without_pad', tf.reduce_min(pad_removed_train_output), collections=['train'])
+
+            self.loss = None
+            if self.hparams.loss_func == 'sigmoid_cross_entropy':
+                self.loss = self.sigmoid_loss(pad_removed_train_output, reshaped_train_labels)
+            elif self.hparams.loss_func == 'pairwise_loss':
+                self.loss = self.pairwise_loss(pad_removed_train_output, reshaped_train_labels)
+            else:
+                self.loss = self.softmax_loss(pad_removed_train_output, reshaped_train_labels)
             params = tf.trainable_variables()
             if self.hparams.l2_loss > 0:
+                loss_l2 = 0.0
                 for p in params:
-                    self.loss += self.hparams.l2_loss * tf.nn.l2_loss(p)
+                    loss_l2 += tf.nn.l2_loss(p)
+                tf.summary.scalar('L2 Loss', tf.reduce_mean(loss_l2), collections=['train'])
+                self.loss += self.hparams.l2_loss * loss_l2
 
             # Select optimizer
             self.optimizer_func = tf.train.AdagradOptimizer
@@ -165,18 +120,85 @@ class PairDebias(BasicAlgorithm):
                                              global_step=self.global_step)
             tf.summary.scalar('Learning Rate', self.learning_rate, collections=['train'])
             tf.summary.scalar('Loss', tf.reduce_mean(self.loss), collections=['train'])
-
-            reshaped_train_labels = tf.transpose(tf.convert_to_tensor(train_labels)) # reshape from [rank_list_size, ?] to [?, rank_list_size]
             pad_removed_train_output = self.remove_padding_for_metric_eval(self.docid_inputs, train_output)
             for metric in self.exp_settings['metrics']:
                 for topn in self.exp_settings['metrics_topn']:
-                    metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, None)
+                    metric_value = ultra.utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, None)
                     tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train'])
-        
-
+            
         self.train_summary = tf.summary.merge_all(key='train')
         self.eval_summary = tf.summary.merge_all(key='eval')
         self.saver = tf.train.Saver(tf.global_variables())
+
+    def sigmoid_loss(self, output, labels, name=None):
+        """Computes pointwise sigmoid loss without propensity weighting.
+
+        Args:
+            output: (tf.Tensor) A tensor with shape [batch_size, list_size]. Each value is
+            the ranking score of the corresponding example.
+            labels: (tf.Tensor) A tensor of the same shape as `output`. A value >= 1 means a
+            relevant example.
+            propensity: No use. 
+            name: A string used as the name for this variable scope.
+
+        Returns:
+            (tf.Tensor) A single value tensor containing the loss.
+        """
+
+        loss = None
+        with tf.name_scope(name, "softmax_loss",[output]):
+            label_dis = tf.math.minimum(labels, 1)
+            loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=label_dis, logits=output)
+        return tf.reduce_mean(tf.reduce_sum(loss, axis=1))
+
+    def pairwise_loss(self, output, labels, name=None):
+        """Computes pairwise entropy loss.
+
+        Args:
+            output: (tf.Tensor) A tensor with shape [batch_size, list_size]. Each value is
+            the ranking score of the corresponding example.
+            labels: (tf.Tensor) A tensor of the same shape as `output`. A value >= 1 means a
+                relevant example.
+            name: A string used as the name for this variable scope.
+
+        Returns:
+            (tf.Tensor) A single value tensor containing the loss.
+        """
+        loss = None
+        with tf.name_scope(name, "pairwise_loss",[output]):
+            sliced_output = tf.unstack(output, axis=1)
+            sliced_label = tf.unstack(labels, axis=1)
+            for i in range(len(sliced_output)):
+                for j in range(i+1, len(sliced_output)):
+                    cur_label_weight = tf.math.sign(sliced_label[i] - sliced_label[j])
+                    cur_pair_loss = -tf.exp(sliced_output[i]) / (tf.exp(sliced_output[i]) + tf.exp(sliced_output[j]))
+                    if loss == None:
+                        loss = cur_label_weight * cur_pair_loss
+                    loss += cur_label_weight * cur_pair_loss
+        batch_size = tf.shape(labels[0])[0]
+        return tf.reduce_sum(loss) / tf.cast(batch_size, dtypes.float32) #/ (tf.reduce_sum(propensity_weights)+1)
+
+
+    def softmax_loss(self, output, labels, name=None):
+        """Computes listwise softmax loss without propensity weighting.
+
+        Args:
+            output: (tf.Tensor) A tensor with shape [batch_size, list_size]. Each value is
+            the ranking score of the corresponding example.
+            labels: (tf.Tensor) A tensor of the same shape as `output`. A value >= 1 means a
+            relevant example.
+            propensity: No use. 
+            name: A string used as the name for this variable scope.
+
+        Returns:
+            (tf.Tensor) A single value tensor containing the loss.
+        """
+
+        loss = None
+        with tf.name_scope(name, "softmax_loss",[output]):
+            label_dis = labels / tf.reduce_sum(labels, 1, keep_dims=True)
+            loss = tf.nn.softmax_cross_entropy_with_logits(logits=output, labels=label_dis) * tf.reduce_sum(labels, 1)
+        return tf.reduce_sum(loss) / tf.reduce_sum(labels)
 
     def step(self, session, input_feed, forward_only):
         """Run a step of the model feeding the given inputs.
@@ -198,7 +220,6 @@ class PairDebias(BasicAlgorithm):
             output_feed = [
                             self.updates,    # Update Op that does SGD.
                             self.loss,    # Loss for this batch.
-                            self.update_propensity_op,
                             self.train_summary # Summarize statistics.
                             ]    
         else:

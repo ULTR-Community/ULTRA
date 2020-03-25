@@ -22,10 +22,8 @@ import copy
 import itertools
 from six.moves import zip
 from tensorflow import dtypes
-
-from .BasicAlgorithm import BasicAlgorithm
-sys.path.append("..")
-import utils
+from ultra.learning_algorithm.base_algorithm import BaseAlgorithm
+import ultra.utils
 
 
 def get_bernoulli_sample(probs):
@@ -40,7 +38,7 @@ def get_bernoulli_sample(probs):
         """
     return tf.ceil(probs - tf.random_uniform(tf.shape(probs)))
 
-class RegressionEM(BasicAlgorithm):
+class RegressionEM(BaseAlgorithm):
     """The regression-based EM algorithm for unbiased learning to rank.
 
     This class implements the regression-based EM algorithm based on the input layer 
@@ -64,7 +62,7 @@ class RegressionEM(BasicAlgorithm):
         """
         print('Build Regression-based EM algorithm.')
 
-        self.hparams = tf.contrib.training.HParams(
+        self.hparams = ultra.utils.hparams.HParams(
             EM_step_size=0.05,                  # Step size for EM algorithm.
             learning_rate=0.05,                 # Learning rate.
             max_gradient_norm=5.0,            # Clip gradients to this norm.
@@ -100,7 +98,7 @@ class RegressionEM(BasicAlgorithm):
         pad_removed_output = self.remove_padding_for_metric_eval(self.docid_inputs, self.output)
         for metric in self.exp_settings['metrics']:
             for topn in self.exp_settings['metrics_topn']:
-                metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, pad_removed_output, None)
+                metric_value = ultra.utils.make_ranking_metric_fn(metric, topn)(reshaped_labels, pad_removed_output, None)
                 tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['eval'])
 
         if not forward_only:
@@ -178,9 +176,9 @@ class RegressionEM(BasicAlgorithm):
             for metric in self.exp_settings['metrics']:
                 for topn in self.exp_settings['metrics_topn']:
                     list_weights = tf.reduce_mean(self.propensity_weights * clipped_labels, axis=1, keep_dims=True)
-                    metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, None)
+                    metric_value = ultra.utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, None)
                     tf.summary.scalar('%s_%d' % (metric, topn), metric_value, collections=['train'])
-                    weighted_metric_value = utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, list_weights)
+                    weighted_metric_value = ultra.utils.make_ranking_metric_fn(metric, topn)(reshaped_train_labels, pad_removed_train_output, list_weights)
                     tf.summary.scalar('Weighted_%s_%d' % (metric, topn), weighted_metric_value, collections=['train'])
 
         self.train_summary = tf.summary.merge_all(key='train')
