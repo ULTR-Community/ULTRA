@@ -33,7 +33,7 @@ class DLA(BaseAlgorithm):
     """The Dual Learning Algorithm for unbiased learning to rank.
 
     This class implements the Dual Learning Algorithm (DLA) based on the input layer 
-    feed. See the following paper for more information on the simulation data.
+    feed. See the following paper for more information on the algorithm.
     
     * Qingyao Ai, Keping Bi, Cheng Luo, Jiafeng Guo, W. Bruce Croft. 2018. Unbiased Learning to Rank with Unbiased Propensity Estimation. In Proceedings of SIGIR '18
     

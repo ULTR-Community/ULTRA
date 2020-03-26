@@ -42,7 +42,7 @@ class PairDebias(BaseAlgorithm):
     """The Pairwise Debiasing algorithm for unbiased learning to rank.
 
     This class implements the Pairwise Debiasing algorithm based on the input layer 
-    feed. See the following paper for more information.
+    feed. See the following paper for more information on the algorithm.
     
     * Hu, Ziniu, Yang Wang, Qu Peng, and Hang Li. "Unbiased LambdaMART: An Unbiased Pairwise Learning-to-Rank Algorithm." In The World Wide Web Conference, pp. 2830-2836. ACM, 2019.
     

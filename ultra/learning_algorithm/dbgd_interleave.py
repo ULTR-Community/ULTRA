@@ -30,7 +30,7 @@ class DBGDInterleave(BaseAlgorithm):
     """The Dueling Bandit Gradient Descent (DBGD) algorithm for unbiased learning to rank.
 
     This class implements the Dueling Bandit Gradient Descent (DBGD) algorithm based on the input layer 
-    feed. See the following paper for more information on the simulation data.
+    feed. See the following paper for more information on the algorithm.
     
     * Yisong Yue and Thorsten Joachims. 2009. Interactively optimizing information retrieval systems as a dueling bandits problem. In ICML. 1201–1208.
     

@@ -33,10 +33,9 @@ def selu(x):
         return scale*tf.where(x>=0.0, x, alpha*tf.nn.elu(x))
 
 class IPWrank(BaseAlgorithm):
-    """This class implements the training and testing of the inverse propensity weighting 
-        algorithm for unbiased learning to rank.
-
-    See the following paper for more information on the dual learning algorithm.
+    """The Inverse Propensity Weighting algorithm for unbiased learning to rank.
+    
+    This class implements the training and testing of the Inverse Propensity Weighting algorithm for unbiased learning to rank. See the following paper for more information on the algorithm.
     
     * Xuanhui Wang, Michael Bendersky, Donald Metzler, Marc Najork. 2016. Learning to Rank with Selection Bias in Personal Search. In Proceedings of SIGIR '16
     * Thorsten Joachims, Adith Swaminathan, Tobias Schnahel. 2017. Unbiased Learning-to-Rank with Biased Feedback. In Proceedings of WSDM '17

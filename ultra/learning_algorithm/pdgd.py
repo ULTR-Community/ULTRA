@@ -29,7 +29,7 @@ class PDGD(BaseAlgorithm):
     """The Pairwise Differentiable Gradient Descent (PDGD) algorithm for unbiased learning to rank.
 
     This class implements the Pairwise Differentiable Gradient Descent (PDGD) algorithm based on the input layer 
-    feed. See the following paper for more information on the simulation data.
+    feed. See the following paper for more information on the algorithm.
     
     * Oosterhuis, Harrie, and Maarten de Rijke. "Differentiable unbiased online learning to rank." In Proceedings of the 27th ACM International Conference on Information and Knowledge Management, pp. 1293-1302. ACM, 2018.
     

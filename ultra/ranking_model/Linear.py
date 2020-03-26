@@ -2,9 +2,9 @@ from __future__ import print_function
 from __future__ import absolute_import
 import os,sys
 import tensorflow as tf
-from .BasicRankingModel import BasicRankingModel
+from ultra.ranking_model import BaseRankingModel
 
-class Linear(BasicRankingModel):
+class Linear(BaseRankingModel):
     def __init__(self, hparams_str):
         """Create the network.
     

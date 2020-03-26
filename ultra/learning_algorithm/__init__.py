@@ -7,6 +7,10 @@ from .regression_EM import *
 from .pdgd import *
 from .dbgd import *
 from .pairwise_debias import *
-from .na import *
+from .navie_algorithm import *
 from .dbgd_interleave import *
 
+def list_available() -> list:
+    from .base_algorithm import BaseAlgorithm
+    from ultra.utils.sys_tools import list_recursive_concrete_subclasses
+    return list_recursive_concrete_subclasses(BaseAlgorithm)

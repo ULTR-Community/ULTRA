@@ -14,11 +14,20 @@
 #
 import os
 import sys
+sys.path.insert(0, os.path.abspath('../..'))
 sys.path.insert(0, os.path.abspath('../../ultra'))
-#sys.path.insert(0, os.path.abspath('../../ULTRA/input_layer'))
-#sys.path.insert(0, os.path.abspath('../../ULTRA/learning_algorithm'))
-#sys.path.insert(0, os.path.abspath('../../ULTRA/utils'))
+sys.path.insert(0, os.path.abspath('../../ultra/input_layer'))
+sys.path.insert(0, os.path.abspath('../../ultra/learning_algorithm'))
+sys.path.insert(0, os.path.abspath('../../ultra/ranking_model'))
+sys.path.insert(0, os.path.abspath('../../ultra/utils'))
 
+def skip(app, what, name, obj, would_skip, options):
+    if name == "__init__":
+        return False
+    return would_skip
+
+def setup(app):
+    app.connect("autodoc-skip-member", skip)
 
 # -- Project information -----------------------------------------------------
 
@@ -149,7 +158,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'ULTRA', 'ULTRA Documentation',
+    (master_doc, 'ultra', 'ULTRA Documentation',
      [author], 1)
 ]
 

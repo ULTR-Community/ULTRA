@@ -17,14 +17,14 @@ import sys
 import time
 import json
 import numpy as np
-from ultra.input_layer.BasicInputFeed import BasicInputFeed
+from ultra.input_layer import BaseInputFeed
 from ultra.input_layer import click_models as cm
-import ultra.utils
+
 import tensorflow as tf
 # We disable pylint because we need python3 compatibility.
 from six.moves import zip     # pylint: disable=redefined-builtin
 
-class DeterministicOnlineSimulationFeed(BasicInputFeed):
+class StochasticOnlineSimulationFeed(BaseInputFeed):
     """Simulate online learning to rank and click data based on human annotations.
 
     This class implements a input layer for online learning to rank experiments
@@ -43,6 +43,7 @@ class DeterministicOnlineSimulationFeed(BasicInputFeed):
         """
         self.hparams = ultra.utils.hparams.HParams(
             click_model_json='./example/ClickModel/pbm_0.1_1.0_4_1.0.json', # the setting file for the predefined click models.
+            tau=1,                                                          # Scalar for the probability distribution.
             oracle_mode=False,                                              # Set True to feed relevance labels instead of simulated clicks.
             dynamic_bias_eta_change=0.0,                                    # Set eta change step for dynamic bias severity in training, 0.0 means no change.
             dynamic_bias_step_interval=1000,                                # Set how many steps to change eta for dynamic bias severity in training, 0.0 means no change.
@@ -55,7 +56,6 @@ class DeterministicOnlineSimulationFeed(BasicInputFeed):
         with open(self.hparams.click_model_json) as fin:
             model_desc = json.load(fin)
             self.click_model = cm.loadModelFromJson(model_desc)
-        
         self.start_index = 0
         self.count = 1
         self.rank_list_size = model.rank_list_size
@@ -106,9 +106,23 @@ class DeterministicOnlineSimulationFeed(BasicInputFeed):
                     break
                 valid_idx -= 1
             list_len = valid_idx + 1
+            # Sample document ranking
+            scores = np.array(rank_scores[i][:list_len])
+            scores = scores - max(scores)
+            exp_scores=np.exp(self.hparams.tau * scores)
+            probs = exp_scores/np.sum(exp_scores)
+            rerank_list= np.random.choice(np.arange(list_len),
+                                                    replace=False,
+                                                    p=probs,
+                                                    size=np.count_nonzero(probs))
+            # Append unselected documents to the end
+            used_indexs = set(rerank_list)
+            unused_indexs = []
+            for tmp_index in range(list_len):
+                if tmp_index not in used_indexs:
+                    unused_indexs.append(tmp_index)
+            rerank_list = np.append(rerank_list, unused_indexs).astype(int)
             # Rerank documents
-            scores = rank_scores[i][:list_len]
-            rerank_list = sorted(range(len(scores)), key=lambda k: scores[k], reverse=True)
             new_docid_list = np.zeros(list_len)
             new_label_list = np.zeros(list_len)
             for j in range(list_len):

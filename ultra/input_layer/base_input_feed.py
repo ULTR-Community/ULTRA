@@ -19,7 +19,7 @@ import tensorflow as tf
 # We disable pylint because we need python3 compatibility.
 from six.moves import zip     # pylint: disable=redefined-builtin
 
-class BasicInputFeed(ABC):
+class BaseInputFeed(ABC):
     """
 
     This class implements a input layer for unbiased learning to rank experiments.

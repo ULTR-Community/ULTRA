@@ -17,7 +17,7 @@ from ultra.learning_algorithm.base_algorithm import BaseAlgorithm
 import ultra.utils
 
 class NavieAlgorithm(BaseAlgorithm):
-    """The input_layer class that directly trains ranking models with clicks.
+    """The navie algorithm that directly trains ranking models with input labels.
 
     """
 

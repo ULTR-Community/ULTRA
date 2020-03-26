@@ -2,11 +2,11 @@ from __future__ import print_function
 from __future__ import absolute_import
 import os,sys
 import tensorflow as tf
-from ultra.ranking_model.BasicRankingModel import BasicRankingModel
-from ultra.ranking_model.BasicRankingModel import ActivationFunctions
+from ultra.ranking_model import BaseRankingModel
+from ultra.ranking_model import ActivationFunctions
 import ultra.utils
 
-class DNN(BasicRankingModel):
+class DNN(BaseRankingModel):
     def __init__(self, hparams_str):
         """Create the network.
     
@@ -22,8 +22,8 @@ class DNN(BasicRankingModel):
         self.hparams.parse(hparams_str)
         self.initializer = None
         self.act_func = None
-        if self.hparams.activation_func in BasicRankingModel.ACT_FUNC_DIC:
-            self.act_func = BasicRankingModel.ACT_FUNC_DIC[self.hparams.activation_func]
+        if self.hparams.activation_func in BaseRankingModel.ACT_FUNC_DIC:
+            self.act_func = BaseRankingModel.ACT_FUNC_DIC[self.hparams.activation_func]
         if self.hparams.initializer == 'constant':
             self.initializer = tf.constant_initializer(0.001)
 
