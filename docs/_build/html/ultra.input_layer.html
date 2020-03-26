@@ -1,0 +1,440 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ultra.input_layer package &mdash; ULTRA 0.2beta documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ultra.learning_algorithm package" href="ultra.learning_algorithm.html" />
+    <link rel="prev" title="ultra package" href="ultra.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ULTRA
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">ultra</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="ultra.html">ultra package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="ultra.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">ultra.input_layer package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultra.learning_algorithm.html">ultra.learning_algorithm package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultra.ranking_model.html">ultra.ranking_model package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultra.utils.html">ultra.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ultra.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ULTRA</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">ultra</a> &raquo;</li>
+        
+          <li><a href="ultra.html">ultra package</a> &raquo;</li>
+        
+      <li>ultra.input_layer package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/ultra.input_layer.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="ultra-input-layer-package">
+<h1>ultra.input_layer package<a class="headerlink" href="#ultra-input-layer-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="ultra-input-layer-base-input-feed-module">
+<h2>ultra.input_layer.base_input_feed module<a class="headerlink" href="#ultra-input-layer-base-input-feed-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ultra.input_layer.click_models">
+<span id="ultra-input-layer-click-models-module"></span><h2>ultra.input_layer.click_models module<a class="headerlink" href="#module-ultra.input_layer.click_models" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ultra.input_layer.click_models.CascadeModel">
+<em class="property">class </em><code class="sig-prename descclassname">ultra.input_layer.click_models.</code><code class="sig-name descname">CascadeModel</code><span class="sig-paren">(</span><em class="sig-param">neg_click_prob=0.0</em>, <em class="sig-param">pos_click_prob=1.0</em>, <em class="sig-param">relevance_grading_num=1</em>, <em class="sig-param">eta=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.CascadeModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ultra.input_layer.click_models.ClickModel" title="ultra.input_layer.click_models.ClickModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultra.input_layer.click_models.ClickModel</span></code></a></p>
+<dl class="method">
+<dt id="ultra.input_layer.click_models.CascadeModel.estimatePropensityWeightsForOneList">
+<code class="sig-name descname">estimatePropensityWeightsForOneList</code><span class="sig-paren">(</span><em class="sig-param">click_list</em>, <em class="sig-param">use_non_clicked_data=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.CascadeModel.estimatePropensityWeightsForOneList" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.CascadeModel.getExamProb">
+<code class="sig-name descname">getExamProb</code><span class="sig-paren">(</span><em class="sig-param">rank</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.CascadeModel.getExamProb" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.CascadeModel.model_name">
+<em class="property">property </em><code class="sig-name descname">model_name</code><a class="headerlink" href="#ultra.input_layer.click_models.CascadeModel.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.CascadeModel.sampleClick">
+<code class="sig-name descname">sampleClick</code><span class="sig-paren">(</span><em class="sig-param">rank</em>, <em class="sig-param">relevance_label</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.CascadeModel.sampleClick" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.CascadeModel.sampleClicksForOneList">
+<code class="sig-name descname">sampleClicksForOneList</code><span class="sig-paren">(</span><em class="sig-param">label_list</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.CascadeModel.sampleClicksForOneList" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.CascadeModel.setExamProb">
+<code class="sig-name descname">setExamProb</code><span class="sig-paren">(</span><em class="sig-param">eta</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.CascadeModel.setExamProb" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ultra.input_layer.click_models.ClickModel">
+<em class="property">class </em><code class="sig-prename descclassname">ultra.input_layer.click_models.</code><code class="sig-name descname">ClickModel</code><span class="sig-paren">(</span><em class="sig-param">neg_click_prob=0.0</em>, <em class="sig-param">pos_click_prob=1.0</em>, <em class="sig-param">relevance_grading_num=1</em>, <em class="sig-param">eta=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.ClickModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="ultra.input_layer.click_models.ClickModel.estimatePropensityWeightsForOneList">
+<code class="sig-name descname">estimatePropensityWeightsForOneList</code><span class="sig-paren">(</span><em class="sig-param">click_list</em>, <em class="sig-param">use_non_clicked_data=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.ClickModel.estimatePropensityWeightsForOneList" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.ClickModel.getModelJson">
+<code class="sig-name descname">getModelJson</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.ClickModel.getModelJson" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.ClickModel.model_name">
+<em class="property">property </em><code class="sig-name descname">model_name</code><a class="headerlink" href="#ultra.input_layer.click_models.ClickModel.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.ClickModel.sampleClicksForOneList">
+<code class="sig-name descname">sampleClicksForOneList</code><span class="sig-paren">(</span><em class="sig-param">label_list</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.ClickModel.sampleClicksForOneList" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.ClickModel.setClickProb">
+<code class="sig-name descname">setClickProb</code><span class="sig-paren">(</span><em class="sig-param">neg_click_prob</em>, <em class="sig-param">pos_click_prob</em>, <em class="sig-param">relevance_grading_num</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.ClickModel.setClickProb" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.ClickModel.setExamProb">
+<code class="sig-name descname">setExamProb</code><span class="sig-paren">(</span><em class="sig-param">eta</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.ClickModel.setExamProb" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ultra.input_layer.click_models.PositionBiasedModel">
+<em class="property">class </em><code class="sig-prename descclassname">ultra.input_layer.click_models.</code><code class="sig-name descname">PositionBiasedModel</code><span class="sig-paren">(</span><em class="sig-param">neg_click_prob=0.0</em>, <em class="sig-param">pos_click_prob=1.0</em>, <em class="sig-param">relevance_grading_num=1</em>, <em class="sig-param">eta=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.PositionBiasedModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ultra.input_layer.click_models.ClickModel" title="ultra.input_layer.click_models.ClickModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultra.input_layer.click_models.ClickModel</span></code></a></p>
+<dl class="method">
+<dt id="ultra.input_layer.click_models.PositionBiasedModel.estimatePropensityWeightsForOneList">
+<code class="sig-name descname">estimatePropensityWeightsForOneList</code><span class="sig-paren">(</span><em class="sig-param">click_list</em>, <em class="sig-param">use_non_clicked_data=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.PositionBiasedModel.estimatePropensityWeightsForOneList" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.PositionBiasedModel.getExamProb">
+<code class="sig-name descname">getExamProb</code><span class="sig-paren">(</span><em class="sig-param">rank</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.PositionBiasedModel.getExamProb" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.PositionBiasedModel.model_name">
+<em class="property">property </em><code class="sig-name descname">model_name</code><a class="headerlink" href="#ultra.input_layer.click_models.PositionBiasedModel.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.PositionBiasedModel.sampleClick">
+<code class="sig-name descname">sampleClick</code><span class="sig-paren">(</span><em class="sig-param">rank</em>, <em class="sig-param">relevance_label</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.PositionBiasedModel.sampleClick" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.PositionBiasedModel.sampleClicksForOneList">
+<code class="sig-name descname">sampleClicksForOneList</code><span class="sig-paren">(</span><em class="sig-param">label_list</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.PositionBiasedModel.sampleClicksForOneList" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.PositionBiasedModel.setExamProb">
+<code class="sig-name descname">setExamProb</code><span class="sig-paren">(</span><em class="sig-param">eta</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.PositionBiasedModel.setExamProb" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ultra.input_layer.click_models.UserBrowsingModel">
+<em class="property">class </em><code class="sig-prename descclassname">ultra.input_layer.click_models.</code><code class="sig-name descname">UserBrowsingModel</code><span class="sig-paren">(</span><em class="sig-param">neg_click_prob=0.0</em>, <em class="sig-param">pos_click_prob=1.0</em>, <em class="sig-param">relevance_grading_num=1</em>, <em class="sig-param">eta=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.UserBrowsingModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ultra.input_layer.click_models.ClickModel" title="ultra.input_layer.click_models.ClickModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultra.input_layer.click_models.ClickModel</span></code></a></p>
+<dl class="method">
+<dt id="ultra.input_layer.click_models.UserBrowsingModel.estimatePropensityWeightsForOneList">
+<code class="sig-name descname">estimatePropensityWeightsForOneList</code><span class="sig-paren">(</span><em class="sig-param">click_list</em>, <em class="sig-param">use_non_clicked_data=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.UserBrowsingModel.estimatePropensityWeightsForOneList" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.UserBrowsingModel.getExamProb">
+<code class="sig-name descname">getExamProb</code><span class="sig-paren">(</span><em class="sig-param">rank</em>, <em class="sig-param">last_click_rank</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.UserBrowsingModel.getExamProb" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.UserBrowsingModel.model_name">
+<em class="property">property </em><code class="sig-name descname">model_name</code><a class="headerlink" href="#ultra.input_layer.click_models.UserBrowsingModel.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.UserBrowsingModel.sampleClick">
+<code class="sig-name descname">sampleClick</code><span class="sig-paren">(</span><em class="sig-param">rank</em>, <em class="sig-param">last_click_rank</em>, <em class="sig-param">relevance_label</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.UserBrowsingModel.sampleClick" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.UserBrowsingModel.sampleClicksForOneList">
+<code class="sig-name descname">sampleClicksForOneList</code><span class="sig-paren">(</span><em class="sig-param">label_list</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.UserBrowsingModel.sampleClicksForOneList" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_models.UserBrowsingModel.setExamProb">
+<code class="sig-name descname">setExamProb</code><span class="sig-paren">(</span><em class="sig-param">eta</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.UserBrowsingModel.setExamProb" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="ultra.input_layer.click_models.loadModelFromJson">
+<code class="sig-prename descclassname">ultra.input_layer.click_models.</code><code class="sig-name descname">loadModelFromJson</code><span class="sig-paren">(</span><em class="sig-param">model_desc</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.loadModelFromJson" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ultra.input_layer.click_models.main">
+<code class="sig-prename descclassname">ultra.input_layer.click_models.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ultra.input_layer.click_models.test_initialization">
+<code class="sig-prename descclassname">ultra.input_layer.click_models.</code><code class="sig-name descname">test_initialization</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.test_initialization" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ultra.input_layer.click_models.test_load_from_file">
+<code class="sig-prename descclassname">ultra.input_layer.click_models.</code><code class="sig-name descname">test_load_from_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_models.test_load_from_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="ultra-input-layer-click-simulation-feed-module">
+<h2>ultra.input_layer.click_simulation_feed module<a class="headerlink" href="#ultra-input-layer-click-simulation-feed-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="ultra-input-layer-deterministic-online-simulation-feed-module">
+<h2>ultra.input_layer.deterministic_online_simulation_feed module<a class="headerlink" href="#ultra-input-layer-deterministic-online-simulation-feed-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="ultra-input-layer-direct-label-feed-module">
+<h2>ultra.input_layer.direct_label_feed module<a class="headerlink" href="#ultra-input-layer-direct-label-feed-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="ultra-input-layer-interleaving-deterministic-online-simulation-feed-module">
+<h2>ultra.input_layer.interleaving_deterministic_online_simulation_feed module<a class="headerlink" href="#ultra-input-layer-interleaving-deterministic-online-simulation-feed-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="ultra-input-layer-stochastic-online-simulation-feed-module">
+<h2>ultra.input_layer.stochastic_online_simulation_feed module<a class="headerlink" href="#ultra-input-layer-stochastic-online-simulation-feed-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="ultra.learning_algorithm.html" class="btn btn-neutral float-right" title="ultra.learning_algorithm package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="ultra.html" class="btn btn-neutral float-left" title="ultra package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, ULTRA
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,656 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ultra.utils package &mdash; ULTRA 0.2beta documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="ultra.ranking_model package" href="ultra.ranking_model.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ULTRA
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">ultra</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="ultra.html">ultra package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="ultra.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="ultra.input_layer.html">ultra.input_layer package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultra.learning_algorithm.html">ultra.learning_algorithm package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultra.ranking_model.html">ultra.ranking_model package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">ultra.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ultra.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ULTRA</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">ultra</a> &raquo;</li>
+        
+          <li><a href="ultra.html">ultra package</a> &raquo;</li>
+        
+      <li>ultra.utils package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/ultra.utils.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="ultra-utils-package">
+<h1>ultra.utils package<a class="headerlink" href="#ultra-utils-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ultra.utils.data_utils">
+<span id="ultra-utils-data-utils-module"></span><h2>ultra.utils.data_utils module<a class="headerlink" href="#module-ultra.utils.data_utils" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ultra.utils.data_utils.Raw_data">
+<em class="property">class </em><code class="sig-prename descclassname">ultra.utils.data_utils.</code><code class="sig-name descname">Raw_data</code><span class="sig-paren">(</span><em class="sig-param">data_path=None</em>, <em class="sig-param">file_prefix=None</em>, <em class="sig-param">rank_cut=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.data_utils.Raw_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="ultra.utils.data_utils.Raw_data.pad">
+<code class="sig-name descname">pad</code><span class="sig-paren">(</span><em class="sig-param">rank_list_size</em>, <em class="sig-param">pad_tails=True</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.data_utils.Raw_data.pad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pad a rank list with zero feature vectors when it is shorter than the required rank list size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rank_list_size</strong> – (int) the required size of a ranked list</p></li>
+<li><p><strong>pad_tails</strong> – (bool) Add padding vectors to the tails of each list (True) or the heads of each list (False)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="ultra.utils.data_utils.generate_ranklist">
+<code class="sig-prename descclassname">ultra.utils.data_utils.</code><code class="sig-name descname">generate_ranklist</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">rerank_lists</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.data_utils.generate_ranklist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a reranked lists based on the data and rerank documents ids.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – (Raw_data) the dataset that contains the raw data</p></li>
+<li><p><strong>rerank_lists</strong> – (list&lt;list&lt;int&gt;&gt;) a list of rerank list in which each
+element represents the original rank of the documents
+in the initial list.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(map&lt;list&lt;int&gt;&gt;) a map of qid with the reranked document id list.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>qid_list_map</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ultra.utils.data_utils.generate_ranklist_by_scores">
+<code class="sig-prename descclassname">ultra.utils.data_utils.</code><code class="sig-name descname">generate_ranklist_by_scores</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">rerank_scores</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.data_utils.generate_ranklist_by_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a reranked lists based on the data and rerank scores.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – (Raw_data) the dataset that contains the raw data</p></li>
+<li><p><strong>rerank_scores</strong> – (list&lt;list&lt;float&gt;&gt;) a list of rerank list in which each
+element represents the reranking scores for the documents
+on that position in the initial list.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(map&lt;list&lt;int&gt;&gt;) a map of qid with the reranked document id list.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>qid_list_map</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ultra.utils.data_utils.merge_TFSummary">
+<code class="sig-prename descclassname">ultra.utils.data_utils.</code><code class="sig-name descname">merge_TFSummary</code><span class="sig-paren">(</span><em class="sig-param">summary_list</em>, <em class="sig-param">weights</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.data_utils.merge_TFSummary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ultra.utils.data_utils.output_ranklist">
+<code class="sig-prename descclassname">ultra.utils.data_utils.</code><code class="sig-name descname">output_ranklist</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">rerank_scores</em>, <em class="sig-param">output_path</em>, <em class="sig-param">file_name='test'</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.data_utils.output_ranklist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a trec format rank list by reranking the initial list with reranking scores.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – (Raw_data) the dataset that contains the raw data</p></li>
+<li><p><strong>rerank_scores</strong> – (list&lt;list&lt;float&gt;&gt;) a list of rerank list in which each
+element represents the reranking scores for the documents
+on that position in the initial list.</p></li>
+<li><p><strong>output_path</strong> – (string) the path for the output</p></li>
+<li><p><strong>file_name</strong> – (string) the name of the output set, e.g., ‘train’, ‘valid’, ‘text’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ultra.utils.data_utils.parse_TFSummary_from_bytes">
+<code class="sig-prename descclassname">ultra.utils.data_utils.</code><code class="sig-name descname">parse_TFSummary_from_bytes</code><span class="sig-paren">(</span><em class="sig-param">summary_bytes</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.data_utils.parse_TFSummary_from_bytes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ultra.utils.data_utils.read_data">
+<code class="sig-prename descclassname">ultra.utils.data_utils.</code><code class="sig-name descname">read_data</code><span class="sig-paren">(</span><em class="sig-param">data_path</em>, <em class="sig-param">file_prefix</em>, <em class="sig-param">rank_cut=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.data_utils.read_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="ultra-utils-hparams-module">
+<h2>ultra.utils.hparams module<a class="headerlink" href="#ultra-utils-hparams-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ultra.utils.metrics">
+<span id="ultra-utils-metrics-module"></span><h2>ultra.utils.metrics module<a class="headerlink" href="#module-ultra.utils.metrics" title="Permalink to this headline">¶</a></h2>
+<p>Defines ranking metrics as TF ops.</p>
+<p>The metrics here are meant to be used during the TF training. That is, a batch
+of instances in the Tensor format are evaluated by ops. It works with listwise
+Tensors only.</p>
+<dl class="class">
+<dt id="ultra.utils.metrics.RankingMetricKey">
+<em class="property">class </em><code class="sig-prename descclassname">ultra.utils.metrics.</code><code class="sig-name descname">RankingMetricKey</code><a class="headerlink" href="#ultra.utils.metrics.RankingMetricKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Ranking metric key strings.</p>
+<dl class="attribute">
+<dt id="ultra.utils.metrics.RankingMetricKey.ARP">
+<code class="sig-name descname">ARP</code><em class="property"> = 'arp'</em><a class="headerlink" href="#ultra.utils.metrics.RankingMetricKey.ARP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ultra.utils.metrics.RankingMetricKey.DCG">
+<code class="sig-name descname">DCG</code><em class="property"> = 'dcg'</em><a class="headerlink" href="#ultra.utils.metrics.RankingMetricKey.DCG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ultra.utils.metrics.RankingMetricKey.ERR">
+<code class="sig-name descname">ERR</code><em class="property"> = 'err'</em><a class="headerlink" href="#ultra.utils.metrics.RankingMetricKey.ERR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ultra.utils.metrics.RankingMetricKey.MAP">
+<code class="sig-name descname">MAP</code><em class="property"> = 'map'</em><a class="headerlink" href="#ultra.utils.metrics.RankingMetricKey.MAP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ultra.utils.metrics.RankingMetricKey.MAX_LABEL">
+<code class="sig-name descname">MAX_LABEL</code><em class="property"> = None</em><a class="headerlink" href="#ultra.utils.metrics.RankingMetricKey.MAX_LABEL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ultra.utils.metrics.RankingMetricKey.MRR">
+<code class="sig-name descname">MRR</code><em class="property"> = 'mrr'</em><a class="headerlink" href="#ultra.utils.metrics.RankingMetricKey.MRR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ultra.utils.metrics.RankingMetricKey.NDCG">
+<code class="sig-name descname">NDCG</code><em class="property"> = 'ndcg'</em><a class="headerlink" href="#ultra.utils.metrics.RankingMetricKey.NDCG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ultra.utils.metrics.RankingMetricKey.ORDERED_PAIR_ACCURACY">
+<code class="sig-name descname">ORDERED_PAIR_ACCURACY</code><em class="property"> = 'ordered_pair_accuracy'</em><a class="headerlink" href="#ultra.utils.metrics.RankingMetricKey.ORDERED_PAIR_ACCURACY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ultra.utils.metrics.RankingMetricKey.PRECISION">
+<code class="sig-name descname">PRECISION</code><em class="property"> = 'precision'</em><a class="headerlink" href="#ultra.utils.metrics.RankingMetricKey.PRECISION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="ultra.utils.metrics.average_relevance_position">
+<code class="sig-prename descclassname">ultra.utils.metrics.</code><code class="sig-name descname">average_relevance_position</code><span class="sig-paren">(</span><em class="sig-param">labels</em>, <em class="sig-param">predictions</em>, <em class="sig-param">weights=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.metrics.average_relevance_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes average relevance position (ARP).</p>
+<p>This can also be named as average_relevance_rank, but this can be confusing
+with mean_reciprocal_rank in acronyms. This name is more distinguishing and
+has been used historically for binary relevance as average_click_position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labels</strong> – A <cite>Tensor</cite> of the same shape as <cite>predictions</cite>.</p></li>
+<li><p><strong>predictions</strong> – A <cite>Tensor</cite> with shape [batch_size, list_size]. Each value is
+the ranking score of the corresponding example.</p></li>
+<li><p><strong>weights</strong> – A <cite>Tensor</cite> of the same shape of predictions or [batch_size, 1]. The
+former case is per-example and the latter case is per-list.</p></li>
+<li><p><strong>name</strong> – A string used as the name for this metric.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A metric for the weighted average relevance position.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ultra.utils.metrics.discounted_cumulative_gain">
+<code class="sig-prename descclassname">ultra.utils.metrics.</code><code class="sig-name descname">discounted_cumulative_gain</code><span class="sig-paren">(</span><em class="sig-param">labels</em>, <em class="sig-param">predictions</em>, <em class="sig-param">weights=None</em>, <em class="sig-param">topn=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.metrics.discounted_cumulative_gain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes discounted cumulative gain (DCG).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labels</strong> – A <cite>Tensor</cite> of the same shape as <cite>predictions</cite>.</p></li>
+<li><p><strong>predictions</strong> – A <cite>Tensor</cite> with shape [batch_size, list_size]. Each value is
+the ranking score of the corresponding example.</p></li>
+<li><p><strong>weights</strong> – A <cite>Tensor</cite> of the same shape of predictions or [batch_size, 1]. The
+former case is per-example and the latter case is per-list.</p></li>
+<li><p><strong>topn</strong> – A cutoff for how many examples to consider for this metric.</p></li>
+<li><p><strong>name</strong> – A string used as the name for this metric.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A metric for the weighted discounted cumulative gain of the batch.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ultra.utils.metrics.expected_reciprocal_rank">
+<code class="sig-prename descclassname">ultra.utils.metrics.</code><code class="sig-name descname">expected_reciprocal_rank</code><span class="sig-paren">(</span><em class="sig-param">labels</em>, <em class="sig-param">predictions</em>, <em class="sig-param">weights=None</em>, <em class="sig-param">topn=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.metrics.expected_reciprocal_rank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes expected reciprocal rank (ERR).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labels</strong> – A <cite>Tensor</cite> of the same shape as <cite>predictions</cite>. A value &gt;= 1 means a
+relevant example.</p></li>
+<li><p><strong>predictions</strong> – A <cite>Tensor</cite> with shape [batch_size, list_size]. Each value is
+the ranking score of the corresponding example.</p></li>
+<li><p><strong>weights</strong> – A <cite>Tensor</cite> of the same shape of predictions or [batch_size, 1]. The
+former case is per-example and the latter case is per-list.</p></li>
+<li><p><strong>topn</strong> – A cutoff for how many examples to consider for this metric.</p></li>
+<li><p><strong>name</strong> – A string used as the name for this metric.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A metric for the weighted expected reciprocal rank of the batch.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ultra.utils.metrics.make_ranking_metric_fn">
+<code class="sig-prename descclassname">ultra.utils.metrics.</code><code class="sig-name descname">make_ranking_metric_fn</code><span class="sig-paren">(</span><em class="sig-param">metric_key</em>, <em class="sig-param">topn=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.metrics.make_ranking_metric_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory method to create a ranking metric function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>metric_key</strong> – A key in <cite>RankingMetricKey</cite>.</p></li>
+<li><p><strong>topn</strong> – An <cite>integer</cite> specifying the cutoff of how many items are considered in
+the metric.</p></li>
+<li><p><strong>name</strong> – A <cite>string</cite> used as the name for this metric.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><cite>labels</cite>: A <cite>Tensor</cite> of the same shape as <cite>predictions</cite> representing</p></li>
+</ul>
+<dl class="simple">
+<dt>graded</dt><dd><p>relevance.</p>
+</dd>
+</dl>
+<ul class="simple">
+<li><p><cite>predictions</cite>: A <cite>Tensor</cite> with shape [batch_size, list_size]. Each value</p></li>
+</ul>
+<dl class="simple">
+<dt>is</dt><dd><p>the ranking score of the corresponding example.</p>
+</dd>
+</dl>
+<ul class="simple">
+<li><p><cite>weights</cite>: A <cite>Tensor</cite> of weights (read more from each metric function).</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A metric fn with the following Args</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ultra.utils.metrics.mean_average_precision">
+<code class="sig-prename descclassname">ultra.utils.metrics.</code><code class="sig-name descname">mean_average_precision</code><span class="sig-paren">(</span><em class="sig-param">labels</em>, <em class="sig-param">predictions</em>, <em class="sig-param">weights=None</em>, <em class="sig-param">topn=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.metrics.mean_average_precision" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes mean average precision (MAP).
+The implementation of MAP is based on Equation (1.7) in the following:
+Liu, T-Y “Learning to Rank for Information Retrieval” found at
+<a class="reference external" href="https://www.nowpublishers.com/article/DownloadSummary/INR-016">https://www.nowpublishers.com/article/DownloadSummary/INR-016</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labels</strong> – A <cite>Tensor</cite> of the same shape as <cite>predictions</cite>. A value &gt;= 1 means a
+relevant example.</p></li>
+<li><p><strong>predictions</strong> – A <cite>Tensor</cite> with shape [batch_size, list_size]. Each value is
+the ranking score of the corresponding example.</p></li>
+<li><p><strong>weights</strong> – A <cite>Tensor</cite> of the same shape of predictions or [batch_size, 1]. The
+former case is per-example and the latter case is per-list.</p></li>
+<li><p><strong>topn</strong> – A cutoff for how many examples to consider for this metric.</p></li>
+<li><p><strong>name</strong> – A string used as the name for this metric.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A metric for the mean average precision.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ultra.utils.metrics.mean_reciprocal_rank">
+<code class="sig-prename descclassname">ultra.utils.metrics.</code><code class="sig-name descname">mean_reciprocal_rank</code><span class="sig-paren">(</span><em class="sig-param">labels</em>, <em class="sig-param">predictions</em>, <em class="sig-param">weights=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.metrics.mean_reciprocal_rank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes mean reciprocal rank (MRR).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labels</strong> – A <cite>Tensor</cite> of the same shape as <cite>predictions</cite>. A value &gt;= 1 means a
+relevant example.</p></li>
+<li><p><strong>predictions</strong> – A <cite>Tensor</cite> with shape [batch_size, list_size]. Each value is
+the ranking score of the corresponding example.</p></li>
+<li><p><strong>weights</strong> – A <cite>Tensor</cite> of the same shape of predictions or [batch_size, 1]. The
+former case is per-example and the latter case is per-list.</p></li>
+<li><p><strong>name</strong> – A string used as the name for this metric.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A metric for the weighted mean reciprocal rank of the batch.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ultra.utils.metrics.normalized_discounted_cumulative_gain">
+<code class="sig-prename descclassname">ultra.utils.metrics.</code><code class="sig-name descname">normalized_discounted_cumulative_gain</code><span class="sig-paren">(</span><em class="sig-param">labels</em>, <em class="sig-param">predictions</em>, <em class="sig-param">weights=None</em>, <em class="sig-param">topn=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.metrics.normalized_discounted_cumulative_gain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes normalized discounted cumulative gain (NDCG).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labels</strong> – A <cite>Tensor</cite> of the same shape as <cite>predictions</cite>.</p></li>
+<li><p><strong>predictions</strong> – A <cite>Tensor</cite> with shape [batch_size, list_size]. Each value is
+the ranking score of the corresponding example.</p></li>
+<li><p><strong>weights</strong> – A <cite>Tensor</cite> of the same shape of predictions or [batch_size, 1]. The
+former case is per-example and the latter case is per-list.</p></li>
+<li><p><strong>topn</strong> – A cutoff for how many examples to consider for this metric.</p></li>
+<li><p><strong>name</strong> – A string used as the name for this metric.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A metric for the weighted normalized discounted cumulative gain of the
+batch.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ultra.utils.metrics.ordered_pair_accuracy">
+<code class="sig-prename descclassname">ultra.utils.metrics.</code><code class="sig-name descname">ordered_pair_accuracy</code><span class="sig-paren">(</span><em class="sig-param">labels</em>, <em class="sig-param">predictions</em>, <em class="sig-param">weights=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.metrics.ordered_pair_accuracy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the percentage of correctedly ordered pair.</p>
+<p>For any pair of examples, we compare their orders determined by <cite>labels</cite> and
+<cite>predictions</cite>. They are correctly ordered if the two orders are compatible.
+That is, labels l_i &gt; l_j and predictions s_i &gt; s_j and the weight for this
+pair is the weight from the l_i.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labels</strong> – A <cite>Tensor</cite> of the same shape as <cite>predictions</cite>.</p></li>
+<li><p><strong>predictions</strong> – A <cite>Tensor</cite> with shape [batch_size, list_size]. Each value is
+the ranking score of the corresponding example.</p></li>
+<li><p><strong>weights</strong> – A <cite>Tensor</cite> of the same shape of predictions or [batch_size, 1]. The
+former case is per-example and the latter case is per-list.</p></li>
+<li><p><strong>name</strong> – A string used as the name for this metric.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A metric for the accuracy or ordered pairs.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ultra.utils.metrics.precision">
+<code class="sig-prename descclassname">ultra.utils.metrics.</code><code class="sig-name descname">precision</code><span class="sig-paren">(</span><em class="sig-param">labels</em>, <em class="sig-param">predictions</em>, <em class="sig-param">weights=None</em>, <em class="sig-param">topn=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.utils.metrics.precision" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes precision as weighted average of relevant examples.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labels</strong> – A <cite>Tensor</cite> of the same shape as <cite>predictions</cite>. A value &gt;= 1 means a
+relevant example.</p></li>
+<li><p><strong>predictions</strong> – A <cite>Tensor</cite> with shape [batch_size, list_size]. Each value is
+the ranking score of the corresponding example.</p></li>
+<li><p><strong>weights</strong> – A <cite>Tensor</cite> of the same shape of predictions or [batch_size, 1]. The
+former case is per-example and the latter case is per-list.</p></li>
+<li><p><strong>topn</strong> – A cutoff for how many examples to consider for this metric.</p></li>
+<li><p><strong>name</strong> – A string used as the name for this metric.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A metric for the weighted precision of the batch.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="ultra-utils-propensity-estimator-module">
+<h2>ultra.utils.propensity_estimator module<a class="headerlink" href="#ultra-utils-propensity-estimator-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="ultra-utils-sys-tools-module">
+<h2>ultra.utils.sys_tools module<a class="headerlink" href="#ultra-utils-sys-tools-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="ultra-utils-team-draft-interleave-module">
+<h2>ultra.utils.team_draft_interleave module<a class="headerlink" href="#ultra-utils-team-draft-interleave-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="ultra.ranking_model.html" class="btn btn-neutral float-left" title="ultra.ranking_model package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, ULTRA
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
