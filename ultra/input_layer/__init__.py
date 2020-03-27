@@ -9,3 +9,7 @@ from .stochastic_online_simulation_feed import *
 from .interleaving_deterministic_online_simulation_feed import *
 
 
+def list_available() -> list:
+    from .base_input_feed import BaseInputFeed
+    from ultra.utils.sys_tools import list_recursive_concrete_subclasses
+    return list_recursive_concrete_subclasses(BaseInputFeed)

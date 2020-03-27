@@ -16,7 +16,9 @@ ULTRA is a toolkit for unbiased/online learning to rank algorithms. It was devel
    :caption: Contents:
 
    modules
+   input_layer_reference
    learning_algorithm_reference
+   ranking_model_reference
 
 
 Indices and tables
