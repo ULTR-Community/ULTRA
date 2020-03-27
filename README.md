@@ -88,7 +88,7 @@ bash offline_exp_pipeline.sh
 
 8. [Ordered_Pair_Accuracy](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the percentage of correctedly ordered pair (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
 
-## Click Simulation Guideline
+## Click Simulation Example
 
 **Create click models for click simulations**
 ```
