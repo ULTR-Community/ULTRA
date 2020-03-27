@@ -21,7 +21,7 @@ import tensorflow as tf
 # We disable pylint because we need python3 compatibility.
 from six.moves import zip     # pylint: disable=redefined-builtin
 from ultra.input_layer import BaseInputFeed
-from ultra.input_layer import click_models as cm
+from ultra.utils import click_models as cm
 import ultra.utils
 
 class DirectLabelFeed(BaseInputFeed):

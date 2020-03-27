@@ -14,7 +14,7 @@ import sys
 import time
 import json
 import numpy as np
-import ultra.input_layer.click_models as cm
+import ultra.utils.click_models as cm
 import tensorflow as tf
 # We disable pylint because we need python3 compatibility.
 from six.moves import zip     # pylint: disable=redefined-builtin

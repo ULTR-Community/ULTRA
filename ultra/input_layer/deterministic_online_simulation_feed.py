@@ -18,7 +18,7 @@ import time
 import json
 import numpy as np
 from ultra.input_layer import BaseInputFeed
-from ultra.input_layer import click_models as cm
+from ultra.utils import click_models as cm
 import ultra.utils
 import tensorflow as tf
 # We disable pylint because we need python3 compatibility.

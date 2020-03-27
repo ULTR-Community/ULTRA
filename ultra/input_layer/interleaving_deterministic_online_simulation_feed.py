@@ -18,7 +18,7 @@ import time
 import json
 import numpy as np
 from ultra.input_layer import BaseInputFeed
-from ultra.input_layer import click_models as cm
+from ultra.utils import click_models as cm
 from ultra.utils.team_draft_interleave import TeamDraftInterleaving
 
 import tensorflow as tf
