@@ -72,21 +72,21 @@ bash offline_exp_pipeline.sh
 
 ## Supported Evaluation Metrics
 
-1. [MRR](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Mean_reciprocal_rank">Mean Reciprocal Rank</a> (inherited from TF-Ranking).
+1. [MRR](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Mean_reciprocal_rank">Mean Reciprocal Rank</a> (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
 
 2. [ERR](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the Expected Reciprocal Rank from <a href="http://olivier.chapelle.cc/pub/err.pdf">*Expected reciprocal rank for graded relevance*</a>.
 
-3. [ARP](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the Average Relevance Position (inherited from TF-Ranking).
+3. [ARP](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the Average Relevance Position (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
 
-4. [NDCG](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Discounted_cumulative_gain">Normalized Discounted Cumulative Gain</a> (inherited from TF-Ranking).
+4. [NDCG](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Discounted_cumulative_gain">Normalized Discounted Cumulative Gain</a> (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
 
-5. [DCG](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Discounted_cumulative_gain">Discounted Cumulative Gain</a> (inherited from TF-Ranking).
+5. [DCG](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Discounted_cumulative_gain">Discounted Cumulative Gain</a> (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
 
-6. [Precision](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the Precision (inherited from TF-Ranking).
+6. [Precision](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the Precision (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
 
-7. [MAP](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision">Mean Average Precision</a> (inherited from TF-Ranking).
+7. [MAP](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision">Mean Average Precision</a> (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
 
-8. [Ordered_Pair_Accuracy](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the percentage of correctedly ordered pair (inherited from TF-Ranking).
+8. [Ordered_Pair_Accuracy](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the percentage of correctedly ordered pair (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
 
 ## Click Simulation Guideline
 
