@@ -26,16 +26,15 @@ python setup.py install #use setup-gpu.py for GPU support
 cd example/toy
 bash offline_exp_pipeline.sh
 ```
+## Input Layers
 
-## Ranking Models
+1. [ClickSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/click_simulation_feed.py): this is the inpuyt layer that generate synthetic clicks on fixed ranked lists to feed the learning algorithm.
 
-1. [Linear](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/ranking_model/Linear.py): this is a linear ranking algorithm that compute ranking scores with a linear function.
+2. [DeterministicOnlineSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/deterministic_online_simulation_feed.py): this is the inpuyt layer that first create ranked lists by sorting documents according to the current ranking model, and then generate synthetic clicks on the lists to feed the learning algorithm.
 
-2. [DNN](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/ranking_model/DNN.py): this is neural ranking algorithm that compute ranking scores with a multi-layer perceptron network (with non-linear activation functions).
+3. [StochasticOnlineSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/stochastic_online_simulation_feed.py): this is the inpuyt layer that first create ranked lists by sampling documents based on their scores in the current ranking model and the Plackett-Luce distribution, and then generate synthetic clicks on the lists to feed the learning algorithm.
 
-3. [DLCM](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/DLCM.py): this is an implementation of the Deep Listwise Context Model in <a href="https://arxiv.org/pdf/1804.05936.pdf">*Learning a Deep Listwise Context Model for Ranking Refinement*</a>. (TODO)
-
-4. [GFS](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/GFS.py): this is an implementation of the Groupwise Scoring Function in <a href="https://arxiv.org/pdf/1811.04415.pdf">*Learning Groupwise Multivariate Scoring Functions Using Deep Neural Networks*</a>. (TODO)
+4. [DirectLabelFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/direct_label_feed.py): this is the inpuyt layer that directly feed the true relevance labels of each documents to the learning algorithm.
 
 ## Learning Algorithms
 
@@ -52,6 +51,16 @@ bash offline_exp_pipeline.sh
 6. [DBGD](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/dbgd.py): this model is an implementation of the Dual Bandit Gradient Descent algorithm in <a href="https://arxiv.org/abs/1503.03244">*Interactively optimizing information retrieval systems as a dueling bandits problem*</a>
 
 7. [NA](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/na.py): this model is an implementation of the naive algorithm that directly train models with input labels (e.g., clicks).
+
+## Ranking Models
+
+1. [Linear](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/ranking_model/Linear.py): this is a linear ranking algorithm that compute ranking scores with a linear function.
+
+2. [DNN](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/ranking_model/DNN.py): this is neural ranking algorithm that compute ranking scores with a multi-layer perceptron network (with non-linear activation functions).
+
+3. [DLCM](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/DLCM.py): this is an implementation of the Deep Listwise Context Model in <a href="https://arxiv.org/pdf/1804.05936.pdf">*Learning a Deep Listwise Context Model for Ranking Refinement*</a>. (TODO)
+
+4. [GFS](https://github.com/QingyaoAi/ULTRA/blob/master/learning_algorithm/GFS.py): this is an implementation of the Groupwise Scoring Function in <a href="https://arxiv.org/pdf/1811.04415.pdf">*Learning Groupwise Multivariate Scoring Functions Using Deep Neural Networks*</a>. (TODO)
 
 ## Supported Evaluation Metrics
 
