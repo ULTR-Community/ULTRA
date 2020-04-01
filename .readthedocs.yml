@@ -2,6 +2,5 @@ build:
   image: latest
 
 python:
-<<<<<<< HEAD
   version: 3.6
   pip_install: true
