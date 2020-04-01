@@ -1,7 +1,7 @@
 # ULTRA
 
 [![Python 3.6](https://img.shields.io/badge/python-3.6%20%7C%203.7-blue.svg)](https://www.python.org/downloads/release/python-360/)
-[![Documentation Status](https://readthedocs.org/projects/ultra/badge/?version=latest)](https://matchzoo.readthedocs.io/en/master/?badge=master)
+[![Documentation Status](https://readthedocs.org/projects/ultra/badge/?version=latest)](https://ultra.readthedocs.io/en/master/?badge=master)
 [![License](https://img.shields.io/badge/License-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 <!---[![Build Status](https://travis-ci.org/NTMC-Community/MatchZoo.svg?branch=master)](https://travis-ci.org/NTMC-Community/MatchZoo/)---> 
 <!---[![codecov](https://codecov.io/gh/NTMC-Community/MatchZoo/branch/master/graph/badge.svg)](https://codecov.io/gh/NTMC-Community/MatchZoo)---> 
