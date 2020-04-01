@@ -1,13 +1,13 @@
 # ULTRA
 
 [![Python 3.6](https://img.shields.io/badge/python-3.6%20%7C%203.7-blue.svg)](https://www.python.org/downloads/release/python-360/)
-[![Documentation Status](https://readthedocs.org/projects/ultra/badge/?version=latest)](https://ultra.readthedocs.io/en/master/?badge=master)
+[![Documentation Status](https://readthedocs.org/projects/ultra/badge/?version=latest)](https://ultr-community.github.io/ULTRA/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 <!---[![Build Status](https://travis-ci.org/NTMC-Community/MatchZoo.svg?branch=master)](https://travis-ci.org/NTMC-Community/MatchZoo/)---> 
 <!---[![codecov](https://codecov.io/gh/NTMC-Community/MatchZoo/branch/master/graph/badge.svg)](https://codecov.io/gh/NTMC-Community/MatchZoo)---> 
 <!---[![Requirements Status](https://requires.io/github/NTMC-Community/MatchZoo/requirements.svg?branch=master)](https://requires.io/github/NTMC-Community/MatchZoo/requirements/?branch=master)---> 
 
-This is an Unbiased Learning To Rank Algorithms (ULTRA) toolbox, which is still UNDER DEVELOPMENT. A user-friendly documentation can be found [here](https://ultra.readthedocs.io/en/latest/).
+This is an Unbiased Learning To Rank Algorithms (ULTRA) toolbox, which is still UNDER DEVELOPMENT. A user-friendly documentation can be found [here](https://ultr-community.github.io/ULTRA/).
 
 Please cite the following paper when you use this toolbox:
 
