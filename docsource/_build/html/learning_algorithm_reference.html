@@ -1,0 +1,396 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Learning Algorithm Reference &mdash; ULTRA 0.2beta documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Ranking Model Reference" href="ranking_model_reference.html" />
+    <link rel="prev" title="Input Layer Reference" href="input_layer_reference.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ULTRA
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="modules.html">ultra</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input_layer_reference.html">Input Layer Reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Learning Algorithm Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dla">DLA</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hyper-parameters">Hyper Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ipwrank">IPWrank</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Hyper Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#regressionem">RegressionEM</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Hyper Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#pdgd">PDGD</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">Hyper Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dbgd">DBGD</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id7">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id8">Hyper Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#pairdebias">PairDebias</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id9">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id10">Hyper Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#naviealgorithm">NavieAlgorithm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id11">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id12">Hyper Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dbgdinterleave">DBGDInterleave</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id13">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id14">Hyper Parameters</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ranking_model_reference.html">Ranking Model Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ULTRA</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Learning Algorithm Reference</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/learning_algorithm_reference.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="learning-algorithm-reference">
+<h1>Learning Algorithm Reference<a class="headerlink" href="#learning-algorithm-reference" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="dla">
+<h2>DLA<a class="headerlink" href="#dla" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="description">
+<h3>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h3>
+<p>The Dual Learning Algorithm for unbiased learning to rank.</p>
+<p>This class implements the Dual Learning Algorithm (DLA) based on the input layer
+feed. See the following paper for more information on the algorithm.</p>
+<ul class="simple">
+<li><p>Qingyao Ai, Keping Bi, Cheng Luo, Jiafeng Guo, W. Bruce Croft. 2018. Unbiased Learning to Rank with Unbiased Propensity Estimation. In Proceedings of SIGIR ‘18</p></li>
+</ul>
+</div>
+<div class="section" id="hyper-parameters">
+<h3>Hyper Parameters<a class="headerlink" href="#hyper-parameters" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="ipwrank">
+<h2>IPWrank<a class="headerlink" href="#ipwrank" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Description<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>The Inverse Propensity Weighting algorithm for unbiased learning to rank.</p>
+<p>This class implements the training and testing of the Inverse Propensity Weighting algorithm for unbiased learning to rank. See the following paper for more information on the algorithm.</p>
+<ul class="simple">
+<li><p>Xuanhui Wang, Michael Bendersky, Donald Metzler, Marc Najork. 2016. Learning to Rank with Selection Bias in Personal Search. In Proceedings of SIGIR ‘16</p></li>
+<li><p>Thorsten Joachims, Adith Swaminathan, Tobias Schnahel. 2017. Unbiased Learning-to-Rank with Biased Feedback. In Proceedings of WSDM ‘17</p></li>
+</ul>
+</div>
+<div class="section" id="id2">
+<h3>Hyper Parameters<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="regressionem">
+<h2>RegressionEM<a class="headerlink" href="#regressionem" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h3>Description<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>The regression-based EM algorithm for unbiased learning to rank.</p>
+<p>This class implements the regression-based EM algorithm based on the input layer
+feed. See the following paper for more information.</p>
+<ul class="simple">
+<li><p>Wang, Xuanhui, Nadav Golbandi, Michael Bendersky, Donald Metzler, and Marc Najork. “Position bias estimation for unbiased learning to rank in personal search.” In Proceedings of the Eleventh ACM International Conference on Web Search and Data Mining, pp. 610-618. ACM, 2018.</p></li>
+</ul>
+<p>In particular, we use the online EM algorithm for the parameter estimations:</p>
+<ul class="simple">
+<li><p>Cappé, Olivier, and Eric Moulines. “Online expectation–maximization algorithm for latent data models.” Journal of the Royal Statistical Society: Series B (Statistical Methodology) 71.3 (2009): 593-613.</p></li>
+</ul>
+</div>
+<div class="section" id="id4">
+<h3>Hyper Parameters<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="pdgd">
+<h2>PDGD<a class="headerlink" href="#pdgd" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id5">
+<h3>Description<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>The Pairwise Differentiable Gradient Descent (PDGD) algorithm for unbiased learning to rank.</p>
+<p>This class implements the Pairwise Differentiable Gradient Descent (PDGD) algorithm based on the input layer
+feed. See the following paper for more information on the algorithm.</p>
+<ul class="simple">
+<li><p>Oosterhuis, Harrie, and Maarten de Rijke. “Differentiable unbiased online learning to rank.” In Proceedings of the 27th ACM International Conference on Information and Knowledge Management, pp. 1293-1302. ACM, 2018.</p></li>
+</ul>
+</div>
+<div class="section" id="id6">
+<h3>Hyper Parameters<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="dbgd">
+<h2>DBGD<a class="headerlink" href="#dbgd" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id7">
+<h3>Description<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<p>The Dueling Bandit Gradient Descent (DBGD) algorithm for unbiased learning to rank.</p>
+<p>This class implements the Dueling Bandit Gradient Descent (DBGD) algorithm based on the input layer
+feed. See the following paper for more information on the algorithm.</p>
+<ul class="simple">
+<li><p>Yisong Yue and Thorsten Joachims. 2009. Interactively optimizing information retrieval systems as a dueling bandits problem. In ICML. 1201–1208.</p></li>
+</ul>
+</div>
+<div class="section" id="id8">
+<h3>Hyper Parameters<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="pairdebias">
+<h2>PairDebias<a class="headerlink" href="#pairdebias" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id9">
+<h3>Description<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<p>The Pairwise Debiasing algorithm for unbiased learning to rank.</p>
+<p>This class implements the Pairwise Debiasing algorithm based on the input layer
+feed. See the following paper for more information on the algorithm.</p>
+<ul class="simple">
+<li><p>Hu, Ziniu, Yang Wang, Qu Peng, and Hang Li. “Unbiased LambdaMART: An Unbiased Pairwise Learning-to-Rank Algorithm.” In The World Wide Web Conference, pp. 2830-2836. ACM, 2019.</p></li>
+</ul>
+</div>
+<div class="section" id="id10">
+<h3>Hyper Parameters<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="naviealgorithm">
+<h2>NavieAlgorithm<a class="headerlink" href="#naviealgorithm" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id11">
+<h3>Description<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<p>The navie algorithm that directly trains ranking models with input labels.</p>
+</div>
+<div class="section" id="id12">
+<h3>Hyper Parameters<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="dbgdinterleave">
+<h2>DBGDInterleave<a class="headerlink" href="#dbgdinterleave" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id13">
+<h3>Description<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<p>The Dueling Bandit Gradient Descent (DBGD) algorithm for unbiased learning to rank.</p>
+<p>This class implements the Dueling Bandit Gradient Descent (DBGD) algorithm based on the input layer
+feed. See the following paper for more information on the algorithm.</p>
+<ul class="simple">
+<li><p>Yisong Yue and Thorsten Joachims. 2009. Interactively optimizing information retrieval systems as a dueling bandits problem. In ICML. 1201–1208.</p></li>
+</ul>
+</div>
+<div class="section" id="id14">
+<h3>Hyper Parameters<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="ranking_model_reference.html" class="btn btn-neutral float-right" title="Ranking Model Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="input_layer_reference.html" class="btn btn-neutral float-left" title="Input Layer Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, ULTRA
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

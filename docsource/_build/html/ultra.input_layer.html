@@ -1,0 +1,1009 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ultra.input_layer package &mdash; ULTRA 0.2beta documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ultra.learning_algorithm package" href="ultra.learning_algorithm.html" />
+    <link rel="prev" title="ultra package" href="ultra.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ULTRA
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">ultra</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="ultra.html">ultra package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="ultra.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">ultra.input_layer package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultra.learning_algorithm.html">ultra.learning_algorithm package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultra.ranking_model.html">ultra.ranking_model package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultra.utils.html">ultra.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ultra.html#module-ultra">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="input_layer_reference.html">Input Layer Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="learning_algorithm_reference.html">Learning Algorithm Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ranking_model_reference.html">Ranking Model Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ULTRA</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">ultra</a> &raquo;</li>
+        
+          <li><a href="ultra.html">ultra package</a> &raquo;</li>
+        
+      <li>ultra.input_layer package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/ultra.input_layer.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="ultra-input-layer-package">
+<h1>ultra.input_layer package<a class="headerlink" href="#ultra-input-layer-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ultra.input_layer.base_input_feed">
+<span id="ultra-input-layer-base-input-feed-module"></span><h2>ultra.input_layer.base_input_feed module<a class="headerlink" href="#module-ultra.input_layer.base_input_feed" title="Permalink to this headline">¶</a></h2>
+<p>The basic class that contains all the API needed for the implementation of a input data feed.</p>
+<dl class="class">
+<dt id="ultra.input_layer.base_input_feed.BaseInputFeed">
+<em class="property">class </em><code class="sig-prename descclassname">ultra.input_layer.base_input_feed.</code><code class="sig-name descname">BaseInputFeed</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">hparam_str</em>, <em class="sig-param">session</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.base_input_feed.BaseInputFeed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>This class implements a input layer for unbiased learning to rank experiments.</p>
+<dl class="attribute">
+<dt id="ultra.input_layer.base_input_feed.BaseInputFeed.MAX_SAMPLE_ROUND_NUM">
+<code class="sig-name descname">MAX_SAMPLE_ROUND_NUM</code><em class="property"> = 100</em><a class="headerlink" href="#ultra.input_layer.base_input_feed.BaseInputFeed.MAX_SAMPLE_ROUND_NUM" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.base_input_feed.BaseInputFeed.__init__">
+<em class="property">abstract </em><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">hparam_str</em>, <em class="sig-param">session</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.base_input_feed.BaseInputFeed.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – (BasicModel) The model we are going to train.</p></li>
+<li><p><strong>batch_size</strong> – the size of the batches generated in each iteration.</p></li>
+<li><p><strong>hparam_str</strong> – the hyper-parameters for the input layer.</p></li>
+<li><p><strong>session</strong> – the current tensorflow Session (used for online learning).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.base_input_feed.BaseInputFeed.get_batch">
+<em class="property">abstract </em><code class="sig-name descname">get_batch</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.base_input_feed.BaseInputFeed.get_batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a random batch of data, prepare for step. Typically used for training.</p>
+<p>To feed data in step(..) it must be a list of batch-major vectors, while
+data here contains single length-major cases. So the main logic of this
+function is to re-index data cases to be in the proper format for feeding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a feed dictionary for the next step
+info_map: a dictionary contain some basic information about the batch (for debugging).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>input_feed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.base_input_feed.BaseInputFeed.get_data_by_index">
+<em class="property">abstract </em><code class="sig-name descname">get_data_by_index</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">index</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.base_input_feed.BaseInputFeed.get_data_by_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get one data from the specified index, prepare for step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>index</strong> – the index of the data</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The triple (docid_inputs, decoder_inputs, target_weights) for
+the constructed batch that has the proper format to call step(…) later.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.base_input_feed.BaseInputFeed.get_next_batch">
+<em class="property">abstract </em><code class="sig-name descname">get_next_batch</code><span class="sig-paren">(</span><em class="sig-param">index</em>, <em class="sig-param">data_set</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.base_input_feed.BaseInputFeed.get_next_batch" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Get the next batch of data from a specific index, prepare for step.</dt><dd><p>Typically used for validation.</p>
+</dd>
+</dl>
+<p>To feed data in step(..) it must be a list of batch-major vectors, while
+data here contains single length-major cases. So the main logic of this
+function is to re-index data cases to be in the proper format for feeding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index</strong> – the index of the data before which we will use to create the data batch.</p></li>
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a feed dictionary for the next step
+info_map: a dictionary contain some basic information about the batch (for debugging).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>input_feed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.base_input_feed.BaseInputFeed.preprocess_data">
+<em class="property">static </em><code class="sig-name descname">preprocess_data</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">hparam_str</em>, <em class="sig-param">exp_settings</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.base_input_feed.BaseInputFeed.preprocess_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preprocess the data for model creation based on the input feed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>hparam_str</strong> – the hyper-parameters for the input layer.</p></li>
+<li><p><strong>exp_settings</strong> – (dictionary) The dictionary containing the model settings.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ultra-input-layer-click-models-module">
+<h2>ultra.input_layer.click_models module<a class="headerlink" href="#ultra-input-layer-click-models-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ultra.input_layer.click_simulation_feed">
+<span id="ultra-input-layer-click-simulation-feed-module"></span><h2>ultra.input_layer.click_simulation_feed module<a class="headerlink" href="#module-ultra.input_layer.click_simulation_feed" title="Permalink to this headline">¶</a></h2>
+<p>Simulate click data based on human annotations.</p>
+<p>See the following paper for more information on the simulation data.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Qingyao Ai, Keping Bi, Cheng Luo, Jiafeng Guo, W. Bruce Croft. 2018. Unbiased Learning to Rank with Unbiased Propensity Estimation. In Proceedings of SIGIR ‘18</p></li>
+</ul>
+</div></blockquote>
+<dl class="class">
+<dt id="ultra.input_layer.click_simulation_feed.ClickSimulationFeed">
+<em class="property">class </em><code class="sig-prename descclassname">ultra.input_layer.click_simulation_feed.</code><code class="sig-name descname">ClickSimulationFeed</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">hparam_str</em>, <em class="sig-param">session=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_simulation_feed.ClickSimulationFeed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ultra.input_layer.base_input_feed.BaseInputFeed" title="ultra.input_layer.base_input_feed.BaseInputFeed"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultra.input_layer.base_input_feed.BaseInputFeed</span></code></a></p>
+<p>Simulate clicks based on human annotations.</p>
+<p>This class implements a input layer for unbiased learning to rank experiments
+by simulating click data based on both the human relevance annotation of
+each query-document pair and a predefined click model.</p>
+<dl class="method">
+<dt id="ultra.input_layer.click_simulation_feed.ClickSimulationFeed.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">hparam_str</em>, <em class="sig-param">session=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_simulation_feed.ClickSimulationFeed.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – (BasicModel) The model we are going to train.</p></li>
+<li><p><strong>batch_size</strong> – the size of the batches generated in each iteration.</p></li>
+<li><p><strong>hparam_str</strong> – the hyper-parameters for the input layer.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_simulation_feed.ClickSimulationFeed.get_batch">
+<code class="sig-name descname">get_batch</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_simulation_feed.ClickSimulationFeed.get_batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a random batch of data, prepare for step. Typically used for training.</p>
+<p>To feed data in step(..) it must be a list of batch-major vectors, while
+data here contains single length-major cases. So the main logic of this
+function is to re-index data cases to be in the proper format for feeding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a feed dictionary for the next step
+info_map: a dictionary contain some basic information about the batch (for debugging).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>input_feed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_simulation_feed.ClickSimulationFeed.get_data_by_index">
+<code class="sig-name descname">get_data_by_index</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">index</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_simulation_feed.ClickSimulationFeed.get_data_by_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get one data from the specified index, prepare for step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>index</strong> – the index of the data</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The triple (docid_inputs, decoder_inputs, target_weights) for
+the constructed batch that has the proper format to call step(…) later.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_simulation_feed.ClickSimulationFeed.get_next_batch">
+<code class="sig-name descname">get_next_batch</code><span class="sig-paren">(</span><em class="sig-param">index</em>, <em class="sig-param">data_set</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_simulation_feed.ClickSimulationFeed.get_next_batch" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Get the next batch of data from a specific index, prepare for step.</dt><dd><p>Typically used for validation.</p>
+</dd>
+</dl>
+<p>To feed data in step(..) it must be a list of batch-major vectors, while
+data here contains single length-major cases. So the main logic of this
+function is to re-index data cases to be in the proper format for feeding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index</strong> – the index of the data before which we will use to create the data batch.</p></li>
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a feed dictionary for the next step
+info_map: a dictionary contain some basic information about the batch (for debugging).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>input_feed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.click_simulation_feed.ClickSimulationFeed.prepare_sim_clicks_with_index">
+<code class="sig-name descname">prepare_sim_clicks_with_index</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">index</em>, <em class="sig-param">docid_inputs</em>, <em class="sig-param">letor_features</em>, <em class="sig-param">labels</em>, <em class="sig-param">check_validation=True</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.click_simulation_feed.ClickSimulationFeed.prepare_sim_clicks_with_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ultra.input_layer.deterministic_online_simulation_feed">
+<span id="ultra-input-layer-deterministic-online-simulation-feed-module"></span><h2>ultra.input_layer.deterministic_online_simulation_feed module<a class="headerlink" href="#module-ultra.input_layer.deterministic_online_simulation_feed" title="Permalink to this headline">¶</a></h2>
+<p>Simulate online learning process and click data based on human annotations.</p>
+<p>See the following paper for more information on the simulation data.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Qingyao Ai, Keping Bi, Cheng Luo, Jiafeng Guo, W. Bruce Croft. 2018. Unbiased Learning to Rank with Unbiased Propensity Estimation. In Proceedings of SIGIR ‘18</p></li>
+</ul>
+</div></blockquote>
+<dl class="class">
+<dt id="ultra.input_layer.deterministic_online_simulation_feed.DeterministicOnlineSimulationFeed">
+<em class="property">class </em><code class="sig-prename descclassname">ultra.input_layer.deterministic_online_simulation_feed.</code><code class="sig-name descname">DeterministicOnlineSimulationFeed</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">hparam_str</em>, <em class="sig-param">session</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.deterministic_online_simulation_feed.DeterministicOnlineSimulationFeed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ultra.input_layer.base_input_feed.BaseInputFeed" title="ultra.input_layer.base_input_feed.BaseInputFeed"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultra.input_layer.base_input_feed.BaseInputFeed</span></code></a></p>
+<p>Simulate online learning to rank and click data based on human annotations.</p>
+<p>This class implements a input layer for online learning to rank experiments
+by simulating click data based on both the human relevance annotation of
+each query-document pair and a predefined click model.</p>
+<dl class="method">
+<dt id="ultra.input_layer.deterministic_online_simulation_feed.DeterministicOnlineSimulationFeed.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">hparam_str</em>, <em class="sig-param">session</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.deterministic_online_simulation_feed.DeterministicOnlineSimulationFeed.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – (BasicModel) The model we are going to train.</p></li>
+<li><p><strong>batch_size</strong> – the size of the batches generated in each iteration.</p></li>
+<li><p><strong>hparam_str</strong> – the hyper-parameters for the input layer.</p></li>
+<li><p><strong>session</strong> – the current tensorflow Session (used for online learning).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.deterministic_online_simulation_feed.DeterministicOnlineSimulationFeed.get_batch">
+<code class="sig-name descname">get_batch</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.deterministic_online_simulation_feed.DeterministicOnlineSimulationFeed.get_batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a random batch of data, prepare for step. Typically used for training.</p>
+<p>To feed data in step(..) it must be a list of batch-major vectors, while
+data here contains single length-major cases. So the main logic of this
+function is to re-index data cases to be in the proper format for feeding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a feed dictionary for the next step
+info_map: a dictionary contain some basic information about the batch (for debugging).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>input_feed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.deterministic_online_simulation_feed.DeterministicOnlineSimulationFeed.get_data_by_index">
+<code class="sig-name descname">get_data_by_index</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">index</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.deterministic_online_simulation_feed.DeterministicOnlineSimulationFeed.get_data_by_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get one data from the specified index, prepare for step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>index</strong> – the index of the data</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The triple (docid_inputs, decoder_inputs, target_weights) for
+the constructed batch that has the proper format to call step(…) later.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.deterministic_online_simulation_feed.DeterministicOnlineSimulationFeed.get_next_batch">
+<code class="sig-name descname">get_next_batch</code><span class="sig-paren">(</span><em class="sig-param">index</em>, <em class="sig-param">data_set</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.deterministic_online_simulation_feed.DeterministicOnlineSimulationFeed.get_next_batch" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Get the next batch of data from a specific index, prepare for step.</dt><dd><p>Typically used for validation.</p>
+</dd>
+</dl>
+<p>To feed data in step(..) it must be a list of batch-major vectors, while
+data here contains single length-major cases. So the main logic of this
+function is to re-index data cases to be in the proper format for feeding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index</strong> – the index of the data before which we will use to create the data batch.</p></li>
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a feed dictionary for the next step
+info_map: a dictionary contain some basic information about the batch (for debugging).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>input_feed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.deterministic_online_simulation_feed.DeterministicOnlineSimulationFeed.prepare_true_labels_with_index">
+<code class="sig-name descname">prepare_true_labels_with_index</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">index</em>, <em class="sig-param">docid_inputs</em>, <em class="sig-param">letor_features</em>, <em class="sig-param">labels</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.deterministic_online_simulation_feed.DeterministicOnlineSimulationFeed.prepare_true_labels_with_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.deterministic_online_simulation_feed.DeterministicOnlineSimulationFeed.simulate_clicks_online">
+<code class="sig-name descname">simulate_clicks_online</code><span class="sig-paren">(</span><em class="sig-param">input_feed</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.deterministic_online_simulation_feed.DeterministicOnlineSimulationFeed.simulate_clicks_online" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate online environment by reranking documents and collect clicks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_feed</strong> – (dict) The input_feed data.</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a feed dictionary for the next step
+info_map: a dictionary contain some basic information about the batch (for debugging).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>input_feed</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ultra.input_layer.direct_label_feed">
+<span id="ultra-input-layer-direct-label-feed-module"></span><h2>ultra.input_layer.direct_label_feed module<a class="headerlink" href="#module-ultra.input_layer.direct_label_feed" title="Permalink to this headline">¶</a></h2>
+<p>Create batch data directly based on labels.</p>
+<p>See the following paper for more information on the simulation data.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Qingyao Ai, Keping Bi, Cheng Luo, Jiafeng Guo, W. Bruce Croft. 2018. Unbiased Learning to Rank with Unbiased Propensity Estimation. In Proceedings of SIGIR ‘18</p></li>
+</ul>
+</div></blockquote>
+<dl class="class">
+<dt id="ultra.input_layer.direct_label_feed.DirectLabelFeed">
+<em class="property">class </em><code class="sig-prename descclassname">ultra.input_layer.direct_label_feed.</code><code class="sig-name descname">DirectLabelFeed</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">hparam_str</em>, <em class="sig-param">session=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.direct_label_feed.DirectLabelFeed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ultra.input_layer.base_input_feed.BaseInputFeed" title="ultra.input_layer.base_input_feed.BaseInputFeed"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultra.input_layer.base_input_feed.BaseInputFeed</span></code></a></p>
+<p>Feed data with human annotations.</p>
+<p>This class implements a input layer for unbiased learning to rank experiments
+by directly feeding the model with the true labels of each query-document pair.</p>
+<dl class="method">
+<dt id="ultra.input_layer.direct_label_feed.DirectLabelFeed.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">hparam_str</em>, <em class="sig-param">session=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.direct_label_feed.DirectLabelFeed.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – (BasicModel) The model we are going to train.</p></li>
+<li><p><strong>batch_size</strong> – the size of the batches generated in each iteration.</p></li>
+<li><p><strong>hparam_str</strong> – the hyper-parameters for the input layer.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.direct_label_feed.DirectLabelFeed.get_batch">
+<code class="sig-name descname">get_batch</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.direct_label_feed.DirectLabelFeed.get_batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a random batch of data, prepare for step. Typically used for training.</p>
+<p>To feed data in step(..) it must be a list of batch-major vectors, while
+data here contains single length-major cases. So the main logic of this
+function is to re-index data cases to be in the proper format for feeding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a feed dictionary for the next step
+info_map: a dictionary contain some basic information about the batch (for debugging).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>input_feed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.direct_label_feed.DirectLabelFeed.get_data_by_index">
+<code class="sig-name descname">get_data_by_index</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">index</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.direct_label_feed.DirectLabelFeed.get_data_by_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get one data from the specified index, prepare for step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>index</strong> – the index of the data</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The triple (docid_inputs, decoder_inputs, target_weights) for
+the constructed batch that has the proper format to call step(…) later.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.direct_label_feed.DirectLabelFeed.get_next_batch">
+<code class="sig-name descname">get_next_batch</code><span class="sig-paren">(</span><em class="sig-param">index</em>, <em class="sig-param">data_set</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.direct_label_feed.DirectLabelFeed.get_next_batch" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Get the next batch of data from a specific index, prepare for step.</dt><dd><p>Typically used for validation.</p>
+</dd>
+</dl>
+<p>To feed data in step(..) it must be a list of batch-major vectors, while
+data here contains single length-major cases. So the main logic of this
+function is to re-index data cases to be in the proper format for feeding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index</strong> – the index of the data before which we will use to create the data batch.</p></li>
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a feed dictionary for the next step
+info_map: a dictionary contain some basic information about the batch (for debugging).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>input_feed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.direct_label_feed.DirectLabelFeed.prepare_true_labels_with_index">
+<code class="sig-name descname">prepare_true_labels_with_index</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">index</em>, <em class="sig-param">docid_inputs</em>, <em class="sig-param">letor_features</em>, <em class="sig-param">labels</em>, <em class="sig-param">check_validation=True</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.direct_label_feed.DirectLabelFeed.prepare_true_labels_with_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ultra.input_layer.interleaving_deterministic_online_simulation_feed">
+<span id="ultra-input-layer-interleaving-deterministic-online-simulation-feed-module"></span><h2>ultra.input_layer.interleaving_deterministic_online_simulation_feed module<a class="headerlink" href="#module-ultra.input_layer.interleaving_deterministic_online_simulation_feed" title="Permalink to this headline">¶</a></h2>
+<p>Simulate online learning process and click data based on human annotations.</p>
+<p>See the following paper for more information on the simulation data.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Qingyao Ai, Keping Bi, Cheng Luo, Jiafeng Guo, W. Bruce Croft. 2018. Unbiased Learning to Rank with Unbiased Propensity Estimation. In Proceedings of SIGIR ‘18</p></li>
+</ul>
+</div></blockquote>
+<dl class="class">
+<dt id="ultra.input_layer.interleaving_deterministic_online_simulation_feed.InterleavingDeterministicOnlineSimulationFeed">
+<em class="property">class </em><code class="sig-prename descclassname">ultra.input_layer.interleaving_deterministic_online_simulation_feed.</code><code class="sig-name descname">InterleavingDeterministicOnlineSimulationFeed</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">hparam_str</em>, <em class="sig-param">session</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.interleaving_deterministic_online_simulation_feed.InterleavingDeterministicOnlineSimulationFeed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ultra.input_layer.base_input_feed.BaseInputFeed" title="ultra.input_layer.base_input_feed.BaseInputFeed"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultra.input_layer.base_input_feed.BaseInputFeed</span></code></a></p>
+<p>Simulate online learning to rank and click data based on human annotations.</p>
+<p>This class implements a input layer for online learning to rank experiments
+by simulating click data based on both the human relevance annotation of
+each query-document pair and a predefined click model.</p>
+<dl class="method">
+<dt id="ultra.input_layer.interleaving_deterministic_online_simulation_feed.InterleavingDeterministicOnlineSimulationFeed.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">hparam_str</em>, <em class="sig-param">session</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.interleaving_deterministic_online_simulation_feed.InterleavingDeterministicOnlineSimulationFeed.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – (BasicModel) The model we are going to train.</p></li>
+<li><p><strong>batch_size</strong> – the size of the batches generated in each iteration.</p></li>
+<li><p><strong>hparam_str</strong> – the hyper-parameters for the input layer.</p></li>
+<li><p><strong>session</strong> – the current tensorflow Session (used for online learning).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.interleaving_deterministic_online_simulation_feed.InterleavingDeterministicOnlineSimulationFeed.get_batch">
+<code class="sig-name descname">get_batch</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.interleaving_deterministic_online_simulation_feed.InterleavingDeterministicOnlineSimulationFeed.get_batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a random batch of data, prepare for step. Typically used for training.</p>
+<p>To feed data in step(..) it must be a list of batch-major vectors, while
+data here contains single length-major cases. So the main logic of this
+function is to re-index data cases to be in the proper format for feeding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a feed dictionary for the next step
+info_map: a dictionary contain some basic information about the batch (for debugging).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>input_feed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.interleaving_deterministic_online_simulation_feed.InterleavingDeterministicOnlineSimulationFeed.get_data_by_index">
+<code class="sig-name descname">get_data_by_index</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">index</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.interleaving_deterministic_online_simulation_feed.InterleavingDeterministicOnlineSimulationFeed.get_data_by_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get one data from the specified index, prepare for step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>index</strong> – the index of the data</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The triple (docid_inputs, decoder_inputs, target_weights) for
+the constructed batch that has the proper format to call step(…) later.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.interleaving_deterministic_online_simulation_feed.InterleavingDeterministicOnlineSimulationFeed.get_next_batch">
+<code class="sig-name descname">get_next_batch</code><span class="sig-paren">(</span><em class="sig-param">index</em>, <em class="sig-param">data_set</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.interleaving_deterministic_online_simulation_feed.InterleavingDeterministicOnlineSimulationFeed.get_next_batch" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Get the next batch of data from a specific index, prepare for step.</dt><dd><p>Typically used for validation.</p>
+</dd>
+</dl>
+<p>To feed data in step(..) it must be a list of batch-major vectors, while
+data here contains single length-major cases. So the main logic of this
+function is to re-index data cases to be in the proper format for feeding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index</strong> – the index of the data before which we will use to create the data batch.</p></li>
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a feed dictionary for the next step
+info_map: a dictionary contain some basic information about the batch (for debugging).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>input_feed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.interleaving_deterministic_online_simulation_feed.InterleavingDeterministicOnlineSimulationFeed.prepare_true_labels_with_index">
+<code class="sig-name descname">prepare_true_labels_with_index</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">index</em>, <em class="sig-param">docid_inputs</em>, <em class="sig-param">letor_features</em>, <em class="sig-param">labels</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.interleaving_deterministic_online_simulation_feed.InterleavingDeterministicOnlineSimulationFeed.prepare_true_labels_with_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.interleaving_deterministic_online_simulation_feed.InterleavingDeterministicOnlineSimulationFeed.simulate_clicks_online">
+<code class="sig-name descname">simulate_clicks_online</code><span class="sig-paren">(</span><em class="sig-param">input_feed</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.interleaving_deterministic_online_simulation_feed.InterleavingDeterministicOnlineSimulationFeed.simulate_clicks_online" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate online environment by reranking documents and collect clicks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_feed</strong> – (dict) The input_feed data.</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a feed dictionary for the next step
+info_map: a dictionary contain some basic information about the batch (for debugging).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>input_feed</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ultra.input_layer.stochastic_online_simulation_feed">
+<span id="ultra-input-layer-stochastic-online-simulation-feed-module"></span><h2>ultra.input_layer.stochastic_online_simulation_feed module<a class="headerlink" href="#module-ultra.input_layer.stochastic_online_simulation_feed" title="Permalink to this headline">¶</a></h2>
+<p>Simulate online learning process and click data based on human annotations.</p>
+<p>See the following paper for more information on the simulation data.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Qingyao Ai, Keping Bi, Cheng Luo, Jiafeng Guo, W. Bruce Croft. 2018. Unbiased Learning to Rank with Unbiased Propensity Estimation. In Proceedings of SIGIR ‘18</p></li>
+</ul>
+</div></blockquote>
+<dl class="class">
+<dt id="ultra.input_layer.stochastic_online_simulation_feed.StochasticOnlineSimulationFeed">
+<em class="property">class </em><code class="sig-prename descclassname">ultra.input_layer.stochastic_online_simulation_feed.</code><code class="sig-name descname">StochasticOnlineSimulationFeed</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">hparam_str</em>, <em class="sig-param">session</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.stochastic_online_simulation_feed.StochasticOnlineSimulationFeed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ultra.input_layer.base_input_feed.BaseInputFeed" title="ultra.input_layer.base_input_feed.BaseInputFeed"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultra.input_layer.base_input_feed.BaseInputFeed</span></code></a></p>
+<p>Simulate online learning to rank and click data based on human annotations.</p>
+<p>This class implements a input layer for online learning to rank experiments
+by simulating click data based on both the human relevance annotation of
+each query-document pair and a predefined click model.</p>
+<dl class="method">
+<dt id="ultra.input_layer.stochastic_online_simulation_feed.StochasticOnlineSimulationFeed.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">hparam_str</em>, <em class="sig-param">session</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.stochastic_online_simulation_feed.StochasticOnlineSimulationFeed.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – (BasicModel) The model we are going to train.</p></li>
+<li><p><strong>batch_size</strong> – the size of the batches generated in each iteration.</p></li>
+<li><p><strong>hparam_str</strong> – the hyper-parameters for the input layer.</p></li>
+<li><p><strong>session</strong> – the current tensorflow Session (used for online learning).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.stochastic_online_simulation_feed.StochasticOnlineSimulationFeed.get_batch">
+<code class="sig-name descname">get_batch</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.stochastic_online_simulation_feed.StochasticOnlineSimulationFeed.get_batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a random batch of data, prepare for step. Typically used for training.</p>
+<p>To feed data in step(..) it must be a list of batch-major vectors, while
+data here contains single length-major cases. So the main logic of this
+function is to re-index data cases to be in the proper format for feeding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a feed dictionary for the next step
+info_map: a dictionary contain some basic information about the batch (for debugging).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>input_feed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.stochastic_online_simulation_feed.StochasticOnlineSimulationFeed.get_data_by_index">
+<code class="sig-name descname">get_data_by_index</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">index</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.stochastic_online_simulation_feed.StochasticOnlineSimulationFeed.get_data_by_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get one data from the specified index, prepare for step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>index</strong> – the index of the data</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The triple (docid_inputs, decoder_inputs, target_weights) for
+the constructed batch that has the proper format to call step(…) later.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.stochastic_online_simulation_feed.StochasticOnlineSimulationFeed.get_next_batch">
+<code class="sig-name descname">get_next_batch</code><span class="sig-paren">(</span><em class="sig-param">index</em>, <em class="sig-param">data_set</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.stochastic_online_simulation_feed.StochasticOnlineSimulationFeed.get_next_batch" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Get the next batch of data from a specific index, prepare for step.</dt><dd><p>Typically used for validation.</p>
+</dd>
+</dl>
+<p>To feed data in step(..) it must be a list of batch-major vectors, while
+data here contains single length-major cases. So the main logic of this
+function is to re-index data cases to be in the proper format for feeding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index</strong> – the index of the data before which we will use to create the data batch.</p></li>
+<li><p><strong>data_set</strong> – (Raw_data) The dataset used to build the input layer.</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a feed dictionary for the next step
+info_map: a dictionary contain some basic information about the batch (for debugging).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>input_feed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.stochastic_online_simulation_feed.StochasticOnlineSimulationFeed.prepare_true_labels_with_index">
+<code class="sig-name descname">prepare_true_labels_with_index</code><span class="sig-paren">(</span><em class="sig-param">data_set</em>, <em class="sig-param">index</em>, <em class="sig-param">docid_inputs</em>, <em class="sig-param">letor_features</em>, <em class="sig-param">labels</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.stochastic_online_simulation_feed.StochasticOnlineSimulationFeed.prepare_true_labels_with_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ultra.input_layer.stochastic_online_simulation_feed.StochasticOnlineSimulationFeed.simulate_clicks_online">
+<code class="sig-name descname">simulate_clicks_online</code><span class="sig-paren">(</span><em class="sig-param">input_feed</em>, <em class="sig-param">check_validation=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.stochastic_online_simulation_feed.StochasticOnlineSimulationFeed.simulate_clicks_online" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate online environment by reranking documents and collect clicks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_feed</strong> – (dict) The input_feed data.</p></li>
+<li><p><strong>check_validation</strong> – (bool) Set True to ignore data with no positive labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a feed dictionary for the next step
+info_map: a dictionary contain some basic information about the batch (for debugging).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>input_feed</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ultra.input_layer">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ultra.input_layer" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ultra.input_layer.list_available">
+<code class="sig-prename descclassname">ultra.input_layer.</code><code class="sig-name descname">list_available</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultra.input_layer.list_available" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="ultra.learning_algorithm.html" class="btn btn-neutral float-right" title="ultra.learning_algorithm package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="ultra.html" class="btn btn-neutral float-left" title="ultra package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, ULTRA
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
