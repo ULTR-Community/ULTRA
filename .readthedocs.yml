@@ -2,5 +2,15 @@ build:
   image: latest
 
 python:
+<<<<<<< HEAD
   version: 3.6
   pip_install: true
+=======
+  install:
+    - requirements: docs/requirements.txt
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs
+  system_packages: true
+>>>>>>> f508ae07725322eaf8c01fd6cdae377dde002b84
