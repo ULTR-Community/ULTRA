@@ -14,12 +14,12 @@ pip install -r requirements.txt
 
 ```python
 # Enter docs folder.
-cd docs
+cd docsource
 # Use sphinx autodoc to generate rst.
 # usage: sphinx-apidoc [OPTIONS] -o <OUTPUT_PATH> <MODULE_PATH> [EXCLUDE_PATTERN,...]
 sphinx-apidoc -o source/ ../ultra/
 # Generate html from rst
 make clean
-make html
+make github
 ```
 
