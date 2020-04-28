@@ -1,4 +1,4 @@
-# ULTRA
+# Unbiased Learning to Rank Algorithms (ULTRA)
 
 [![Python 3.6](https://img.shields.io/badge/python-3.6%20%7C%203.7-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Documentation Status](https://readthedocs.org/projects/ultra/badge/?version=latest)](https://ultr-community.github.io/ULTRA/)
@@ -36,13 +36,13 @@ bash offline_exp_pipeline.sh
 ```
 ## Input Layers
 
-1. [ClickSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/click_simulation_feed.py): this is the inpuyt layer that generate synthetic clicks on fixed ranked lists to feed the learning algorithm.
+1. [ClickSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/click_simulation_feed.py): this is the input layer that generate synthetic clicks on fixed ranked lists to feed the learning algorithm.
 
-2. [DeterministicOnlineSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/deterministic_online_simulation_feed.py): this is the inpuyt layer that first create ranked lists by sorting documents according to the current ranking model, and then generate synthetic clicks on the lists to feed the learning algorithm.
+2. [DeterministicOnlineSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/deterministic_online_simulation_feed.py): this is the input layer that first create ranked lists by sorting documents according to the current ranking model, and then generate synthetic clicks on the lists to feed the learning algorithm.
 
-3. [StochasticOnlineSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/stochastic_online_simulation_feed.py): this is the inpuyt layer that first create ranked lists by sampling documents based on their scores in the current ranking model and the Plackett-Luce distribution, and then generate synthetic clicks on the lists to feed the learning algorithm.
+3. [StochasticOnlineSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/stochastic_online_simulation_feed.py): this is the input layer that first create ranked lists by sampling documents based on their scores in the current ranking model and the Plackett-Luce distribution, and then generate synthetic clicks on the lists to feed the learning algorithm.
 
-4. [DirectLabelFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/direct_label_feed.py): this is the inpuyt layer that directly feed the true relevance labels of each documents to the learning algorithm.
+4. [DirectLabelFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/direct_label_feed.py): this is the input layer that directly feed the true relevance labels of each documents to the learning algorithm.
 
 ## Learning Algorithms
 
@@ -66,9 +66,11 @@ bash offline_exp_pipeline.sh
 
 2. [DNN](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/ranking_model/DNN.py): this is neural ranking algorithm that compute ranking scores with a multi-layer perceptron network (with non-linear activation functions).
 
-3. [DLCM](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/DLCM.py): this is an implementation of the Deep Listwise Context Model in <a href="https://arxiv.org/pdf/1804.05936.pdf">*Learning a Deep Listwise Context Model for Ranking Refinement*</a>. (TODO)
+3. [DLCM](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/DLCM.py): this is an implementation of the Deep Listwise Context Model in <a href="https://arxiv.org/pdf/1804.05936.pdf">*Learning a Deep Listwise Context Model for Ranking Refinement*</a>.
 
 4. [GFS](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/GFS.py): this is an implementation of the Groupwise Scoring Function in <a href="https://arxiv.org/pdf/1811.04415.pdf">*Learning Groupwise Multivariate Scoring Functions Using Deep Neural Networks*</a>. (TODO)
+
+5. [SetRank](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/SetRank.py): this is an implementation of the SetRank model in <a href="https://arxiv.org/abs/1912.05891">*SetRank: Learning a Permutation-Invariant Ranking Model for Information Retrieval*</a>.
 
 ## Supported Evaluation Metrics
 
@@ -126,4 +128,48 @@ If you use ULTRA in your research, please use the following BibTex entry.
 } 
 ```
 
+## Development Team
+
+ ​ ​ ​ ​
+<table border="0">
+  <tbody>
+    <tr align="center">
+      <td>
+        ​ <a href="https://github.com/QingyaoAi"><img width="50" height="50" src="https://github.com/QingyaoAi.png?s=50" alt="QingyaoAi"></a><br>
+        ​ <a href="http://ir.aiqingyao.org/">Qingyao Ai</a> ​
+        <p>Core Dev<br>
+        ASST PROF, Univ. of Utah</p>​
+      </td>
+      <td>
+         <a href="https://github.com/Taosheng-ty"><img width="50" height="50" src="https://github.com/Taosheng-ty.png?s=50" alt="Taosheng-ty"></a><br>
+         <a href="https://github.com/Taosheng-ty">Tao Yang</a> ​
+        <p>Core Dev<br> Ph.D., Univ. of Utah</p>​
+      </td>
+      <td>
+        ​ <a href="https://github.com/huazhengwang"><img width="50" height="50" src="https://github.com/huazhengwang.png?s=50" alt="huazhengwang"></a><br>
+         <a href="https://github.com/huazhengwang">Huazheng Wang</a>
+         <p>Core Dev<br> Ph.D., Univ. of Virginia</p>​
+      </td>
+      <td>
+        ​ <a href="https://github.com/defaultstr"><img width="50" height="50" src="https://github.com/defaultstr.png?s=50" alt="defaultstr"></a><br>
+        ​ <a href="https://github.com/defaultstr">Jiaxin Mao</a>
+        <p>Dev<br>
+        Postdoc, Tsinghua Univ.</p>​
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
 ## Project Organizers
+
+- Qingyao Ai
+  * School of Computing, University of Utah
+  * [Homepage](http://ir.aiqingyao.org/)
+
+
+## License
+
+[Apache-2.0](https://opensource.org/licenses/Apache-2.0)
+
+Copyright (c) 2020-present, Qingyao Ai (QingyaoAi)

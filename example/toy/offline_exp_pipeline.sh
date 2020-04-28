@@ -11,7 +11,7 @@ python ./utils/libsvm/initial_ranking_with_svm_rank.py ./ ./example/toy/data/tra
 python ./utils/libsvm/prepare_exp_data_with_svmrank.py ./example/toy/data/ ./tmp/ ./tmp_data/ 136
 
 # Run model
-python main.py --max_train_iteration=1000
+python main.py --max_train_iteration=1000 --setting_file=./example/offline_setting/dla_exp_settings.json
 
 # Test model
 python main.py --test_only=True
