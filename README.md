@@ -34,7 +34,14 @@ python setup.py install #use setup-gpu.py for GPU support
 cd example/toy
 bash offline_exp_pipeline.sh
 ```
-## Input Layers
+
+## Structure
+
+<div align='center'>
+<img src="https://github.com/ULTR-Community/ULTRA/blob/master/docs/structure.png?raw=true" width = "800"  alt="structure" align="center" />
+</div>
+
+### Input Layers
 
 1. [ClickSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/click_simulation_feed.py): this is the input layer that generate synthetic clicks on fixed ranked lists to feed the learning algorithm.
 
@@ -44,7 +51,7 @@ bash offline_exp_pipeline.sh
 
 4. [DirectLabelFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/direct_label_feed.py): this is the input layer that directly feed the true relevance labels of each documents to the learning algorithm.
 
-## Learning Algorithms
+### Learning Algorithms
 
 1. [DLA](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/dla.py): this is an implementation of the Dual Learning Algorithm in <a href="https://arxiv.org/pdf/1804.05938.pdf">*Unbiased Learning to Rank with Unbiased Propensity Estimation*</a>.
 
@@ -60,7 +67,7 @@ bash offline_exp_pipeline.sh
 
 7. [NA](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/na.py): this model is an implementation of the naive algorithm that directly train models with input labels (e.g., clicks).
 
-## Ranking Models
+### Ranking Models
 
 1. [Linear](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/ranking_model/Linear.py): this is a linear ranking algorithm that compute ranking scores with a linear function.
 
