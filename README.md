@@ -36,13 +36,13 @@ bash offline_exp_pipeline.sh
 ```
 ## Input Layers
 
-1. [ClickSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/click_simulation_feed.py): this is the inpuyt layer that generate synthetic clicks on fixed ranked lists to feed the learning algorithm.
+1. [ClickSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/click_simulation_feed.py): this is the input layer that generate synthetic clicks on fixed ranked lists to feed the learning algorithm.
 
-2. [DeterministicOnlineSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/deterministic_online_simulation_feed.py): this is the inpuyt layer that first create ranked lists by sorting documents according to the current ranking model, and then generate synthetic clicks on the lists to feed the learning algorithm.
+2. [DeterministicOnlineSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/deterministic_online_simulation_feed.py): this is the input layer that first create ranked lists by sorting documents according to the current ranking model, and then generate synthetic clicks on the lists to feed the learning algorithm.
 
-3. [StochasticOnlineSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/stochastic_online_simulation_feed.py): this is the inpuyt layer that first create ranked lists by sampling documents based on their scores in the current ranking model and the Plackett-Luce distribution, and then generate synthetic clicks on the lists to feed the learning algorithm.
+3. [StochasticOnlineSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/stochastic_online_simulation_feed.py): this is the input layer that first create ranked lists by sampling documents based on their scores in the current ranking model and the Plackett-Luce distribution, and then generate synthetic clicks on the lists to feed the learning algorithm.
 
-4. [DirectLabelFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/direct_label_feed.py): this is the inpuyt layer that directly feed the true relevance labels of each documents to the learning algorithm.
+4. [DirectLabelFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/direct_label_feed.py): this is the input layer that directly feed the true relevance labels of each documents to the learning algorithm.
 
 ## Learning Algorithms
 
