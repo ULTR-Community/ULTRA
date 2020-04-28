@@ -320,6 +320,8 @@ A list of (tf.Tensor, tf.Tensor) containing the random noise and the parameters 
 <dt id="ultra.ranking_model.dnn.DNN">
 <em class="property">class </em><code class="sig-prename descclassname">ultra.ranking_model.dnn.</code><code class="sig-name descname">DNN</code><span class="sig-paren">(</span><em class="sig-param">hparams_str</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.ranking_model.dnn.DNN" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ultra.ranking_model.base_ranking_model.BaseRankingModel" title="ultra.ranking_model.base_ranking_model.BaseRankingModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultra.ranking_model.base_ranking_model.BaseRankingModel</span></code></a></p>
+<p>The deep neural network model for learning to rank.</p>
+<p>This class implements a deep neural network (DNN) based ranking model. It’s essientially a multi-layer perceptron network.</p>
 <dl class="method">
 <dt id="ultra.ranking_model.dnn.DNN.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">hparams_str</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.ranking_model.dnn.DNN.__init__" title="Permalink to this definition">¶</a></dt>
@@ -378,6 +380,8 @@ A list of (tf.Tensor, tf.Tensor) containing the random noise and the parameters 
 <dt id="ultra.ranking_model.linear.Linear">
 <em class="property">class </em><code class="sig-prename descclassname">ultra.ranking_model.linear.</code><code class="sig-name descname">Linear</code><span class="sig-paren">(</span><em class="sig-param">hparams_str</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.ranking_model.linear.Linear" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ultra.ranking_model.base_ranking_model.BaseRankingModel" title="ultra.ranking_model.base_ranking_model.BaseRankingModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultra.ranking_model.base_ranking_model.BaseRankingModel</span></code></a></p>
+<p>A linear model for learning to rank.</p>
+<p>This class implements a linear ranking model. It’s essientially a logistic regression model.</p>
 <dl class="method">
 <dt id="ultra.ranking_model.linear.Linear.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">hparams_str</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.ranking_model.linear.Linear.__init__" title="Permalink to this definition">¶</a></dt>

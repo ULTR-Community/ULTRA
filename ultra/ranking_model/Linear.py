@@ -5,6 +5,12 @@ import tensorflow as tf
 from ultra.ranking_model import BaseRankingModel
 
 class Linear(BaseRankingModel):
+    """A linear model for learning to rank.
+
+    This class implements a linear ranking model. It's essientially a logistic regression model.
+
+    """
+
     def __init__(self, hparams_str):
         """Create the network.
     

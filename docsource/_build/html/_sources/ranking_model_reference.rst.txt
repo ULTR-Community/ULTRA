@@ -8,8 +8,9 @@ DNN
 Description
 ***********
 
-Helper class that provides a standard way to create an ABC using
-inheritance.
+The deep neural network model for learning to rank.
+
+This class implements a deep neural network (DNN) based ranking model. It's essientially a multi-layer perceptron network.
 
 Hyper Parameters
 ****************
@@ -20,8 +21,43 @@ Linear
 Description
 ***********
 
-Helper class that provides a standard way to create an ABC using
-inheritance.
+A linear model for learning to rank.
+
+This class implements a linear ranking model. It's essientially a logistic regression model.
+
+Hyper Parameters
+****************
+
+DLCM
+####
+
+Description
+***********
+
+The Deep Listwise Context Model for learning to rank.
+
+This class implements the Deep Listwise Context Model (DLCM) for ranking.
+
+See the following paper for more information.
+
+* Qingyao Ai, Keping Bi, Jiafeng Guo, W. Bruce Croft. 2018. Learning a Deep Listwise Context Model for Ranking Refinement. In Proceedings of SIGIR '18
+
+Hyper Parameters
+****************
+
+SetRank
+#######
+
+Description
+***********
+
+The SetRank model for learning to rank.
+
+This class implements the SetRank model for ranking.
+
+See the following paper for more information.
+
+* Liang Pang, Jun Xu, Qingyao Ai, Yanyan Lan, Xueqi Cheng, Jirong Wen. 2020. SetRank: Learning a Permutation-Invariant Ranking Model for Information Retrieval. In Proceedings of SIGIR '20
 
 Hyper Parameters
 ****************

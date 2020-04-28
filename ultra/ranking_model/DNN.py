@@ -7,6 +7,12 @@ from ultra.ranking_model import ActivationFunctions
 import ultra.utils
 
 class DNN(BaseRankingModel):
+    """The deep neural network model for learning to rank.
+
+    This class implements a deep neural network (DNN) based ranking model. It's essientially a multi-layer perceptron network.
+
+    """
+
     def __init__(self, hparams_str):
         """Create the network.
     

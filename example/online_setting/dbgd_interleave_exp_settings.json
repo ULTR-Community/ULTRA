@@ -1,5 +1,5 @@
 {
-    "train_input_feed":"ultra.input_layer.InterleavingDeterministicOnlineSimulationFeed",
+    "train_input_feed":"ultra.input_layer.StochasticOnlineSimulationFeed",
     "train_input_hparams":"",
     "valid_input_feed":"ultra.input_layer.DirectLabelFeed",
     "valid_input_hparams":"",

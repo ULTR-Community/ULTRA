@@ -19,6 +19,7 @@ import json
 import numpy as np
 from ultra.input_layer import BaseInputFeed
 from ultra.utils import click_models as cm
+from ultra.utils.team_draft_interleave import TeamDraftInterleaving
 import ultra.utils
 import tensorflow as tf
 # We disable pylint because we need python3 compatibility.
@@ -48,7 +49,7 @@ class DeterministicOnlineSimulationFeed(BaseInputFeed):
             dynamic_bias_step_interval=1000,                                # Set how many steps to change eta for dynamic bias severity in training, 0.0 means no change.
         )
         
-        print('Create online simluation feed')
+        print('Create online deterministic simluation feed')
         print(hparam_str)
         self.hparams.parse(hparam_str)
         self.click_model = None
@@ -65,6 +66,14 @@ class DeterministicOnlineSimulationFeed(BaseInputFeed):
         self.model = model
         self.session = session
         self.global_batch_count = 0
+
+        # Check whether the model needs result interleaving.
+        self.need_interleave = False
+        if hasattr(model.hparams, 'need_interleave'):
+            self.need_interleave = model.hparams.need_interleave
+            print('Online simulation with interleaving: %s' % (str(self.need_interleave)))
+        if self.need_interleave:
+            self.interleaving = TeamDraftInterleaving()
     
     def prepare_true_labels_with_index(self, data_set, index, docid_inputs, letor_features, labels, check_validation=False):
         i = index
@@ -98,7 +107,12 @@ class DeterministicOnlineSimulationFeed(BaseInputFeed):
         rank_scores = self.session.run([self.model.output], input_feed)[0]
         # Rerank documents and collect clicks
         letor_features_length = len(input_feed[self.model.letor_features.name])
-        for i in range(len(input_feed[self.model.docid_inputs[0].name])):
+        local_batch_size = len(input_feed[self.model.docid_inputs[0].name])
+
+        if self.need_interleave:
+            input_feed[self.model.winners.name] = np.zeros(local_batch_size)
+
+        for i in range(local_batch_size):
             # Get valid doc index
             valid_idx = self.max_candidate_num - 1
             while valid_idx > -1:
@@ -106,9 +120,20 @@ class DeterministicOnlineSimulationFeed(BaseInputFeed):
                     break
                 valid_idx -= 1
             list_len = valid_idx + 1
+            
             # Rerank documents
-            scores = rank_scores[i][:list_len]
-            rerank_list = sorted(range(len(scores)), key=lambda k: scores[k], reverse=True)
+            rerank_list = None
+            if self.need_interleave: 
+                # Rerank documents via interleaving
+                old_scores = rank_scores[1][i][:list_len]
+                new_scores = rank_scores[2][i][:list_len]
+                old_rank_list = sorted(range(len(old_scores)), key=lambda k: old_scores[k], reverse=True)
+                new_rank_list = sorted(range(len(new_scores)), key=lambda k: new_scores[k], reverse=True)
+                rerank_list = self.interleaving.interleave(np.asarray([old_rank_list, new_rank_list]))
+            else:
+                scores = rank_scores[i][:list_len]
+                rerank_list = sorted(range(len(scores)), key=lambda k: scores[k], reverse=True)
+            
             new_docid_list = np.zeros(list_len)
             new_label_list = np.zeros(list_len)
             for j in range(list_len):
@@ -131,6 +156,10 @@ class DeterministicOnlineSimulationFeed(BaseInputFeed):
                     input_feed[self.model.labels[j].name][i] = click_list[j] 
                 else:
                     input_feed[self.model.labels[j].name][i] = 0
+
+            if self.need_interleave: 
+                # Infer winner in interleaving 
+                input_feed[self.model.winners.name][i] = self.interleaving.infer_winner(click_list)
 
         return input_feed
         

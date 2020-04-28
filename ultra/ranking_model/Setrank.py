@@ -1,9 +1,17 @@
+"""Training and testing the SetRank model.
+
+See the following paper for more information.
+	
+	* Liang Pang, Jun Xu, Qingyao Ai, Yanyan Lan, Xueqi Cheng, Jirong Wen. 2020. SetRank: Learning a Permutation-Invariant Ranking Model for Information Retrieval. In Proceedings of SIGIR '20
+"""
+
 from __future__ import print_function
 from __future__ import absolute_import
 import os,sys
 import random
 import tensorflow as tf
 from ultra.ranking_model import BaseRankingModel
+import ultra.utils
 ## Before changes we can get around 0.748 ndcg@10
 ## encodr part the transformer is borrowed from https://www.tensorflow.org/tutorials/text/transformer
 
@@ -276,7 +284,17 @@ def scaled_dot_product_attention(q, k, v, mask=None,is_training=True,collect=Non
 #     return output, attention_weights
 
 
-class Setrank(BaseRankingModel):
+class SetRank(BaseRankingModel):
+    """The SetRank model for learning to rank.
+
+    This class implements the SetRank model for ranking.
+
+    See the following paper for more information.
+    
+    * Liang Pang, Jun Xu, Qingyao Ai, Yanyan Lan, Xueqi Cheng, Jirong Wen. 2020. SetRank: Learning a Permutation-Invariant Ranking Model for Information Retrieval. In Proceedings of SIGIR '20
+
+    """
+
     def __init__(self, hparams_str):
         """Create the network.
     
@@ -284,8 +302,13 @@ class Setrank(BaseRankingModel):
             hparams_str: (String) The hyper-parameters used to build the network.
         """
         print("build Transformer")
-        self.hparams = tf.contrib.training.HParams(
-            d_model=256, num_heads=8,num_layers=2,diff=64,rate=0.0,initializer=None
+        self.hparams = ultra.utils.hparams.HParams(
+            d_model=256, 
+            num_heads=8,
+            num_layers=2,
+            diff=64,
+            rate=0.0,
+            initializer=None
         )
         self.hparams.parse(hparams_str)
         self.initializer = None
