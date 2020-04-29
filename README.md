@@ -7,11 +7,7 @@
 <!---[![codecov](https://codecov.io/gh/NTMC-Community/MatchZoo/branch/master/graph/badge.svg)](https://codecov.io/gh/NTMC-Community/MatchZoo)---> 
 <!---[![Requirements Status](https://requires.io/github/NTMC-Community/MatchZoo/requirements.svg?branch=master)](https://requires.io/github/NTMC-Community/MatchZoo/requirements/?branch=master)---> 
 
-This is an Unbiased Learning To Rank Algorithms (ULTRA) toolbox, which is still UNDER DEVELOPMENT. A user-friendly documentation can be found [here](https://ultr-community.github.io/ULTRA/).
-
-Please cite the following paper when you use this toolbox:
-
-> Ai, Qingyao, Jiaxin Mao, Yiqun Liu, and W. Bruce Croft. "Unbiased learning to rank: Theory and practice." In Proceedings of the 27th ACM International Conference on Information and Knowledge Management, pp. 2305-2306. ACM, 2018.
+This is an Unbiased Learning To Rank Algorithms (ULTRA) toolbox, which provides a codebase for experiments and research on learning to rank with human annotated or noisy labels. With the unified data processing pipeline, ULTRA supports multiple unbiased learning-to-rank algorithms, online learning-to-rank algorithms, neural learning-to-rank models, as well as different methods to use and simulate noisy labels (e.g., clicks) to train and test different algorithms/ranking models. A user-friendly documentation can be found [here](https://ultr-community.github.io/ULTRA/).
 
 ## Get Started
 
@@ -45,9 +41,9 @@ bash offline_exp_pipeline.sh
 
 1. [ClickSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/click_simulation_feed.py): this is the input layer that generate synthetic clicks on fixed ranked lists to feed the learning algorithm.
 
-2. [DeterministicOnlineSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/deterministic_online_simulation_feed.py): this is the input layer that first create ranked lists by sorting documents according to the current ranking model, and then generate synthetic clicks on the lists to feed the learning algorithm.
+2. [DeterministicOnlineSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/deterministic_online_simulation_feed.py): this is the input layer that first create ranked lists by sorting documents according to the current ranking model, and then generate synthetic clicks on the lists to feed the learning algorithm. It can do result interleaving if required by the learning algorithm.
 
-3. [StochasticOnlineSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/stochastic_online_simulation_feed.py): this is the input layer that first create ranked lists by sampling documents based on their scores in the current ranking model and the Plackett-Luce distribution, and then generate synthetic clicks on the lists to feed the learning algorithm.
+3. [StochasticOnlineSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/stochastic_online_simulation_feed.py): this is the input layer that first create ranked lists by sampling documents based on their scores in the current ranking model and the Plackett-Luce distribution, and then generate synthetic clicks on the lists to feed the learning algorithm. It can do result interleaving if required by the learning algorithm.
 
 4. [DirectLabelFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/direct_label_feed.py): this is the input layer that directly feed the true relevance labels of each documents to the learning algorithm.
 
@@ -75,7 +71,7 @@ bash offline_exp_pipeline.sh
 
 3. [DLCM](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/DLCM.py): this is an implementation of the Deep Listwise Context Model in <a href="https://arxiv.org/pdf/1804.05936.pdf">*Learning a Deep Listwise Context Model for Ranking Refinement*</a>.
 
-4. [GFS](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/GFS.py): this is an implementation of the Groupwise Scoring Function in <a href="https://arxiv.org/pdf/1811.04415.pdf">*Learning Groupwise Multivariate Scoring Functions Using Deep Neural Networks*</a>. (TODO)
+4. [GSF](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/GSF.py): this is an implementation of the Groupwise Scoring Function in <a href="https://arxiv.org/pdf/1811.04415.pdf">*Learning Groupwise Multivariate Scoring Functions Using Deep Neural Networks*</a>.
 
 5. [SetRank](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/SetRank.py): this is an implementation of the SetRank model in <a href="https://arxiv.org/abs/1912.05891">*SetRank: Learning a Permutation-Invariant Ranking Model for Information Retrieval*</a>.
 
@@ -132,8 +128,18 @@ If you use ULTRA in your research, please use the following BibTex entry.
  publisher = {ACM},
  address = {New York, NY, USA},
  keywords = {click model, counterfactual learning, unbiased learning to rank, user bias},
-} 
+}
+
+@misc{ai2020unbiased,
+    title={Unbiased Learning to Rank: Online or Offline?},
+    author={Qingyao Ai and Tao Yang and Huazheng Wang and Jiaxin Mao},
+    year={2020},
+    eprint={2004.13574},
+    archivePrefix={arXiv},
+    primaryClass={cs.IR}
+}
 ```
+
 
 ## Development Team
 
