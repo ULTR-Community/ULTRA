@@ -4,6 +4,7 @@ from .base_ranking_model import *
 from .dnn import *
 from .linear import *
 from .DLCM import *
+from .GSF import *
 from .SetRank import *
 def list_available() -> list:
     from .base_ranking_model import BaseRankingModel

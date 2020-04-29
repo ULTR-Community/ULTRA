@@ -45,6 +45,23 @@ See the following paper for more information.
 Hyper Parameters
 ****************
 
+GSF
+###
+
+Description
+***********
+
+The Groupwise Scoring Function (with no approaximation) for learning to rank.
+
+This class implements The Groupwise Scoring Function (GSF) based on multi-layer perceptron networks.
+
+See the following paper for more information.
+
+* Qingyao Ai, Xuanhui Wang, Sebastian Bruch, Nadav Golbandi, Michael Bendersky, Marc Najork. 2019. Learning Groupwise Scoring Functions Using Deep Neural Networks. In Proceedings of ICTIR '19
+
+Hyper Parameters
+****************
+
 SetRank
 #######
 

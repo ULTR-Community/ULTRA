@@ -6,7 +6,7 @@
     "test_input_feed":"ultra.input_layer.DirectLabelFeed",
     "test_input_hparams":"",
 
-    "ranking_model":"ultra.ranking_model.DNN",
+    "ranking_model":"ultra.ranking_model.GSF",
     "ranking_model_hparams":"hidden_layer_sizes=[512, 256, 128]",
 
     "learning_algorithm": "ultra.learning_algorithm.DLA",
