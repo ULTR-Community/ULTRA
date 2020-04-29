@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name="ULTRA",
-    version="0.1.0",
+    version="0.2.0",
     author="Qingyao Ai",
     author_email="aiqingyao@gmail.com",
     description=("TODO"),
@@ -29,7 +29,7 @@ setup(
     install_requires=[
         #'keras >= 2.0.5',
         #'tensorflow-gpu >= 1.1.0,<2',
-        'tensorflow >= 1.1.0,<2',
+        'tensorflow >= 1.1.0,<1.15',
         'tensorflow_ranking >= 0.1.0', # You may need to mannually install tensorflow_ranking from the source code
         'numpy >= 1.12.1',
         'six >= 1.10.0',
