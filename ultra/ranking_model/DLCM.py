@@ -302,16 +302,22 @@ class DLCM(BaseRankingModel):
                                 num_heads=num_heads, loop_function=loop_function)
     def build_with_random_noise(self, input_list, noise_rate, is_training=False):
             return self.build(input_list, is_training)
-    def build(self, encoder_embed,is_training=False):
-        """Embedding RNN sequence-to-sequence model.
+    def build(self, input_list, is_training=False):
+        """Create embedding RNN sequence-to-sequence model.
 
-        encoder_embed: [batch,feature_size]*len_seq
+        Args:
+            input_list: (list<tf.Tensor>) A list of tensors containing the features
+                        for a list of documents.
+            is_training: (bool) A flag indicating whether the model is running in training mode.
+
+        Returns:
+            A list of tf.Tensor containing the ranking scores for each instance in input_list.
         """
         feed_previous=self.feed_previous
-        embed_size = encoder_embed[0].get_shape()[-1].value #
+        embed_size = input_list[0].get_shape()[-1].value #
         dtype=dtypes.float32
         output_projection=None
-        list_size=len(encoder_embed)#len_seq
+        list_size=len(input_list)#len_seq
         with variable_scope.variable_scope("cell",reuse=tf.AUTO_REUSE):
             single_cell = tf.contrib.rnn.GRUCell(embed_size + self.expand_embed_size)
             double_cell = tf.contrib.rnn.GRUCell((embed_size +self.expand_embed_size) * 2)
@@ -345,13 +351,13 @@ class DLCM(BaseRankingModel):
                         current_size = output_sizes[i]
                     return output_data
             for i in xrange(list_size):
-                encoder_embed[i]=self.Layer_embedding(encoder_embed[i])
+                input_list[i]=self.Layer_embedding(input_list[i])
                 if self.expand_embed_size > 0:
-                    encoder_embed[i] =  tf.concat(axis=1, values=[encoder_embed[i], abstract(encoder_embed[i], i)]) #[batch,feature_size+expand_embed_size]*len_seq
-#             encoder_embed= [tf.reshape(e, [1, -1,self.expand_embed_size+embed_size])
-#                         for e in encoder_embed]
-#             encoder_embed = tf.concat(axis=0, values=encoder_embed)###[len_seq,batch,feature_size+expand_embed_size]
-            encoder_embed=tf.stack(encoder_embed,axis=0)###[len_seq,batch,feature_size+expand_embed_size]           
+                    input_list[i] =  tf.concat(axis=1, values=[input_list[i], abstract(input_list[i], i)]) #[batch,feature_size+expand_embed_size]*len_seq
+#             input_list= [tf.reshape(e, [1, -1,self.expand_embed_size+embed_size])
+#                         for e in input_list]
+#             input_list = tf.concat(axis=0, values=input_list)###[len_seq,batch,feature_size+expand_embed_size]
+            input_list=tf.stack(input_list,axis=0)###[len_seq,batch,feature_size+expand_embed_size]           
             enc_cell = copy.deepcopy(cell)
             ind=tf.range(0,list_size)
             print(self.hparams.input_sequence)
@@ -361,9 +367,9 @@ class DLCM(BaseRankingModel):
                 ind=tf.range(list_size-1,-1,-1)
             elif self.hparams.input_sequence=="random":
                 ind=tf.random.shuffle(ind)
-            encoder_embed_input=tf.nn.embedding_lookup(encoder_embed,ind)###[len_seq,batch,feature_size+expand_embed_size] 
-            encoder_embed_input_list=tf.unstack(encoder_embed_input,axis=0)###[batch,feature_size+expand_embed_size]*len_seq
-            encoder_outputs_some_order, encoder_state = tf.nn.static_rnn(enc_cell, encoder_embed_input_list, dtype=dtype)
+            input_list_input=tf.nn.embedding_lookup(input_list,ind)###[len_seq,batch,feature_size+expand_embed_size] 
+            input_list_input_list=tf.unstack(input_list_input,axis=0)###[batch,feature_size+expand_embed_size]*len_seq
+            encoder_outputs_some_order, encoder_state = tf.nn.static_rnn(enc_cell, input_list_input_list, dtype=dtype)
             ind_sort=tf.argsort(ind) ## find the order of sequence
 #             ind_sort=tf.Print(tf.argsort(ind),[tf.argsort(ind),ind],"sequence")
             self.ind_sort=[ind_sort,ind]
@@ -371,20 +377,20 @@ class DLCM(BaseRankingModel):
 #             encoder_outputs=[None]*list_size
 #             for i in range(list_size):
 #                 encoder_outputs[ind[i]]=encoder_outputs_some_order[i]## back to the order of initial list.
-            encoder_embed_output=tf.nn.embedding_lookup(encoder_outputs_some_order,ind_sort)###[len_seq,batch,feature_size+expand_embed_size] 
-            encoder_embed_output_list=tf.unstack(encoder_embed_output,axis=0)#[feature_size+expand_embed_size] *len_seq
+            input_list_output=tf.nn.embedding_lookup(encoder_outputs_some_order,ind_sort)###[len_seq,batch,feature_size+expand_embed_size] 
+            input_list_output_list=tf.unstack(input_list_output,axis=0)#[feature_size+expand_embed_size] *len_seq
             top_states = [tf.reshape(self.layer_norm_hidden(e), [-1, 1, cell.output_size])
-                        for e in encoder_embed_output_list] ##[batch,1,encoder_out]*len_seq
+                        for e in input_list_output_list] ##[batch,1,encoder_out]*len_seq
             encoder_state=self.layer_norm_final(encoder_state)####[batch,encoder_state]
 #             top_states = [tf.reshape(e, [-1, 1, cell.output_size])
 #                         for e in encoder_outputs]  ##[]
 #             encoder_state=encoder_state
-                        #for e in encoder_embed]
+                        #for e in input_list]
             attention_states = tf.concat(axis=1, values=top_states) ##[batch,len_seq,encoder_out]
 #             print(attention_states.get_shape(),"attention_states.get_shape()")
             if isinstance(feed_previous, bool):
                 outputs, state=self.embedding_rnn_decoder(
-                    encoder_state, cell, attention_states,encoder_embed,
+                    encoder_state, cell, attention_states,input_list,
                     num_heads=self.hparams.num_heads, output_projection=output_projection,
                     feed_previous=feed_previous)
                 print(outputs[0].get_shape(),"outputs[0].get_shape()")
@@ -396,7 +402,7 @@ class DLCM(BaseRankingModel):
                 with variable_scope.variable_scope(variable_scope.get_variable_scope(),
                                                  reuse=reuse):
                     outputs, state = self.embedding_rnn_decoder(
-                        encoder_state, cell, attention_states,encoder_embed,
+                        encoder_state, cell, attention_states,input_list,
                         num_heads = self.hparams.num_heads, output_projection=output_projection,
                         feed_previous=feed_previous_bool,
                         update_embedding_for_previous=False)
