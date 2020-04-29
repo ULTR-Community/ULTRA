@@ -25,7 +25,7 @@ from six.moves import zip
 from tensorflow import dtypes
 from ultra.learning_algorithm.base_algorithm import BaseAlgorithm
 import ultra.utils
-
+import ultra
 class DBGD(BaseAlgorithm):
     """The Dueling Bandit Gradient Descent (DBGD) algorithm for unbiased learning to rank.
 
@@ -56,7 +56,7 @@ class DBGD(BaseAlgorithm):
         print(exp_settings['learning_algorithm_hparams'])
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
         self.exp_settings = exp_settings
-
+        self.model=None
         self.max_candidate_num = exp_settings['max_candidate_num']
         self.feature_size = data_set.feature_size
         self.learning_rate = tf.Variable(float(self.hparams.learning_rate), trainable=False)

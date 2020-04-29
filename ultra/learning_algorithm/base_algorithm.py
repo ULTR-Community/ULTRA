@@ -14,7 +14,9 @@ import tensorflow as tf
 import tensorflow_ranking as tfr
 from abc import ABC, abstractmethod
 
-import ultra.utils
+import ultra
+import ultra.utils as utils
+
 
 class BaseAlgorithm(ABC):
     """The basic class that contains all the API needed for the 
@@ -111,9 +113,14 @@ class BaseAlgorithm(ABC):
             PAD_embed = tf.zeros([1,self.feature_size],dtype=tf.float32)
             letor_features = tf.concat(axis=0,values=[self.letor_features, PAD_embed])
             input_feature_list = []
-
-            model = ultra.utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
-
+            if hasattr(self,"model") and self.model==None:
+                self.model = utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
+                model=self.model
+#                 print("")
+            elif hasattr(self,"model") and self.model!=None:
+                model=self.model
+            else:
+                model = ultra.utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
             for i in range(len(input_id_list)):
                 input_feature_list.append(tf.nn.embedding_lookup(letor_features, input_id_list[i]))
             return model.build(input_feature_list, is_training)
@@ -137,7 +144,14 @@ class BaseAlgorithm(ABC):
             letor_features = tf.concat(axis=0,values=[self.letor_features, PAD_embed])
             input_feature_list = []
 
-            model = ultra.utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
+            if hasattr(self,"model") and self.model==None:
+                self.model = utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
+                model=self.model
+#                 print("")
+            elif hasattr(self,"model") and self.model!=None:
+                model=self.model
+            else:
+                model = ultra.utils.find_class(self.exp_settings['ranking_model'])(self.exp_settings['ranking_model_hparams'])
 
             for i in range(len(input_id_list)):
                 input_feature_list.append(tf.nn.embedding_lookup(letor_features, input_id_list[i]))

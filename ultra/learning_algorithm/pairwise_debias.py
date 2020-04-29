@@ -69,7 +69,7 @@ class PairDebias(BaseAlgorithm):
         print(exp_settings['learning_algorithm_hparams'])
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
         self.exp_settings = exp_settings
-
+        self.model=None
         self.max_candidate_num = exp_settings['max_candidate_num']
         self.feature_size = data_set.feature_size
         self.learning_rate = tf.Variable(float(self.hparams.learning_rate), trainable=False)

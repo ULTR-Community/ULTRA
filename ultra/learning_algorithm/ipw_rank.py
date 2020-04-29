@@ -52,7 +52,7 @@ class IPWrank(BaseAlgorithm):
         """
 
         self.hparams = ultra.utils.hparams.HParams(
-            propensity_estimator_type='utils.propensity_estimator.RandomizedPropensityEstimator',
+            propensity_estimator_type='ultra.utils.propensity_estimator.RandomizedPropensityEstimator',
             propensity_estimator_json='./example/PropensityEstimator/randomized_pbm_0.1_1.0_4_1.0.json', # the setting file for the predefined click models.
             learning_rate=0.05,                 # Learning rate.
             max_gradient_norm=5.0,            # Clip gradients to this norm.
@@ -60,6 +60,7 @@ class IPWrank(BaseAlgorithm):
             l2_loss=0.0,                    # Set strength for L2 regularization.
             grad_strategy='ada',            # Select gradient strategy
         )
+        self.model=None
         print(exp_settings['learning_algorithm_hparams'])
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
         self.exp_settings = exp_settings

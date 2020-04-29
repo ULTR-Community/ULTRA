@@ -25,7 +25,7 @@ from six.moves import zip
 from tensorflow import dtypes
 from ultra.learning_algorithm.base_algorithm import BaseAlgorithm
 import ultra.utils
-
+import ultra
 class DBGDInterleave(BaseAlgorithm):
     """The Dueling Bandit Gradient Descent (DBGD) algorithm for unbiased learning to rank.
 
@@ -48,7 +48,6 @@ class DBGDInterleave(BaseAlgorithm):
 
         self.hparams = ultra.utils.hparams.HParams(
             noise_rate=0.5,               # The update rate for randomly sampled weights.
-            need_interleave=True,         # Set True to use result interleaving in online simulation
             learning_rate=0.01,                 # Learning rate.
             max_gradient_norm=5.0,            # Clip gradients to this norm.
             l2_loss=0.01,                    # Set strength for L2 regularization.
@@ -57,7 +56,7 @@ class DBGDInterleave(BaseAlgorithm):
         print(exp_settings['learning_algorithm_hparams'])
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
         self.exp_settings = exp_settings
-
+        self.model=None
         self.max_candidate_num = exp_settings['max_candidate_num']
         self.feature_size = data_set.feature_size
         self.learning_rate = tf.Variable(float(self.hparams.learning_rate), trainable=False)

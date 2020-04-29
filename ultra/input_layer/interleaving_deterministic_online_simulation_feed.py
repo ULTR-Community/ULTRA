@@ -20,7 +20,7 @@ import numpy as np
 from ultra.input_layer import BaseInputFeed
 from ultra.utils import click_models as cm
 from ultra.utils.team_draft_interleave import TeamDraftInterleaving
-
+import ultra
 import tensorflow as tf
 # We disable pylint because we need python3 compatibility.
 from six.moves import zip     # pylint: disable=redefined-builtin
