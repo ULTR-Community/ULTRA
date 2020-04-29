@@ -178,6 +178,11 @@ If you use ULTRA in your research, please use the following BibTex entry.
 </table>
 
 
+## Contribution
+
+Please read the [Contributing Guide](./CONTRIBUTING.md) before creating a pull request. 
+
+
 ## Project Organizers
 
 - Qingyao Ai
