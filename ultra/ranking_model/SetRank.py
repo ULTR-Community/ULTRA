@@ -338,6 +338,7 @@ class SetRank(BaseRankingModel):
                 list_size=len(input_list)
                 ind=list(range(0,list_size))
                 random.shuffle(ind)
+
 #                 input_list=[input_list[i] for i in ind ]
                 x= [tf.expand_dims(e,1)for e in input_list]
                 
