@@ -13,3 +13,6 @@ sphinx-apidoc -o source/ ../ultra
 # make html files
 make clean
 make github
+
+# add twitter card
+python add_twitter_card.py ../docs/index.html ./twitter_card.json
