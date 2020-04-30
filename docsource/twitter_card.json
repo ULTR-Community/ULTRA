@@ -4,5 +4,5 @@
     "twitter:creator" : "@CommunityUltr",
     "twitter:title" : "ULTRA: Unbiased Learning to Rank Algorithms toolbox",
     "twitter:description" : "A codebase for experiments and research on unbiased/online learning to rank with human annotated or noisy labels.",
-    "twitter:image" : "https://ultr-community.github.io/ULTRA/_images/logo.png"
+    "twitter:image" : "https://raw.githubusercontent.com/ULTR-Community/ULTRA/master/docs/logo.png"
 }
