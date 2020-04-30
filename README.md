@@ -1,5 +1,5 @@
 <div align='center'>
-<img src="https://github.com/ULTR-Community/ULTRA/blob/master/docs/logo.png?raw=true" width = "150"  alt="logo" align="center" />
+<img src="https://github.com/ULTR-Community/ULTRA/blob/master/docs/logo.png?raw=true" width = "200"  alt="logo" align="center" />
 </div>
 
 # Unbiased Learning to Rank Algorithms (ULTRA)
