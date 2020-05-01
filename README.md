@@ -176,7 +176,7 @@ If you use ULTRA in your research, please use the following BibTex entry.
       <td>
         ​ <a href="https://github.com/defaultstr"><img width="50" height="50" src="https://github.com/defaultstr.png?s=50" alt="defaultstr"></a><br>
         ​ <a href="https://github.com/defaultstr">Jiaxin Mao</a>
-        <p>Dev<br>
+        <p>Core Dev<br>
         Postdoc, Tsinghua Univ.</p>​
       </td>
     </tr>
