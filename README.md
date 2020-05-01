@@ -37,8 +37,7 @@ make init # Replace 'tensorflow' with 'tensorflow-gpu' in requirements.txt for G
 
 **Run toy example:**
 ```
-cd example/toy
-bash offline_exp_pipeline.sh
+bash example/toy/offline_exp_pipeline.sh
 ```
 
 ## Structure
