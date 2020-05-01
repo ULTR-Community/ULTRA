@@ -105,13 +105,13 @@ bash offline_exp_pipeline.sh
 
 **Create click models for click simulations**
 ```
-python utils/click_models.py pbm 0.1 1 4 1.0 example/ClickModel
+python ultra/utils/click_models.py pbm 0.1 1 4 1.0 example/ClickModel
 ```
 \* The output is a json file containing the click mode that could be used for click simulation. More details could be found in the code.
 
 **(Optional) Estimate examination propensity with result randomization**
 ```
-python utils/propensity_estimator.py example/ClickModel/pbm_0.1_1.0_4_1.0.json <DATA_DIR> example/PropensityEstimator/
+python ultra/utils/propensity_estimator.py example/ClickModel/pbm_0.1_1.0_4_1.0.json <DATA_DIR> example/PropensityEstimator/
 ```
 \* The output is a json file containing the estimated examination propensity (used for IPW). DATA_DIR is the directory for the prepared data created by ./libsvm_tools/prepare_exp_data_with_svmrank.py. More details could be found in the code.
 
