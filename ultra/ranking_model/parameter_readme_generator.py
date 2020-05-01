@@ -1,6 +1,5 @@
 """ultra/ranking_model/README.md generater."""
 
-import ultra
 from pathlib import Path
 
 import tabulate
@@ -9,6 +8,7 @@ import pandas as pd
 import sys
 
 sys.path.append(".")
+import ultra
 
 
 def _generate():

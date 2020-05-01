@@ -10,7 +10,7 @@ Description
 
 The Dual Learning Algorithm for unbiased learning to rank.
 
-This class implements the Dual Learning Algorithm (DLA) based on the input layer 
+This class implements the Dual Learning Algorithm (DLA) based on the input layer
 feed. See the following paper for more information on the algorithm.
 
 * Qingyao Ai, Keping Bi, Cheng Luo, Jiafeng Guo, W. Bruce Croft. 2018. Unbiased Learning to Rank with Unbiased Propensity Estimation. In Proceedings of SIGIR '18
@@ -42,7 +42,7 @@ Description
 
 The regression-based EM algorithm for unbiased learning to rank.
 
-This class implements the regression-based EM algorithm based on the input layer 
+This class implements the regression-based EM algorithm based on the input layer
 feed. See the following paper for more information.
 
 * Wang, Xuanhui, Nadav Golbandi, Michael Bendersky, Donald Metzler, and Marc Najork. "Position bias estimation for unbiased learning to rank in personal search." In Proceedings of the Eleventh ACM International Conference on Web Search and Data Mining, pp. 610-618. ACM, 2018.
@@ -62,7 +62,7 @@ Description
 
 The Pairwise Differentiable Gradient Descent (PDGD) algorithm for unbiased learning to rank.
 
-This class implements the Pairwise Differentiable Gradient Descent (PDGD) algorithm based on the input layer 
+This class implements the Pairwise Differentiable Gradient Descent (PDGD) algorithm based on the input layer
 feed. See the following paper for more information on the algorithm.
 
 * Oosterhuis, Harrie, and Maarten de Rijke. "Differentiable unbiased online learning to rank." In Proceedings of the 27th ACM International Conference on Information and Knowledge Management, pp. 1293-1302. ACM, 2018.
@@ -78,7 +78,7 @@ Description
 
 The Dueling Bandit Gradient Descent (DBGD) algorithm for unbiased learning to rank.
 
-This class implements the Dueling Bandit Gradient Descent (DBGD) algorithm based on the input layer 
+This class implements the Dueling Bandit Gradient Descent (DBGD) algorithm based on the input layer
 feed. See the following paper for more information on the algorithm.
 
 * Yisong Yue and Thorsten Joachims. 2009. Interactively optimizing information retrieval systems as a dueling bandits problem. In ICML. 1201–1208.
@@ -94,7 +94,7 @@ Description
 
 The Pairwise Debiasing algorithm for unbiased learning to rank.
 
-This class implements the Pairwise Debiasing algorithm based on the input layer 
+This class implements the Pairwise Debiasing algorithm based on the input layer
 feed. See the following paper for more information on the algorithm.
 
 * Hu, Ziniu, Yang Wang, Qu Peng, and Hang Li. "Unbiased LambdaMART: An Unbiased Pairwise Learning-to-Rank Algorithm." In The World Wide Web Conference, pp. 2830-2836. ACM, 2019.
@@ -123,7 +123,7 @@ Description
 
 The Dueling Bandit Gradient Descent (DBGD) algorithm for unbiased learning to rank.
 
-This class implements the Dueling Bandit Gradient Descent (DBGD) algorithm based on the input layer 
+This class implements the Dueling Bandit Gradient Descent (DBGD) algorithm based on the input layer
 feed. See the following paper for more information on the algorithm.
 
 * Yisong Yue and Thorsten Joachims. 2009. Interactively optimizing information retrieval systems as a dueling bandits problem. In ICML. 1201–1208.

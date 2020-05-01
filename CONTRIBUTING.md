@@ -40,7 +40,7 @@ Contributing Flow
 1. Fork the latest version of [ULTRA](https://github.com/ULTR-Community/ULTRA/) into your repo.
 2. Create an issue under [ULTR-Community/ULTRA/](https://github.com/ULTR-Community/ULTRA/issues), write description about the bug/enhancement.
 3. Clone your forked ULTRA into your machine, add your changes. 
-4. Create json files in tests/pipeline_test/ (e.g.,tests/pipeline_test/test.json) to test models that have been changed. Please create separate json files to test each changed model.
+4. Create json files in tests/test_settings/ (e.g.,tests/test_settings/test.json) to test models that have been changed. Please create separate json files to test each changed model.
 5. Run `make test` to ensure all tests passed on your computer.
 6. Run `make format` to use autopep8 to format your code.
 7. Push to your forked repo, then send the pull request to the official repo. In pull request, you need to create a link to the issue you created using `#[issue_id]`, and describe what has been changed.

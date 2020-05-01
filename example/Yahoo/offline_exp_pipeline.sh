@@ -33,5 +33,10 @@ python ./libsvm_tools/initial_ranking_with_svm_rank.py \
 # Prepare model input.
 python ./libsvm_tools/prepare_exp_data_with_svmrank.py ./Webscope_C14B/ ./tmp/ ./tmp_data/ 700
 
-# run model
-python main.py --setting_file=./example/offline_setting/dla_exp_settings.json
+
+export SETTING_ARGS="--data_dir=./tmp_data/ --model_dir=./tmp_model/ --output_dir=./tmp_output/ --setting_file=./example/offline_setting/dla_exp_settings.json"
+# Run model
+python main.py --max_train_iteration=1000 $SETTING_ARGS
+
+# Test model
+python main.py --test_only=True $SETTING_ARGS

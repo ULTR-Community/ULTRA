@@ -2,7 +2,7 @@ init:
 		pip install -r requirements.txt
 
 format:
-		autopep8 --in-place --aggressive -r ./ultra/
+		autopep8 --in-place --aggressive -r ./ultra/ --exclude="parameter_readme_generator.py"
 		autopep8 --in-place --aggressive -r ./tests/
 
 codecov:
