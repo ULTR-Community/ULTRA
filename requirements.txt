@@ -1,0 +1,6 @@
+tensorflow >= 1.1.0,<1.15
+tensorflow_ranking >= 0.1.0,<2
+numpy >= 1.12.1
+six >= 1.10.0
+scipy >= 1.0.0
+autopep8 >= 1.0.0

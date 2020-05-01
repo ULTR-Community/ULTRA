@@ -1,5 +1,6 @@
 """ultra/input_layer/README.md generater."""
 
+import ultra
 from pathlib import Path
 
 import tabulate
@@ -8,7 +9,6 @@ import pandas as pd
 import sys
 
 sys.path.append(".")
-import ultra
 
 
 def _generate():
@@ -63,7 +63,8 @@ def _make_model_params_table(model):
 def _write_to_files(full):
     readme_file_path = Path(__file__).parent.joinpath('README.rst')
     doc_file_path = Path(__file__).parent.parent.parent. \
-        joinpath('docsource').joinpath('source').joinpath('input_layer_reference.rst')
+        joinpath('docsource').joinpath('source').joinpath(
+            'input_layer_reference.rst')
     for file_path in readme_file_path, doc_file_path:
         with open(file_path, 'w', encoding='utf-8') as out_file:
             out_file.write(full)

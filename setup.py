@@ -34,6 +34,7 @@ setup(
         'numpy >= 1.12.1',
         'six >= 1.10.0',
         'scipy >= 1.0.0',
+        'autopep8 >= 1.0.0',
     ]
     #extras_require={
     #    'visualize': ['matplotlib >= 2.2.0'],

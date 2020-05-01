@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 import random
 
 input_file = sys.argv[1]
@@ -14,7 +15,8 @@ with open(input_file) as fin:
             qid_list_data[qid] = []
         qid_list_data[qid].append(line.strip())
 
-sampled_qid_lists = random.sample(qid_list_data.items(), max(int(sample_rate * len(qid_list_data)), 1))
+sampled_qid_lists = random.sample(qid_list_data.items(), max(
+    int(sample_rate * len(qid_list_data)), 1))
 
 with open(output_file, 'w') as fout:
     sorted_qid_lists = sorted(sampled_qid_lists, key=lambda k: k[0])
@@ -22,5 +24,3 @@ with open(output_file, 'w') as fout:
         for line in qid_list[1]:
             fout.write(line)
             fout.write('\n')
-
-

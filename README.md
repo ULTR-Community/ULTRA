@@ -30,7 +30,7 @@ source venv/bin/activate
 ```
 git clone https://github.com/ULTR-Community/ULTRA.git
 cd ULTRA
-python setup.py install #use setup-gpu.py for GPU support
+make init # Replace 'tensorflow' with 'tensorflow-gpu' in requirements.txt for GPU support
 ```
 
 **Run toy example:**

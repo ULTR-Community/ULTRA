@@ -27,18 +27,18 @@ PARAM_RE = re.compile(r"""
 def _parse_fail(name, var_type, value, values):
     """Helper function for raising a value error for bad assignment."""
     raise ValueError(
-            'Could not parse hparam \'%s\' of type \'%s\' with value \'%s\' in %s' %
-            (name, var_type.__name__, value, values))
+        'Could not parse hparam \'%s\' of type \'%s\' with value \'%s\' in %s' %
+        (name, var_type.__name__, value, values))
 
 
 def _reuse_fail(name, values):
     """Helper function for raising a value error for reuse of name."""
     raise ValueError('Multiple assignments to variable \'%s\' in %s' % (name,
-                                                                                                                                            values))
+                                                                        values))
 
 
 def _process_scalar_value(name, parse_fn, var_type, m_dict, values,
-                                                    results_dictionary):
+                          results_dictionary):
     """Update results_dictionary with a scalar value.
     Used to update the results_dictionary to be returned by parse_values when
     encountering a clause with a scalar RHS (e.g.    "s=5" or "arr[0]=5".)
@@ -83,7 +83,7 @@ def _process_scalar_value(name, parse_fn, var_type, m_dict, values,
 
 
 def _process_list_value(name, parse_fn, var_type, m_dict, values,
-                                                results_dictionary):
+                        results_dictionary):
     """Update results_dictionary from a list of values.
     Used to update results_dictionary to be returned by parse_values when
     encountering a clause with a list RHS (e.g.    "arr=[1,2,3]".)
@@ -128,8 +128,8 @@ def _cast_to_type_if_compatible(name, param_type, value):
             * If `param_type` is a float type, but `value` is not a numeric type.
     """
     fail_msg = (
-            "Could not cast hparam '%s' of type '%s' from value %r" %
-            (name, param_type, value))
+        "Could not cast hparam '%s' of type '%s' from value %r" %
+        (name, param_type, value))
 
     # Some callers use None, for which we can't do any casting/checking. :(
     if issubclass(param_type, type(None)):
@@ -189,7 +189,7 @@ def parse_values(values, type_map, ignore_unknown_hyperparameters):
             type T if either V has type T, or V is a list of elements of type T.
             Hence, for a multidimensional parameter 'x' taking float values,
             'x=[0.1,0.2]' will parse successfully if type_map['x'] = float.
-        ignore_unknown_hyperparameters: Bool. Set false to raise ValueError if the 
+        ignore_unknown_hyperparameters: Bool. Set false to raise ValueError if the
                                             hyper-parameter is unknown.
     Returns:
         A python map mapping each name to either:
@@ -209,7 +209,8 @@ def parse_values(values, type_map, ignore_unknown_hyperparameters):
     while pos < len(values):
         m = PARAM_RE.match(values, pos)
         if not m:
-            raise ValueError('Malformed hyperparameter value: %s' % values[pos:])
+            raise ValueError(
+                'Malformed hyperparameter value: %s' % values[pos:])
         # Check that there is a comma between parameters and move past it.
         pos = m.end()
         # Parse the values.
@@ -223,7 +224,8 @@ def parse_values(values, type_map, ignore_unknown_hyperparameters):
                 continue
         type_ = type_map[name]
 
-        # Set up correct parsing function (depending on whether type_ is a bool)
+        # Set up correct parsing function (depending on whether type_ is a
+        # bool)
         if type_ == bool:
 
             def parse_bool(value):
@@ -244,12 +246,12 @@ def parse_values(values, type_map, ignore_unknown_hyperparameters):
         # If a singe value is provided
         if m_dict['val'] is not None:
             _process_scalar_value(name, parse, type_, m_dict, values,
-                                                        results_dictionary)
+                                  results_dictionary)
 
         # If the assigned value is a list:
         elif m_dict['vals'] is not None:
             _process_list_value(name, parse, type_, m_dict, values,
-                                                    results_dictionary)
+                                results_dictionary)
 
         else:    # Not assigned a list or value
             _parse_fail(name, type_, '', values)
@@ -356,7 +358,7 @@ class HParams(object):
             self._init_from_proto(hparam_def)
             if kwargs:
                 raise ValueError('hparam_def and initialization values are '
-                                                 'mutually exclusive')
+                                 'mutually exclusive')
         else:
             for name, value in six.iteritems(kwargs):
                 self.add_hparam(name, value)
@@ -378,7 +380,7 @@ class HParams(object):
         if isinstance(value, (list, tuple)):
             if not value:
                 raise ValueError(
-                        'Multi-valued hyperparameters cannot be empty: %s' % name)
+                    'Multi-valued hyperparameters cannot be empty: %s' % name)
             self._hparam_types[name] = (type(value[0]), True)
         else:
             self._hparam_types[name] = (type(value), False)
@@ -398,14 +400,20 @@ class HParams(object):
         if isinstance(value, list):
             if not is_list:
                 raise ValueError(
-                        'Must not pass a list for single-valued parameter: %s' % name)
+                    'Must not pass a list for single-valued parameter: %s' % name)
             setattr(self, name, [
                     _cast_to_type_if_compatible(name, param_type, v) for v in value])
         else:
             if is_list:
                 raise ValueError(
-                        'Must pass a list for multi-valued parameter: %s.' % name)
-            setattr(self, name, _cast_to_type_if_compatible(name, param_type, value))
+                    'Must pass a list for multi-valued parameter: %s.' % name)
+            setattr(
+                self,
+                name,
+                _cast_to_type_if_compatible(
+                    name,
+                    param_type,
+                    value))
 
     def parse(self, values, ignore_unknown_hyperparameters=True):
         """Override hyperparameter values, parsing new values from a string.
@@ -413,7 +421,7 @@ class HParams(object):
         Args:
             values: String.    Comma separated list of `name=value` pairs where
                 'value' must follow the syntax described above.
-            ignore_unknown_hyperparameters: Bool. Set false to raise ValueError if the 
+            ignore_unknown_hyperparameters: Bool. Set false to raise ValueError if the
                                             hyper-parameter is unknown.
         Returns:
             The `HParams` instance.
@@ -425,7 +433,8 @@ class HParams(object):
             param_type, _ = t
             type_map[name] = param_type
 
-        values_map = parse_values(values, type_map, ignore_unknown_hyperparameters)
+        values_map = parse_values(
+            values, type_map, ignore_unknown_hyperparameters)
         return self.override_from_dict(values_map)
 
     def override_from_dict(self, values_dict):
@@ -465,10 +474,10 @@ class HParams(object):
             A JSON string.
         """
         return json.dumps(
-                self.values(),
-                indent=indent,
-                separators=separators,
-                sort_keys=sort_keys)
+            self.values(),
+            indent=indent,
+            separators=separators,
+            sort_keys=sort_keys)
 
     def parse_json(self, values_json):
         """Override hyperparameter values, parsing new values from a json object.
@@ -496,9 +505,10 @@ class HParams(object):
             # Ensure that default is compatible with the parameter type.
             if default is not None:
                 param_type, is_param_list = self._hparam_types[key]
-                type_str = 'list<%s>' % param_type if is_param_list else str(param_type)
+                type_str = 'list<%s>' % param_type if is_param_list else str(
+                    param_type)
                 fail_msg = ("Hparam '%s' of type '%s' is incompatible with "
-                                        'default=%s' % (key, type_str, default))
+                            'default=%s' % (key, type_str, default))
 
                 is_default_list = isinstance(default, list)
                 if is_param_list != is_default_list:
@@ -552,11 +562,12 @@ class HParams(object):
         elif issubclass(param_type, float):
             typename = 'float'
         else:
-            raise ValueError('Unsupported parameter type: %s' % str(param_type))
+            raise ValueError(
+                'Unsupported parameter type: %s' %
+                str(param_type))
 
         suffix = 'list' if is_list else 'value'
         return '_'.join([typename, suffix])
-
 
     @staticmethod
     def from_proto(hparam_def, import_scope=None):    # pylint: disable=unused-argument
