@@ -1,7 +1,7 @@
 import os,sys
 import json, copy, random
 from ultra.utils import data_utils
-from ultra.utils import click_models as cm
+from ultra.utils import click_models as CM
 
 class BasicPropensityEstimator:
     def __init__(self, file_name=None):

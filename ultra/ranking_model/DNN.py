@@ -23,7 +23,8 @@ class DNN(BaseRankingModel):
         self.hparams = ultra.utils.hparams.HParams(
             hidden_layer_sizes=[512, 256, 128],        # Number of neurons in each layer of a ranking_model. 
             activation_func='elu',                     # Type for activation function, which could be elu, relu, sigmoid, or tanh
-            initializer='None'                         # Set parameter initializer
+            initializer='None',                         # Set parameter initializer
+            norm="layer"                                # Set the default normalization
         )
         self.hparams.parse(hparams_str)
         self.initializer = None
@@ -32,7 +33,16 @@ class DNN(BaseRankingModel):
             self.act_func = BaseRankingModel.ACT_FUNC_DIC[self.hparams.activation_func]
         if self.hparams.initializer == 'constant':
             self.initializer = tf.constant_initializer(0.001)
-
+        self.layer_norm=[]
+        output_sizes = self.hparams.hidden_layer_sizes + [1]
+        if self.hparams.norm=="batch":
+            print("using batch norm")
+            for j in range(len(output_sizes)):
+                self.layer_norm.append(tf.keras.layers.BatchNormalization(name="DNN_layer_norm_%d"%j))
+        if self.hparams.norm=="layer":
+            print("using layer norm")
+            for j in range(len(output_sizes)):
+                self.layer_norm.append(tf.keras.layers.LayerNormalization(name="DNN_layer_norm_%d"%j))
     def build(self, input_list, is_training=False):
         """ Create the model
         
@@ -48,14 +58,16 @@ class DNN(BaseRankingModel):
         with tf.variable_scope(tf.get_variable_scope(), initializer=self.initializer,
                                             reuse=tf.AUTO_REUSE):
             input_data = tf.concat(input_list, axis=0)
-            output_data = tf.compat.v1.layers.batch_normalization(input_data, training=is_training, name="input_batch_normalization")
+#             output_data = tf.compat.v1.layers.batch_normalization(input_data, training=is_training, name="input_batch_normalization")
+            output_data=input_data
             output_sizes = self.hparams.hidden_layer_sizes + [1]
             current_size = output_data.get_shape()[-1].value
             for j in range(len(output_sizes)):
+                output_data=self.layer_norm[j](output_data,training=is_training)
                 expand_W = tf.get_variable("dnn_W_%d" % j, [current_size, output_sizes[j]]) 
                 expand_b = tf.get_variable("dnn_b_%d" % j, [output_sizes[j]])
                 output_data = tf.nn.bias_add(tf.matmul(output_data, expand_W), expand_b)
-                output_data = tf.compat.v1.layers.batch_normalization(output_data, training=is_training, name="batch_normalization_%d" % j)
+#                 output_data = tf.compat.v1.layers.batch_normalization(output_data, training=is_training, name="batch_normalization_%d" % j)
                 # Add activation if it is a hidden layer
                 if j != len(output_sizes)-1:
                     output_data = self.act_func(output_data)

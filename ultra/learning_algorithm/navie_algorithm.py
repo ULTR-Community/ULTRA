@@ -41,7 +41,7 @@ class NavieAlgorithm(BaseAlgorithm):
         print(exp_settings['learning_algorithm_hparams'])
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
         self.exp_settings = exp_settings
-
+        self.model=None
         self.max_candidate_num = exp_settings['max_candidate_num']
         self.feature_size = data_set.feature_size
         self.learning_rate = tf.Variable(float(self.hparams.learning_rate), trainable=False)
@@ -87,11 +87,11 @@ class NavieAlgorithm(BaseAlgorithm):
 
             self.loss = None
             if self.hparams.loss_func == 'sigmoid_cross_entropy':
-                self.loss = self.sigmoid_loss(pad_removed_train_output, reshaped_train_labels)
+                self.loss = self.sigmoid_loss(train_output, reshaped_train_labels)
             elif self.hparams.loss_func == 'pairwise_loss':
-                self.loss = self.pairwise_loss(pad_removed_train_output, reshaped_train_labels)
+                self.loss = self.pairwise_loss(train_output, reshaped_train_labels)
             else:
-                self.loss = self.softmax_loss(pad_removed_train_output, reshaped_train_labels)
+                self.loss = self.softmax_loss(train_output, reshaped_train_labels)
             params = tf.trainable_variables()
             if self.hparams.l2_loss > 0:
                 loss_l2 = 0.0
