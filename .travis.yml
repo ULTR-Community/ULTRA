@@ -1,3 +1,32 @@
-  language: python
-  script:
-    - pytest
+language: python
+
+cache: pip
+
+sudo: true
+
+env:
+  global:
+    - PYTHONPATH=$PYTHONPATH:$TRAVIS_BUILD_DIR/tests:$TRAVIS_BUILD_DIR/ultra
+
+matrix:
+  allow_failures:
+    - os: osx
+  include:
+    - os: linux
+      dist: trusty
+      python: 3.6
+    - os: osx
+      osx_image: xcode10.2
+      language: shell
+
+install:
+  - pip3 install -U pip
+  - pip3 install -r requirements.txt
+
+script:
+  - stty cols 80
+  - export COLUMNS=80
+
+
+after_success:
+  - codecov
