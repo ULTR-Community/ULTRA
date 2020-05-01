@@ -9,7 +9,7 @@ import unittest
 from parameterized import parameterized
 
 test_setting_list = []
-for f in os.listdir('./tests/pipeline_test/'):
+for f in os.listdir('./tests/test_settings/'):
     if f.endswith('.json'):
         test_setting_list.append(f[:-5])
 
@@ -23,7 +23,7 @@ class TestBasicModel(unittest.TestCase):
         train_command = ' '.join([
             'python main.py',
             '--max_train_iteration=20',
-            '--setting_file=./tests/pipeline_test/%s.json' % json_file_name,
+            '--setting_file=./tests/test_settings/%s.json' % json_file_name,
             '--model_dir=./tests/tmp_model_%s/' % json_file_name,
             '--output_dir=./tests/tmp_output_%s/' % json_file_name,
         ])
@@ -53,7 +53,7 @@ class TestBasicModel(unittest.TestCase):
         test_command = ' '.join([
             'python main.py',
             '--test_only=True',
-            '--setting_file=./tests/pipeline_test/%s.json' % json_file_name,
+            '--setting_file=./tests/test_settings/%s.json' % json_file_name,
             '--model_dir=./tests/tmp_model_%s/' % json_file_name,
             '--output_dir=./tests/tmp_output_%s/' % json_file_name,
         ])
