@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import os,sys
 import tensorflow as tf
 from ultra.ranking_model import BaseRankingModel
+import ultra
 
 class Linear(BaseRankingModel):
     """A linear model for learning to rank.
