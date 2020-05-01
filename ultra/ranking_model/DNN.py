@@ -63,7 +63,10 @@ class DNN(BaseRankingModel):
             output_sizes = self.hparams.hidden_layer_sizes + [1]
             current_size = output_data.get_shape()[-1].value
             for j in range(len(output_sizes)):
-                output_data=self.layer_norm[j](output_data,training=is_training)
+                if self.hparams.norm=="batch":
+                    output_data=self.layer_norm[j](output_data,training=is_training)
+                if self.hparams.norm=="layer":
+                    output_data=self.layer_norm[j](output_data) 
                 expand_W = tf.get_variable("dnn_W_%d" % j, [current_size, output_sizes[j]]) 
                 expand_b = tf.get_variable("dnn_b_%d" % j, [output_sizes[j]])
                 output_data = tf.nn.bias_add(tf.matmul(output_data, expand_W), expand_b)
