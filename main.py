@@ -21,12 +21,12 @@ import json
 import ultra
 
 #rank list size should be read from data
-tf.app.flags.DEFINE_string("data_dir", "./tmp_data/", "The directory of the experimental dataset.")
+tf.app.flags.DEFINE_string("data_dir", "./tests/data/", "The directory of the experimental dataset.")
 tf.app.flags.DEFINE_string("train_data_prefix", "train", "The name prefix of the training data in data_dir.")
 tf.app.flags.DEFINE_string("valid_data_prefix", "valid", "The name prefix of the validation data in data_dir.")
 tf.app.flags.DEFINE_string("test_data_prefix", "test", "The name prefix of the test data in data_dir.")
-tf.app.flags.DEFINE_string("model_dir", "./tmp_model/", "The directory for model and intermediate outputs.")
-tf.app.flags.DEFINE_string("output_dir", "./tmp_output/", "The directory to output results.")
+tf.app.flags.DEFINE_string("model_dir", "./tests/tmp_model/", "The directory for model and intermediate outputs.")
+tf.app.flags.DEFINE_string("output_dir", "./tests/tmp_output/", "The directory to output results.")
 
 # model 
 tf.app.flags.DEFINE_string("setting_file", "./example/offline_setting/dla_exp_settings.json", "A json file that contains all the settings of the algorithm.")

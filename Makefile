@@ -3,7 +3,7 @@ init:
 
 format:
 		autopep8 --in-place --aggressive -r ./ultra/
+		autopep8 --in-place --aggressive -r ./tests/
 
 test:
-		pytest tests/ --ignore=tests/inte_tests/ --cov matchzoo/ --cov-report term-missing --cov-config .coveragerc
-		# flake8 ./matchzoo --exclude __init__.py
+		pytest tests/ --ignore=tests/inte_tests/ 
