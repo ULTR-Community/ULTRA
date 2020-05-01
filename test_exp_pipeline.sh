@@ -8,4 +8,4 @@ rm -r ./tmp_output/
 python main.py --max_train_iteration=100 --setting_file=./example/offline_setting/dla_exp_settings.json
 
 # Test model
-python main.py --test_only=True
+python main.py --test_only=True --setting_file=./example/offline_setting/dla_exp_settings.json
