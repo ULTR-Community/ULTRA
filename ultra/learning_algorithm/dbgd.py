@@ -105,9 +105,9 @@ class DBGD(BaseAlgorithm):
             self.rank_list_size = exp_settings['train_list_cutoff']
             train_output = tf.concat(
                 self.get_ranking_scores(
-                    self.docid_inputs[:self.rank_list_size], 
-                    is_training=self.is_training, 
-                    scope='ranking_model'), 
+                    self.docid_inputs[:self.rank_list_size],
+                    is_training=self.is_training,
+                    scope='ranking_model'),
                 1)
             train_labels = self.labels[:self.rank_list_size]
             # Create random gradients and apply it to get new ranking scores
@@ -121,11 +121,11 @@ class DBGD(BaseAlgorithm):
             self.new_output = tf.concat(new_output_list, 1)
 
             previous_ndcg = ultra.utils.make_ranking_metric_fn(
-                    'ndcg', self.rank_list_size)(
-                    reshaped_train_labels, train_output, None)
+                'ndcg', self.rank_list_size)(
+                reshaped_train_labels, train_output, None)
             new_ndcg = ultra.utils.make_ranking_metric_fn(
-                    'ndcg', self.rank_list_size)(
-                    reshaped_train_labels, self.new_output, None)
+                'ndcg', self.rank_list_size)(
+                reshaped_train_labels, self.new_output, None)
             self.loss = 1.0 - new_ndcg
 
             if self.hparams.need_interleave:
@@ -153,9 +153,9 @@ class DBGD(BaseAlgorithm):
                 opt = self.optimizer_func(self.hparams.learning_rate)
                 if self.hparams.max_gradient_norm > 0:
                     self.clipped_gradients, self.norm = tf.clip_by_global_norm(self.gradients,
-                                                                            self.hparams.max_gradient_norm)
+                                                                               self.hparams.max_gradient_norm)
                     self.updates = opt.apply_gradients(zip(self.clipped_gradients, params),
-                                                    global_step=self.global_step)
+                                                       global_step=self.global_step)
                     tf.summary.scalar(
                         'Gradient Norm',
                         self.norm,
@@ -163,9 +163,9 @@ class DBGD(BaseAlgorithm):
                 else:
                     self.norm = None
                     self.updates = opt.apply_gradients(zip(update_or_not * self.gradients, params),
-                                                    global_step=self.global_step)
+                                                       global_step=self.global_step)
 
-            else: # No result interleaving
+            else:  # No result interleaving
                 update_or_not = tf.ceil(new_ndcg - previous_ndcg)
                 # Compute gradients
                 params = [p[1] for p in noise_list]
@@ -180,9 +180,9 @@ class DBGD(BaseAlgorithm):
                 opt = self.optimizer_func(self.hparams.learning_rate)
                 if self.hparams.max_gradient_norm > 0:
                     self.clipped_gradients, self.norm = tf.clip_by_global_norm(self.gradients,
-                                                                            self.hparams.max_gradient_norm)
+                                                                               self.hparams.max_gradient_norm)
                     self.updates = opt.apply_gradients(zip(self.clipped_gradients, params),
-                                                    global_step=self.global_step)
+                                                       global_step=self.global_step)
                     tf.summary.scalar(
                         'Gradient Norm',
                         self.norm,
@@ -190,8 +190,8 @@ class DBGD(BaseAlgorithm):
                 else:
                     self.norm = None
                     self.updates = opt.apply_gradients(zip(update_or_not * self.gradients, params),
-                                                    global_step=self.global_step)
-            
+                                                       global_step=self.global_step)
+
             tf.summary.scalar(
                 'Learning Rate',
                 self.learning_rate,
