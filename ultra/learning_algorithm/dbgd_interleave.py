@@ -51,8 +51,9 @@ class DBGDInterleave(BaseAlgorithm):
         self.hparams = ultra.utils.hparams.HParams(
             # The update rate for randomly sampled weights.
             noise_rate=0.5,
-            learning_rate=0.01,                 # Learning rate.
-            max_gradient_norm=5.0,            # Clip gradients to this norm.
+            learning_rate=0.01,         # Learning rate.
+            max_gradient_norm=5.0,      # Clip gradients to this norm.
+            need_interleave=True,       # Set True to use result interleaving
             # Set strength for L2 regularization.
             l2_loss=0.01,
             grad_strategy='ada',            # Select gradient strategy
