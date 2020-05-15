@@ -9,6 +9,7 @@ from .dbgd import *
 from .pairwise_debias import *
 from .navie_algorithm import *
 from .dbgd_interleave import *
+from .dbgd_dsp import *
 
 
 def list_available() -> list:

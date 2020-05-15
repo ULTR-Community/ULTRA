@@ -1,6 +1,6 @@
 {
     "train_input_feed":"ultra.input_layer.StochasticOnlineSimulationFeed",
-    "train_input_hparams":"",
+    "train_input_hparams":"need_interleave=True",
     "valid_input_feed":"ultra.input_layer.DirectLabelFeed",
     "valid_input_hparams":"",
     "test_input_feed":"ultra.input_layer.DirectLabelFeed",
