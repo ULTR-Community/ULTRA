@@ -123,21 +123,18 @@ class InterleavingDeterministicOnlineSimulationFeed(BaseInputFeed):
             list_len = valid_idx + 1
             # Rerank documents via interleaving
             # print(rank_scores[0],'!', rank_scores[1],'!', rank_scores[2])
-            old_scores = rank_scores[1][i][:list_len]
-            new_scores = rank_scores[2][i][:list_len]
-            old_rank_list = sorted(
-                range(
-                    len(old_scores)),
-                key=lambda k: old_scores[k],
-                reverse=True)
-            new_rank_list = sorted(
-                range(
-                    len(new_scores)),
-                key=lambda k: new_scores[k],
-                reverse=True)
+            rank_lists = []
+            for j in range(1, len(rank_scores)):
+                scores = rank_scores[j][i][:list_len]
+                rank_list = sorted(
+                    range(
+                        len(scores)),
+                    key=lambda k: scores[k],
+                    reverse=True)
+                rank_lists.append(rank_list)
             # print([old_rank_list, new_rank_list])
             rerank_list = self.interleaving.interleave(
-                np.asarray([old_rank_list, new_rank_list]))
+                np.asarray(rank_lists))
             # print (rerank_list, list_len)
             # rerank_list = sorted(range(len(scores)), key=lambda k: scores[k], reverse=True)
             new_docid_list = np.zeros(list_len)
@@ -169,6 +166,7 @@ class InterleavingDeterministicOnlineSimulationFeed(BaseInputFeed):
             # Infer winner in interleaving
             input_feed[self.model.winners.name][i] = self.interleaving.infer_winner(
                 click_list)
+            print (input_feed[self.model.winners.name])
 
         return input_feed
 

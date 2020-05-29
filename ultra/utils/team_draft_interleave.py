@@ -50,4 +50,4 @@ class TeamDraftInterleaving():
             [(self.teams[:len(clicks)] == i) * clicks for i in range(self.n_rankers)])
         # print (click_matrix)
         ranker_clicks = np.sum(click_matrix, axis=1)
-        return int(ranker_clicks[0] < ranker_clicks[1])  # , ranker_clicks
+        return np.range(self.n_rankers)[ranker_clicks[0] < ranker_clicks]
