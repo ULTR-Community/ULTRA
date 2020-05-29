@@ -123,7 +123,7 @@ class DeterministicOnlineSimulationFeed(BaseInputFeed):
         local_batch_size = len(input_feed[self.model.docid_inputs[0].name])
 
         if self.need_interleave:
-            input_feed[self.model.winners.name] = np.zeros(local_batch_size)
+            input_feed[self.model.winners.name] = [None for _ in range(local_batch_size)]
 
         for i in range(local_batch_size):
             # Get valid doc index
@@ -139,20 +139,18 @@ class DeterministicOnlineSimulationFeed(BaseInputFeed):
             rerank_list = None
             if self.need_interleave:
                 # Rerank documents via interleaving
-                old_scores = rank_scores[1][i][:list_len]
-                new_scores = rank_scores[2][i][:list_len]
-                old_rank_list = sorted(
-                    range(
-                        len(old_scores)),
-                    key=lambda k: old_scores[k],
-                    reverse=True)
-                new_rank_list = sorted(
-                    range(
-                        len(new_scores)),
-                    key=lambda k: new_scores[k],
-                    reverse=True)
+                rank_lists = []
+                for j in range(1, len(rank_scores)):
+                    scores = rank_scores[j][i][:list_len]
+                    rank_list = sorted(
+                        range(
+                            len(scores)),
+                        key=lambda k: scores[k],
+                        reverse=True)
+                    rank_lists.append(rank_list)
+
                 rerank_list = self.interleaving.interleave(
-                    np.asarray([old_rank_list, new_rank_list]))
+                    np.asarray(rank_lists))
             else:
                 scores = rank_scores[i][:list_len]
                 rerank_list = sorted(

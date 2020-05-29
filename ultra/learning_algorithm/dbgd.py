@@ -73,7 +73,7 @@ class DBGD(BaseAlgorithm):
         self.letor_features = tf.placeholder(tf.float32, shape=[None, self.feature_size],
                                              name="letor_features")  # the letor features for the documents
         self.labels = []  # the labels for the documents (e.g., clicks)
-        self.winners = tf.placeholder(tf.int32, shape=[None],
+        self.winners = tf.placeholder(tf.float32, shape=[None, 2],
                                       name="winners")  # winners of interleaved tests
         for i in range(self.max_candidate_num):
             self.docid_inputs.append(tf.placeholder(tf.int64, shape=[None],
@@ -126,23 +126,26 @@ class DBGD(BaseAlgorithm):
             new_ndcg = ultra.utils.make_ranking_metric_fn(
                 'ndcg', self.rank_list_size)(
                 reshaped_train_labels, self.new_output, None)
-            self.loss = 1.0 - new_ndcg
+            self.loss = 1.0 - previous_ndcg
 
             if self.hparams.need_interleave:
                 self.output = (self.output, train_output, self.new_output)
-                tf.print(tf.reduce_sum(self.winners))
-                update_or_not = tf.cast(
-                    tf.ceil(
-                        tf.reduce_sum(
-                            self.winners) /
-                        tf.size(
-                            self.winners) -
-                        0.5),
-                    tf.float32)
-                tf.print(self.winners, update_or_not)
                 # Compute gradients
                 params = [p[1] for p in noise_list]
-                self.gradients = [p[0] * update_or_not for p in noise_list]
+                self.gradients = []
+                for p in noise_list:
+                    gradient_matrix = tf.expand_dims(tf.stack([tf.zeros_like(p[1]), p[0]]), axis=0)
+                    expended_winners = self.winners 
+                    for i in range(gradient_matrix.get_shape().rank - expended_winners.get_shape().rank):
+                        expended_winners = tf.expand_dims(expended_winners, axis=-1)
+                    self.gradients.append(
+                        tf.reduce_mean(
+                            tf.reduce_sum(
+                                expended_winners * gradient_matrix, 
+                                axis=1 
+                            ),
+                        axis=0)
+                        )
 
                 # Select optimizer
                 self.optimizer_func = tf.train.AdagradOptimizer
@@ -162,7 +165,7 @@ class DBGD(BaseAlgorithm):
                         collections=['train'])
                 else:
                     self.norm = None
-                    self.updates = opt.apply_gradients(zip(update_or_not * self.gradients, params),
+                    self.updates = opt.apply_gradients(zip(self.gradients, params),
                                                        global_step=self.global_step)
 
             else:  # No result interleaving

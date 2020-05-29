@@ -8,7 +8,7 @@ from .pdgd import *
 from .dbgd import *
 from .pairwise_debias import *
 from .navie_algorithm import *
-from .dbgd_interleave import *
+from .mgd import *
 
 
 def list_available() -> list:

@@ -56,7 +56,7 @@ class DNN(BaseRankingModel):
 
         Args:
             input_list: (list<tf.Tensor>) A list of tensors containing the features
-                        for a list of documents.
+                        for a list of documents. The length of the list is equal to the number of documents to rank for each query.
             is_training: (bool) A flag indicating whether the model is running in training mode.
 
         Returns:
@@ -95,7 +95,7 @@ class DNN(BaseRankingModel):
 
         Args:
             input_list: (list<tf.Tensor>) A list of tensors containing the features
-                        for a list of documents.
+                        for a list of documents. The length of the list is equal to the number of documents to rank for each query.
             noise_rate: (float) A value specify how much noise to add.
             is_training: (bool) A flag indicating whether the model is running in training mode.
 
