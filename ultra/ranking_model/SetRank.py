@@ -387,7 +387,7 @@ class SetRank(BaseRankingModel):
 
     def build_with_random_noise(
             self, input_list, noise_rate, is_training=False):
-        """ Create the model
+        """ Create the model with noise.
 
         Args:
             input_list: (list<tf.Tensor>) A list of tensors containing the features
@@ -400,33 +400,5 @@ class SetRank(BaseRankingModel):
             A list of (tf.Tensor, tf.Tensor) containing the random noise and the parameters it is designed for.
 
         """
-        noise_tensor_list = []
-        with tf.variable_scope(tf.get_variable_scope(), initializer=self.initializer,
-                               reuse=tf.AUTO_REUSE):
-            input_data = tf.concat(input_list, axis=0)
-            output_data = tf.compat.v1.layers.batch_normalization(
-                input_data, training=is_training, name="input_batch_normalization")
-            output_sizes = self.hparams.hidden_layer_sizes + [1]
-            current_size = output_data.get_shape()[-1].value
-            for j in range(len(output_sizes)):
-                original_W = tf.get_variable(
-                    "dnn_W_%d" % j, [current_size, output_sizes[j]])
-                original_b = tf.get_variable("dnn_b_%d" % j, [output_sizes[j]])
-                # Create random noise
-                random_W = tf.random.uniform(original_W.get_shape())
-                random_b = tf.random.uniform(original_b.get_shape())
-                noise_tensor_list.append((random_W, original_W))
-                noise_tensor_list.append((random_b, original_b))
-                expand_W = original_W + random_W * noise_rate
-                expand_b = original_b + random_b * noise_rate
-                # Run dnn
-                output_data = tf.nn.bias_add(
-                    tf.matmul(output_data, expand_W), expand_b)
-                output_data = tf.compat.v1.layers.batch_normalization(
-                    output_data, training=is_training, name="batch_normalization_%d" % j)
-                # Add activation if it is a hidden layer
-                if j != len(output_sizes) - 1:
-                    output_data = tf.nn.elu(output_data)
-                current_size = output_sizes[j]
-            return tf.split(output_data, len(input_list),
-                            axis=0), noise_tensor_list
+        raise ValueError('Random noise is not implemented in DLCM.')
+        return None

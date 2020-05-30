@@ -180,7 +180,7 @@ class BaseAlgorithm(ABC):
                     tf.nn.embedding_lookup(
                         letor_features, input_id_list[i]))
             return model.build_with_random_noise(
-                input_feature_list, self.hparams.noise_rate, is_training)
+                input_feature_list, self.hparams.learning_rate, is_training)
 
     def pairwise_cross_entropy_loss(self, pos_scores, neg_scores, name=None):
         """Computes pairwise softmax loss without propensity weighting.

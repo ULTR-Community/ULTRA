@@ -139,8 +139,8 @@ class GSF(BaseRankingModel):
                     "dnn_W_%d" % j, [current_size, output_sizes[j]])
                 original_b = tf.get_variable("dnn_b_%d" % j, [output_sizes[j]])
                 # Create random noise
-                random_W = tf.random.uniform(original_W.get_shape())
-                random_b = tf.random.uniform(original_b.get_shape())
+                random_W = tf.math.l2_normalize(tf.random.normal(original_W.get_shape()))
+                random_b = tf.math.l2_normalize(tf.random.normal(original_b.get_shape()))
                 noise_tensor_list.append((random_W, original_W))
                 noise_tensor_list.append((random_b, original_b))
 

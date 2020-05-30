@@ -92,8 +92,8 @@ class Linear(BaseRankingModel):
                 original_b = tf.get_variable(
                     "linear_b_%d" % j, [output_sizes[j]])
                 # Create random noise
-                random_W = tf.random.uniform(original_W.get_shape())
-                random_b = tf.random.uniform(original_b.get_shape())
+                random_W = tf.math.l2_normalize(tf.random.normal(original_W.get_shape()))
+                random_b = tf.math.l2_normalize(tf.random.normal(original_b.get_shape()))
                 noise_tensor_list.append((random_W, original_W))
                 noise_tensor_list.append((random_b, original_b))
                 expand_W = original_W + random_W * noise_rate

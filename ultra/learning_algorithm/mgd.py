@@ -1,8 +1,8 @@
-"""Training and testing the Dueling Bandit Gradient Descent (DBGD) algorithm for unbiased learning to rank.
+"""Training and testing the Multileave Gradient Descent (MGD) algorithm for unbiased learning to rank.
 
-See the following paper for more information on the Dueling Bandit Gradient Descent (DBGD) algorithm.
+See the following paper for more information on the Multileave Gradient Descent (MGD) algorithm.
 
-    * Yisong Yue and Thorsten Joachims. 2009. Interactively optimizing information retrieval systems as a dueling bandits problem. In ICML. 1201–1208.
+    * Anne Schuth, Harrie Oosterhuis, Shimon Whiteson, Maarten de Rijke. 2016. Multileave Gradient Descent for Fast Online Learning to Rank. In WSDM. 457-466.
 
 """
 
@@ -24,20 +24,19 @@ import itertools
 from six.moves import zip
 from tensorflow import dtypes
 from ultra.learning_algorithm.base_algorithm import BaseAlgorithm
+from ultra.learning_algorithm.dbgd import DBGD
 import ultra.utils
 import ultra
 
 
-class DBGD(BaseAlgorithm):
-    """The Dueling Bandit Gradient Descent (DBGD) algorithm for unbiased learning to rank.
+class MGD(DBGD):
+    """The Multileave Gradient Descent (MGD) algorithm for unbiased learning to rank.
 
-    This class implements the Dueling Bandit Gradient Descent (DBGD) algorithm based on the input layer
-    feed. See the following paper for more information on the algorithm.
+    This class implements the Multileave Gradient Descent (MGD) algorithm based on the input layer feed. See the following paper for more information on the algorithm.
 
-    * Yisong Yue and Thorsten Joachims. 2009. Interactively optimizing information retrieval systems as a dueling bandits problem. In ICML. 1201–1208.
+    * Anne Schuth, Harrie Oosterhuis, Shimon Whiteson, Maarten de Rijke. 2016. Multileave Gradient Descent for Fast Online Learning to Rank. In WSDM. 457-466.
 
     """
-
     def __init__(self, data_set, exp_settings, forward_only=False):
         """Create the model.
 
@@ -56,7 +55,8 @@ class DBGD(BaseAlgorithm):
             need_interleave=True,       # Set True to use result interleaving
             # Set strength for L2 regularization.
             l2_loss=0.01,
-            grad_strategy='ada',            # Select gradient strategy
+            grad_strategy='ada',        # Select gradient strategy
+            ranker_num=5,               # Select number of rankers to try in each batch.
         )
         print(exp_settings['learning_algorithm_hparams'])
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
@@ -66,6 +66,7 @@ class DBGD(BaseAlgorithm):
         self.feature_size = data_set.feature_size
         self.learning_rate = tf.Variable(
             float(self.hparams.learning_rate), trainable=False)
+        self.ranker_num = self.hparams.ranker_num
 
         # Feeds for inputs.
         self.is_training = tf.placeholder(tf.bool, name="is_train")
@@ -73,7 +74,7 @@ class DBGD(BaseAlgorithm):
         self.letor_features = tf.placeholder(tf.float32, shape=[None, self.feature_size],
                                              name="letor_features")  # the letor features for the documents
         self.labels = []  # the labels for the documents (e.g., clicks)
-        self.winners = tf.placeholder(tf.float32, shape=[None, 2],
+        self.winners = tf.placeholder(tf.float32, shape=[None, self.ranker_num+1],
                                       name="winners")  # winners of interleaved tests
         for i in range(self.max_candidate_num):
             self.docid_inputs.append(tf.placeholder(tf.int64, shape=[None],
@@ -105,95 +106,86 @@ class DBGD(BaseAlgorithm):
             self.rank_list_size = exp_settings['train_list_cutoff']
             train_output = tf.concat(
                 self.get_ranking_scores(
-                    self.docid_inputs[:self.rank_list_size],
+                    self.docid_inputs,
                     is_training=self.is_training,
                     scope='ranking_model'),
                 1)
             train_labels = self.labels[:self.rank_list_size]
             # Create random gradients and apply it to get new ranking scores
-            new_output_list, noise_list = self.get_ranking_scores_with_noise(
-                self.docid_inputs[:self.rank_list_size], is_training=self.is_training, scope='ranking_model')
-
-            # Compute NDCG for the old ranking scores and new ranking scores
+            # new_output_lists = [self.output]
+            new_output_lists = []
+            params = []
+            param_gradient_from_rankers = {}
+            # noise_lists = [tf.zeros_like(self.output, tf.float32)]
+            for i in range(self.ranker_num):
+                new_output_list, noise_list = self.get_ranking_scores_with_noise(
+                    self.docid_inputs, is_training=self.is_training, scope='ranking_model')
+                new_output_lists.append(tf.concat(new_output_list, 1))
+                for p in noise_list:
+                    if p[1].name not in param_gradient_from_rankers:
+                        params.append(p[1])
+                        param_gradient_from_rankers[p[1].name] = [tf.zeros_like(p[1])]
+                    param_gradient_from_rankers[p[1].name].append(p[0])
+            
+            # Compute NDCG for the old ranking scores.
             # reshape from [rank_list_size, ?] to [?, rank_list_size]
             reshaped_train_labels = tf.transpose(
                 tf.convert_to_tensor(train_labels))
-            self.new_output = tf.concat(new_output_list, 1)
-
-            previous_ndcg = ultra.utils.make_ranking_metric_fn(
-                'ndcg', self.rank_list_size)(
-                reshaped_train_labels, train_output, None)
-            new_ndcg = ultra.utils.make_ranking_metric_fn(
-                'ndcg', self.rank_list_size)(
-                reshaped_train_labels, self.new_output, None)
+            previous_ndcg = ultra.utils.make_ranking_metric_fn('ndcg', self.rank_list_size)(
+                    reshaped_train_labels, train_output[:, :self.rank_list_size], None)
             self.loss = 1.0 - previous_ndcg
 
-            if self.hparams.need_interleave:
-                self.output = (self.output, train_output, self.new_output)
-                # Compute gradients
-                params = [p[1] for p in noise_list]
-                self.gradients = []
-                for p in noise_list:
-                    gradient_matrix = tf.expand_dims(tf.stack([tf.zeros_like(p[1]), p[0]]), axis=0)
-                    expended_winners = self.winners 
-                    for i in range(gradient_matrix.get_shape().rank - expended_winners.get_shape().rank):
-                        expended_winners = tf.expand_dims(expended_winners, axis=-1)
-                    self.gradients.append(
-                        tf.reduce_mean(
-                            tf.reduce_sum(
-                                expended_winners * gradient_matrix, 
-                                axis=1 
-                            ),
-                        axis=0)
-                        )
+            final_winners = None
+            if self.hparams.need_interleave: # Use result interleaving
+                self.output = [self.output, train_output] + new_output_lists
+                final_winners = self.winners 
+            else: # No result interleaving
+                score_lists = [train_output] + new_output_lists
+                ndcg_lists = []
+                for scores in score_lists:
+                    ndcg = ultra.utils.make_ranking_metric_fn(
+                        'ndcg', self.rank_list_size)(
+                        reshaped_train_labels, scores, None)
+                    ndcg_lists.append(ndcg - previous_ndcg)
+                ndcg_gains = tf.ceil(tf.stack(ndcg_lists))
+                final_winners = ndcg_gains / (tf.reduce_sum(ndcg_gains, axis=0)+0.000000001)
 
-                # Select optimizer
-                self.optimizer_func = tf.train.AdagradOptimizer
-                if self.hparams.grad_strategy == 'sgd':
-                    self.optimizer_func = tf.train.GradientDescentOptimizer
+            # Compute gradients
+            self.gradients = []
+            for p in params:
+                gradient_matrix = tf.expand_dims(tf.stack(param_gradient_from_rankers[p.name]), axis=0)
+                expended_winners = final_winners
+                for i in range(gradient_matrix.get_shape().rank - expended_winners.get_shape().rank):
+                    expended_winners = tf.expand_dims(expended_winners, axis=-1)
+                self.gradients.append(
+                    tf.reduce_mean(
+                        tf.reduce_sum(
+                            expended_winners * gradient_matrix, 
+                            axis=1 
+                        ),
+                    axis=0)
+                    )
 
-                # Gradients and SGD update operation for training the model.
-                opt = self.optimizer_func(self.hparams.learning_rate)
-                if self.hparams.max_gradient_norm > 0:
-                    self.clipped_gradients, self.norm = tf.clip_by_global_norm(self.gradients,
-                                                                               self.hparams.max_gradient_norm)
-                    self.updates = opt.apply_gradients(zip(self.clipped_gradients, params),
-                                                       global_step=self.global_step)
-                    tf.summary.scalar(
-                        'Gradient Norm',
-                        self.norm,
-                        collections=['train'])
-                else:
-                    self.norm = None
-                    self.updates = opt.apply_gradients(zip(self.gradients, params),
-                                                       global_step=self.global_step)
+            # Select optimizer
+            self.optimizer_func = tf.train.AdagradOptimizer
+            if self.hparams.grad_strategy == 'sgd':
+                self.optimizer_func = tf.train.GradientDescentOptimizer
 
-            else:  # No result interleaving
-                update_or_not = tf.ceil(new_ndcg - previous_ndcg)
-                # Compute gradients
-                params = [p[1] for p in noise_list]
-                self.gradients = [p[0] * update_or_not for p in noise_list]
-
-                # Select optimizer
-                self.optimizer_func = tf.train.AdagradOptimizer
-                if self.hparams.grad_strategy == 'sgd':
-                    self.optimizer_func = tf.train.GradientDescentOptimizer
-
-                # Gradients and SGD update operation for training the model.
-                opt = self.optimizer_func(self.hparams.learning_rate)
-                if self.hparams.max_gradient_norm > 0:
-                    self.clipped_gradients, self.norm = tf.clip_by_global_norm(self.gradients,
-                                                                               self.hparams.max_gradient_norm)
-                    self.updates = opt.apply_gradients(zip(self.clipped_gradients, params),
-                                                       global_step=self.global_step)
-                    tf.summary.scalar(
-                        'Gradient Norm',
-                        self.norm,
-                        collections=['train'])
-                else:
-                    self.norm = None
-                    self.updates = opt.apply_gradients(zip(update_or_not * self.gradients, params),
-                                                       global_step=self.global_step)
+            # Gradients and SGD update operation for training the model.
+            opt = self.optimizer_func(self.hparams.learning_rate)
+            if self.hparams.max_gradient_norm > 0:
+                self.clipped_gradients, self.norm = tf.clip_by_global_norm(self.gradients,
+                                                                        self.hparams.max_gradient_norm)
+                self.updates = opt.apply_gradients(zip(self.clipped_gradients, params),
+                                                global_step=self.global_step)
+                tf.summary.scalar(
+                    'Gradient Norm',
+                    self.norm,
+                    collections=['train'])
+            else:
+                self.norm = None
+                self.updates = opt.apply_gradients(zip(self.gradients, params),
+                                                global_step=self.global_step)
 
             tf.summary.scalar(
                 'Learning Rate',
@@ -201,7 +193,7 @@ class DBGD(BaseAlgorithm):
                 collections=['train'])
             tf.summary.scalar('Loss', self.loss, collections=['train'])
             pad_removed_train_output = self.remove_padding_for_metric_eval(
-                self.docid_inputs, train_output)
+                self.docid_inputs, train_output[:, :self.rank_list_size])
             for metric in self.exp_settings['metrics']:
                 for topn in self.exp_settings['metrics_topn']:
                     metric_value = ultra.utils.make_ranking_metric_fn(metric, topn)(
@@ -227,6 +219,8 @@ class DBGD(BaseAlgorithm):
             and a tf.summary containing related information about the step.
 
         """
+        #print ("!!!!!!!!!!!!!", tf.shape(self.new_output))
+
 
         if not forward_only:
             input_feed[self.is_training.name] = True
