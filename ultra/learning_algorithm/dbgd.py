@@ -50,13 +50,10 @@ class DBGD(BaseAlgorithm):
 
         self.hparams = ultra.utils.hparams.HParams(
             # The update rate for randomly sampled weights.
-            #noise_rate=0.5,
-            learning_rate=0.01,         # Learning rate.
+            learning_rate=0.1,         # Learning rate.
             max_gradient_norm=5.0,      # Clip gradients to this norm.
             need_interleave=True,       # Set True to use result interleaving
-            # Set strength for L2 regularization.
-            l2_loss=0.01,
-            grad_strategy='ada',            # Select gradient strategy
+            grad_strategy='sgd',            # Select gradient strategy
         )
         print(exp_settings['learning_algorithm_hparams'])
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
