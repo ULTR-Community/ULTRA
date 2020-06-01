@@ -4,10 +4,10 @@ Feature_number=220              ## how many features for LETOR data
 Prepro_fun="log"                ## additional function to do preprocessing, available, "log", "None", we default normalize data to -1 and 1. If choosing log, it will first using log function to the data and then normalize it to -1 and 1. 
 prefix=""                       ## name before data, for example setl.train.txt, prefix=set1.
 # Data_zip_file=istella-s-letor.tar.gz  ## zipped data file path.
-Data_zip_file=istella-s-letor.tar.gz
+Data_zip_file=istella-letor.tar.gz  
 cd ../../
-# Download Istella-s dataset.
-# wget http://library.istella.it/dataset/istella-s-letor.tar.gz    
+# Download Istella dataset.
+# wget http://library.istella.it/dataset/istella-letor.tar.gz  
 # create path that will be used.
 mkdir $Data_path
 mkdir $Data_path/cleaned_data  # path to store data after cleaning

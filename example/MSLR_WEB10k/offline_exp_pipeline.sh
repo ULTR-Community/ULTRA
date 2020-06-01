@@ -5,9 +5,8 @@ Prepro_fun=""                ## additional function to do preprocessing, availab
 prefix=""                       ## name before data, for example setl.train.txt, prefix=set1.
 Data_zip_file=./MSLR-WEB10K.zip ## zipped data file path.
 cd ../../
-# Download Yahoo! Letor dataset.
-# wget https://webscope.sandbox.yahoo.com/download.php?r=39201&d=
-# The link might be expired. If so, please go to https://webscope.sandbox.yahoo.com/catalog.php?datatype=c&did=64 for more information.
+# Download MSLR-WEB10K dataset.
+# view https://www.microsoft.com/en-us/research/project/mslr/ for the download link
 
 mkdir $Data_path
 mkdir $Data_path/cleaned_data  # path to store data after cleaning
