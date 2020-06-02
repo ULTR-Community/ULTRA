@@ -328,26 +328,8 @@ class DLCM(BaseRankingModel):
             return self.rnn_decoder(encode_embed, attention_states, initial_state, cell,
                                     num_heads=num_heads, loop_function=loop_function)
 
-    def build_with_random_noise(
-            self, input_list, noise_rate, is_training=False):
-        """ Create the model with noise.
-
-        Args:
-            input_list: (list<tf.Tensor>) A list of tensors containing the features
-                        for a list of documents.
-            noise_rate: (float) A value specify how much noise to add.
-            is_training: (bool) A flag indicating whether the model is running in training mode.
-
-        Returns:
-            A list of tf.Tensor containing the ranking scores for each instance in input_list.
-            A list of (tf.Tensor, tf.Tensor) containing the random noise and the parameters it is designed for.
-
-        """
-        raise ValueError('Random noise is not implemented in DLCM.')
-        return self.build(input_list, is_training)
-
-    def build(self, input_list, is_training=False):
-        """Create embedding RNN sequence-to-sequence model.
+    def build(self, input_list, noisy_params=None, noise_rate=0.05, is_training=False, **kwargs):
+        """Create embedding RNN sequence-to-sequence model. No support for noisy parameters.
 
         Args:
             input_list: (list<tf.Tensor>) A list of tensors containing the features

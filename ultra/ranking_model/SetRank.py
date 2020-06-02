@@ -348,17 +348,18 @@ class SetRank(BaseRankingModel):
             self.Encoder_layer = Encoder(self.hparams.num_layers, self.hparams.d_model,
                                          self.hparams.num_heads, self.hparams.diff, self.hparams.rate)
 
-    def build(self, input_list, is_training=False):
-        """ Create the model
+    def build(self, input_list, noisy_params=None, noise_rate=0.05, is_training=False, **kwargs):
+        """ Create the SetRank model (no supports for noisy parameters)
 
         Args:
-            input_list: (list<tf.Tensor>) A list of tensors containing the features
-                        for a list of documents.  list of [seq_len_q], each element [batch, feature_size]
+            input_list: (list<tf.tensor>) A list of tensors containing the features
+                        for a list of documents.
+            noisy_params: (dict<parameter_name, tf.variable>) A dictionary of noisy parameters to add.
+            noise_rate: (float) A value specify how much noise to add.
             is_training: (bool) A flag indicating whether the model is running in training mode.
 
         Returns:
             A list of tf.Tensor containing the ranking scores for each instance in input_list.
-
         """
         with tf.variable_scope(tf.get_variable_scope() or "transformer", reuse=tf.AUTO_REUSE, initializer=self.initializer):
             sco_cur = tf.get_variable_scope()
@@ -383,22 +384,5 @@ class SetRank(BaseRankingModel):
 #                     reind_output[ind[i]]=output[i]
 #                 output=reind_output
         return output  # [len_seq,batch,1]
-# output should be a list of list_size while each element is [Batch,1]
 
-    def build_with_random_noise(
-            self, input_list, noise_rate, is_training=False):
-        """ Create the model with noise.
 
-        Args:
-            input_list: (list<tf.Tensor>) A list of tensors containing the features
-                        for a list of documents.
-            noise_rate: (float) A value specify how much noise to add.
-            is_training: (bool) A flag indicating whether the model is running in training mode.
-
-        Returns:
-            A list of tf.Tensor containing the ranking scores for each instance in input_list.
-            A list of (tf.Tensor, tf.Tensor) containing the random noise and the parameters it is designed for.
-
-        """
-        raise ValueError('Random noise is not implemented in DLCM.')
-        return None

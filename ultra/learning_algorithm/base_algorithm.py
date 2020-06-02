@@ -102,7 +102,7 @@ class BaseAlgorithm(ABC):
             self.docid_inputs[:list_size], self.is_training, scope)
         return tf.concat(output_scores, 1)
 
-    def get_ranking_scores(self, input_id_list, is_training=False, scope=None):
+    def get_ranking_scores(self, input_id_list, is_training=False, scope=None, **kwargs):
         """Compute ranking scores with the given inputs.
 
         Args:
@@ -122,66 +122,16 @@ class BaseAlgorithm(ABC):
                 axis=0, values=[
                     self.letor_features, PAD_embed])
             input_feature_list = []
-            if hasattr(self, "model") and self.model is None:
+            if not hasattr(self, "model") or self.model is None:
                 self.model = utils.find_class(
-                    self.exp_settings['ranking_model'])(
-                    self.exp_settings['ranking_model_hparams'])
-                model = self.model
-#                 print("")
-            elif hasattr(self, "model") and self.model is not None:
-                model = self.model
-            else:
-                model = ultra.utils.find_class(
                     self.exp_settings['ranking_model'])(
                     self.exp_settings['ranking_model_hparams'])
             for i in range(len(input_id_list)):
                 input_feature_list.append(
                     tf.nn.embedding_lookup(
                         letor_features, input_id_list[i]))
-            return model.build(input_feature_list, is_training)
-
-    def get_ranking_scores_with_noise(
-            self, input_id_list, is_training=False, scope=None):
-        """Run a step of the model feeding the given inputs.
-
-        Args:
-            input_id_list: (list<tf.Tensor>) A list of tensors containing document ids.
-                            Each tensor must have a shape of [None].
-            is_training: (bool) A flag indicating whether the model is running in training mode.
-            scope: (string) The name of the variable scope.
-
-        Returns:
-            A tensor with the same shape of input_docids.
-            A list of (tf.Tensor, tf.Tensor) containing the random noise and the parameters it is designed for.
-
-        """
-        with tf.variable_scope(scope or "ranking_model"):
-            PAD_embed = tf.zeros([1, self.feature_size], dtype=tf.float32)
-            letor_features = tf.concat(
-                axis=0, values=[
-                    self.letor_features, PAD_embed])
-            input_feature_list = []
-
-            if hasattr(self, "model") and self.model is None:
-                self.model = utils.find_class(
-                    self.exp_settings['ranking_model'])(
-                    self.exp_settings['ranking_model_hparams'])
-                model = self.model
-#                 print("")
-            elif hasattr(self, "model") and self.model is not None:
-                model = self.model
-            else:
-                model = ultra.utils.find_class(
-                    self.exp_settings['ranking_model'])(
-                    self.exp_settings['ranking_model_hparams'])
-
-            for i in range(len(input_id_list)):
-                input_feature_list.append(
-                    tf.nn.embedding_lookup(
-                        letor_features, input_id_list[i]))
-            return model.build_with_random_noise(
-                input_feature_list, self.hparams.learning_rate, is_training)
-
+            return self.model.build(input_feature_list, is_training=is_training, **kwargs)
+    
     def pairwise_cross_entropy_loss(self, pos_scores, neg_scores, name=None):
         """Computes pairwise softmax loss without propensity weighting.
 

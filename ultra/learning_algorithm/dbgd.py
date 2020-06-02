@@ -50,7 +50,7 @@ class DBGD(BaseAlgorithm):
 
         self.hparams = ultra.utils.hparams.HParams(
             # The update rate for randomly sampled weights.
-            learning_rate=0.1,         # Learning rate.
+            learning_rate=0.05,         # Learning rate.
             max_gradient_norm=5.0,      # Clip gradients to this norm.
             need_interleave=True,       # Set True to use result interleaving
             grad_strategy='sgd',            # Select gradient strategy
@@ -107,9 +107,14 @@ class DBGD(BaseAlgorithm):
                     scope='ranking_model'),
                 1)
             train_labels = self.labels[:self.rank_list_size]
-            # Create random gradients and apply it to get new ranking scores
-            new_output_list, noise_list = self.get_ranking_scores_with_noise(
-                self.docid_inputs[:self.rank_list_size], is_training=self.is_training, scope='ranking_model')
+
+            # Create random unit noise
+            ranking_model_params = self.model.model_parameters
+            noisy_params = {x: tf.math.l2_normalize(tf.random.normal(ranking_model_params[x].get_shape())) for x in ranking_model_params}
+
+            # Apply the noise to get new ranking scores
+            new_output_list = self.get_ranking_scores(
+                self.docid_inputs[:self.rank_list_size], is_training=self.is_training, scope='ranking_model', noisy_params=noisy_params, noise_rate=self.hparams.learning_rate)
 
             # Compute NDCG for the old ranking scores and new ranking scores
             # reshape from [rank_list_size, ?] to [?, rank_list_size]
@@ -128,10 +133,11 @@ class DBGD(BaseAlgorithm):
             if self.hparams.need_interleave:
                 self.output = (self.output, train_output, self.new_output)
                 # Compute gradients
-                params = [p[1] for p in noise_list]
+                params = []
                 self.gradients = []
-                for p in noise_list:
-                    gradient_matrix = tf.expand_dims(tf.stack([tf.zeros_like(p[1]), p[0]]), axis=0)
+                for x in ranking_model_params:
+                    params.append(ranking_model_params[x])
+                    gradient_matrix = tf.expand_dims(tf.stack([tf.zeros_like(ranking_model_params[x]), noisy_params[x]]), axis=0)
                     expended_winners = self.winners 
                     for i in range(gradient_matrix.get_shape().rank - expended_winners.get_shape().rank):
                         expended_winners = tf.expand_dims(expended_winners, axis=-1)

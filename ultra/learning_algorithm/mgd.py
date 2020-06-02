@@ -49,11 +49,11 @@ class MGD(DBGD):
 
         self.hparams = ultra.utils.hparams.HParams(
             # The update rate for randomly sampled weights.
-            learning_rate=0.1,         # Learning rate.
+            learning_rate=0.05,         # Learning rate.
             max_gradient_norm=5.0,      # Clip gradients to this norm.
             need_interleave=True,       # Set True to use result interleaving
             grad_strategy='sgd',        # Select gradient strategy
-            ranker_num=5,               # Select number of rankers to try in each batch.
+            ranker_num=4,               # Select number of rankers to try in each batch.
         )
         print(exp_settings['learning_algorithm_hparams'])
         self.hparams.parse(exp_settings['learning_algorithm_hparams'])
@@ -108,21 +108,26 @@ class MGD(DBGD):
                     scope='ranking_model'),
                 1)
             train_labels = self.labels[:self.rank_list_size]
-            # Create random gradients and apply it to get new ranking scores
+
+            
+            ranking_model_params = self.model.model_parameters
             # new_output_lists = [self.output]
             new_output_lists = []
             params = []
             param_gradient_from_rankers = {}
             # noise_lists = [tf.zeros_like(self.output, tf.float32)]
             for i in range(self.ranker_num):
-                new_output_list, noise_list = self.get_ranking_scores_with_noise(
-                    self.docid_inputs, is_training=self.is_training, scope='ranking_model')
+                # Create random unit noise
+                noisy_params = {x: tf.math.l2_normalize(tf.random.normal(ranking_model_params[x].get_shape())) for x in ranking_model_params}
+                # Apply the noise to get new ranking scores
+                new_output_list = self.get_ranking_scores(
+                    self.docid_inputs[:self.rank_list_size], is_training=self.is_training, scope='ranking_model', noisy_params=noisy_params, noise_rate=self.hparams.learning_rate)
                 new_output_lists.append(tf.concat(new_output_list, 1))
-                for p in noise_list:
-                    if p[1].name not in param_gradient_from_rankers:
-                        params.append(p[1])
-                        param_gradient_from_rankers[p[1].name] = [tf.zeros_like(p[1])]
-                    param_gradient_from_rankers[p[1].name].append(p[0])
+                for x in noisy_params:
+                    if x not in param_gradient_from_rankers:
+                        params.append(ranking_model_params[x])
+                        param_gradient_from_rankers[x] = [tf.zeros_like(ranking_model_params[x])]
+                    param_gradient_from_rankers[x].append(noisy_params[x])
             
             # Compute NDCG for the old ranking scores.
             # reshape from [rank_list_size, ?] to [?, rank_list_size]
