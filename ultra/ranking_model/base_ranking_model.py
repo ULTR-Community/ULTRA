@@ -112,6 +112,6 @@ class BaseRankingModel(ABC):
         """
         var = tf.get_variable(name, shape, **kwargs)
         self.model_parameters[var.name] = var
-        if noisy_params != None and name in noisy_params:
-            var = var + noisy_params[name] * noise_rate
+        if noisy_params != None and var.name in noisy_params:
+            var = var + noisy_params[var.name] * noise_rate
         return var
