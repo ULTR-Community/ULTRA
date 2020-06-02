@@ -17,7 +17,7 @@ import sys
 import time
 import numpy as np
 import tensorflow as tf
-import tensorflow_ranking as tfr
+
 import copy
 import itertools
 from six.moves import zip

@@ -34,20 +34,16 @@ from tensorflow.python.ops import embedding_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import rnn_cell_impl
-from tensorflow.python.ops import variable_scope
 from tensorflow.python.ops import init_ops
 from tensorflow.contrib.rnn.python.ops import core_rnn_cell
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.ops import logging_ops
 from tensorflow.python.ops import tensor_array_ops
-from tensorflow.python.ops import variable_scope as vs
 from tensorflow.python.util import nest
-
 
 # TODO(ebrevdo): Remove once _linear is fully deprecated.
 # linear = rnn_cell_impl._linear  # pylint: disable=protected-access
 linear = core_rnn_cell._linear
-
 
 class DLCM(BaseRankingModel):
     """The Deep Listwise Context Model for learning to rank.
@@ -95,7 +91,7 @@ class DLCM(BaseRankingModel):
         self.target_labels = []
         self.target_weights = []
         self.target_initial_score = []
-        with variable_scope.variable_scope("embedding_rnn_seq2seq", reuse=tf.AUTO_REUSE):
+        with tf.variable_scope("embedding_rnn_seq2seq", reuse=tf.AUTO_REUSE):
 
             self.Layer_embedding = tf.keras.layers.LayerNormalization(
                 name="embedding_norm")
@@ -140,7 +136,7 @@ class DLCM(BaseRankingModel):
         """RNN decoder for the sequence-to-sequence model.
 
         """
-        with variable_scope.variable_scope(scope or "rnn_decoder"):
+        with tf.variable_scope(scope or "rnn_decoder"):
             batch_size = tf.shape(encode_embed[0])[0]  # Needed for reshaping.
             # number of output vector in sequence
             attn_length = attention_states.get_shape()[1].value
@@ -169,32 +165,32 @@ class DLCM(BaseRankingModel):
             attention_vec_size = attn_size
             head_weights = []
             for a in xrange(num_heads):
-                k = variable_scope.get_variable("AttnW_%d" % a,
+                k = self.get_variable("AttnW_%d" % a,
                                                 [1, 1, attn_size, attention_vec_size])
                 hidden_features.append(nn_ops.conv2d(
                     hidden, k, [1, 1, 1, 1], "SAME"))  # [B,T,1,attn_vec_size]
-                k2 = variable_scope.get_variable("AttnW2_%d" % a,
+                k2 = self.get_variable("AttnW2_%d" % a,
                                                  [1, 1, attn_size, attention_vec_size])
                 hidden_features2.append(nn_ops.conv2d(
                     hidden, k2, [1, 1, 1, 1], "SAME"))
-                v.append(variable_scope.get_variable("AttnV_%d" % a,
+                v.append(self.get_variable("AttnV_%d" % a,
                                                      [attention_vec_size]))
-                u.append(variable_scope.get_variable("AttnU_%d" % a,
+                u.append(self.get_variable("AttnU_%d" % a,
                                                      [attention_vec_size]))
-                head_weights.append(variable_scope.get_variable(
+                head_weights.append(self.get_variable(
                     "head_weight_%d" % a, [1]))
                 current_layer_size = attn_size + state_size
-                linear_w.append(variable_scope.get_variable("linearW_%d" % a,
+                linear_w.append(self.get_variable("linearW_%d" % a,
                                                             [1, 1, current_layer_size, 1]))
-                linear_b.append(variable_scope.get_variable("linearB_%d" % a,
+                linear_b.append(self.get_variable("linearB_%d" % a,
                                                             [1]))
                 abstract_w.append([])
                 abstract_b.append([])
                 for i in xrange(len(abstract_layers)):
                     layer_size = abstract_layers[i]
-                    abstract_w[a].append(variable_scope.get_variable("Att_%d_layerW_%d" % (a, i),
+                    abstract_w[a].append(self.get_variable("Att_%d_layerW_%d" % (a, i),
                                                                      [1, 1, current_layer_size, layer_size]))
-                    abstract_b[a].append(variable_scope.get_variable("Att_%d_layerB_%d" % (a, i),
+                    abstract_b[a].append(self.get_variable("Att_%d_layerB_%d" % (a, i),
                                                                      [layer_size]))
                     current_layer_size = layer_size
 
@@ -209,7 +205,7 @@ class DLCM(BaseRankingModel):
                 concat_input = tf.concat(axis=3, values=[hidden, tiled_query])
                 #concat_input = tf.concat(3, [hidden, hidden])
                 for a in xrange(num_heads):
-                    with variable_scope.variable_scope("Attention_%d" % a):
+                    with tf.variable_scope("Attention_%d" % a):
                         s = None
                         if self.hparams.att_strategy == 'multi':
                             print('Attention: multiply')
@@ -318,7 +314,7 @@ class DLCM(BaseRankingModel):
                 output_projection[1], dtype=dtypes.float32)
             proj_biases.get_shape().assert_is_compatible_with([num_symbols])
 
-        with variable_scope.variable_scope(scope or "embedding_rnn_decoder"):
+        with tf.variable_scope(scope or "embedding_rnn_decoder"):
             loop_function = self._extract_argmax_and_embed(
                 encode_embed, output_projection,
                 update_embedding_for_previous) if feed_previous else None
@@ -344,7 +340,7 @@ class DLCM(BaseRankingModel):
         dtype = dtypes.float32
         output_projection = None
         list_size = len(input_list)  # len_seq
-        with variable_scope.variable_scope("cell", reuse=tf.AUTO_REUSE):
+        with tf.variable_scope("cell", reuse=tf.AUTO_REUSE):
             single_cell = tf.contrib.rnn.GRUCell(
                 embed_size + self.expand_embed_size)
             double_cell = tf.contrib.rnn.GRUCell(
@@ -364,21 +360,21 @@ class DLCM(BaseRankingModel):
                     [single_cell] * self.hparams.num_layers)
                 self.double_cell = tf.contrib.rnn.MultiRNNCell(
                     [double_cell] * self.hparams.num_layers)
-        with variable_scope.variable_scope(tf.get_variable_scope() or "embedding_rnn_seq2seq", reuse=tf.AUTO_REUSE):
+        with tf.variable_scope(tf.get_variable_scope() or "embedding_rnn_seq2seq", reuse=tf.AUTO_REUSE):
 
             def abstract(input_data, index):
                 reuse = None if index < 1 else True
                 print(reuse, "reuse or not", tf.AUTO_REUSE, "tf.AUTO_REUSE")
-                with variable_scope.variable_scope(variable_scope.get_variable_scope(),
+                with tf.variable_scope(tf.get_variable_scope(),
                                                    reuse=tf.AUTO_REUSE):
                     output_data = input_data
                     output_sizes = [
                         int((embed_size + self.expand_embed_size) / 2), self.expand_embed_size]
                     current_size = embed_size
                     for i in xrange(2):
-                        expand_W = variable_scope.get_variable(
+                        expand_W = self.get_variable(
                             "expand_W_%d" % i, [current_size, output_sizes[i]])
-                        expand_b = variable_scope.get_variable(
+                        expand_b = self.get_variable(
                             "expand_b_%d" % i, [output_sizes[i]])
                         output_data = tf.nn.bias_add(
                             tf.matmul(output_data, expand_W), expand_b)
@@ -446,7 +442,7 @@ class DLCM(BaseRankingModel):
             # If feed_previous is a Tensor, we construct 2 graphs and use cond.
             def decoder(feed_previous_bool):
                 reuse = None if feed_previous_bool else True
-                with variable_scope.variable_scope(variable_scope.get_variable_scope(),
+                with tf.variable_scope(tf.get_variable_scope(),
                                                    reuse=reuse):
                     outputs, state = self.embedding_rnn_decoder(
                         encoder_state, cell, attention_states, input_list,

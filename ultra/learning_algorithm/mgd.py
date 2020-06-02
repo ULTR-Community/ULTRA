@@ -18,7 +18,7 @@ import time
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.framework import ops
-import tensorflow_ranking as tfr
+
 import copy
 import itertools
 from six.moves import zip
@@ -45,7 +45,7 @@ class MGD(DBGD):
             exp_settings: (dictionary) The dictionary containing the model settings.
             forward_only: Set true to conduct prediction only, false to conduct training.
         """
-        print('Build Dueling Bandit Gradient Descent (DBGD) algorithm.')
+        print('Build Multileave Gradient Descent (DBGD) algorithm.')
 
         self.hparams = ultra.utils.hparams.HParams(
             # The update rate for randomly sampled weights.

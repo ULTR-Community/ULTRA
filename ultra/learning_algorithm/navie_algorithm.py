@@ -11,7 +11,7 @@ import os
 import random
 import sys
 import tensorflow as tf
-import tensorflow_ranking as tfr
+
 from tensorflow import dtypes
 from ultra.learning_algorithm.base_algorithm import BaseAlgorithm
 import ultra.utils
