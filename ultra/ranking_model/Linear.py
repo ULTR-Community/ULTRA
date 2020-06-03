@@ -31,10 +31,11 @@ class Linear(BaseRankingModel):
 
         if self.hparams.initializer in BaseRankingModel.INITIALIZER_DIC:
             self.initializer = BaseRankingModel.INITIALIZER_DIC[self.hparams.initializer]
-        
+
         self.model_parameters = {}
 
-    def build(self, input_list, noisy_params=None, noise_rate=0.05, is_training=False, **kwargs):
+    def build(self, input_list, noisy_params=None,
+              noise_rate=0.05, is_training=False, **kwargs):
         """ Create the Linear model
 
         Args:
@@ -52,16 +53,16 @@ class Linear(BaseRankingModel):
             input_data = tf.concat(input_list, axis=0)
             output_data = input_data
             output_sizes = [1]
-            
+
             if self.layer_norm is None and self.hparams.norm in BaseRankingModel.NORM_FUNC_DIC:
                 self.layer_norm = []
                 for j in range(len(output_sizes)):
                     self.layer_norm.append(BaseRankingModel.NORM_FUNC_DIC[self.hparams.norm](
                         name="layer_norm_%d" % j))
-            
+
             current_size = output_data.get_shape()[-1].value
             for j in range(len(output_sizes)):
-                if self.layer_norm != None:
+                if self.layer_norm is not None:
                     output_data = self.layer_norm[j](
                         output_data, training=is_training)
                 expand_W = self.get_variable(

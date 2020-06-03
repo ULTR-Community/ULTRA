@@ -45,6 +45,7 @@ from tensorflow.python.util import nest
 # linear = rnn_cell_impl._linear  # pylint: disable=protected-access
 linear = core_rnn_cell._linear
 
+
 class DLCM(BaseRankingModel):
     """The Deep Listwise Context Model for learning to rank.
 
@@ -166,32 +167,32 @@ class DLCM(BaseRankingModel):
             head_weights = []
             for a in xrange(num_heads):
                 k = self.get_variable("AttnW_%d" % a,
-                                                [1, 1, attn_size, attention_vec_size])
+                                      [1, 1, attn_size, attention_vec_size])
                 hidden_features.append(nn_ops.conv2d(
                     hidden, k, [1, 1, 1, 1], "SAME"))  # [B,T,1,attn_vec_size]
                 k2 = self.get_variable("AttnW2_%d" % a,
-                                                 [1, 1, attn_size, attention_vec_size])
+                                       [1, 1, attn_size, attention_vec_size])
                 hidden_features2.append(nn_ops.conv2d(
                     hidden, k2, [1, 1, 1, 1], "SAME"))
                 v.append(self.get_variable("AttnV_%d" % a,
-                                                     [attention_vec_size]))
+                                           [attention_vec_size]))
                 u.append(self.get_variable("AttnU_%d" % a,
-                                                     [attention_vec_size]))
+                                           [attention_vec_size]))
                 head_weights.append(self.get_variable(
                     "head_weight_%d" % a, [1]))
                 current_layer_size = attn_size + state_size
                 linear_w.append(self.get_variable("linearW_%d" % a,
-                                                            [1, 1, current_layer_size, 1]))
+                                                  [1, 1, current_layer_size, 1]))
                 linear_b.append(self.get_variable("linearB_%d" % a,
-                                                            [1]))
+                                                  [1]))
                 abstract_w.append([])
                 abstract_b.append([])
                 for i in xrange(len(abstract_layers)):
                     layer_size = abstract_layers[i]
                     abstract_w[a].append(self.get_variable("Att_%d_layerW_%d" % (a, i),
-                                                                     [1, 1, current_layer_size, layer_size]))
+                                                           [1, 1, current_layer_size, layer_size]))
                     abstract_b[a].append(self.get_variable("Att_%d_layerB_%d" % (a, i),
-                                                                     [layer_size]))
+                                                           [layer_size]))
                     current_layer_size = layer_size
 
             def attention(query):
@@ -324,7 +325,8 @@ class DLCM(BaseRankingModel):
             return self.rnn_decoder(encode_embed, attention_states, initial_state, cell,
                                     num_heads=num_heads, loop_function=loop_function)
 
-    def build(self, input_list, noisy_params=None, noise_rate=0.05, is_training=False, **kwargs):
+    def build(self, input_list, noisy_params=None,
+              noise_rate=0.05, is_training=False, **kwargs):
         """Create embedding RNN sequence-to-sequence model. No support for noisy parameters.
 
         Args:
@@ -366,7 +368,7 @@ class DLCM(BaseRankingModel):
                 reuse = None if index < 1 else True
                 print(reuse, "reuse or not", tf.AUTO_REUSE, "tf.AUTO_REUSE")
                 with tf.variable_scope(tf.get_variable_scope(),
-                                                   reuse=tf.AUTO_REUSE):
+                                       reuse=tf.AUTO_REUSE):
                     output_data = input_data
                     output_sizes = [
                         int((embed_size + self.expand_embed_size) / 2), self.expand_embed_size]
@@ -443,7 +445,7 @@ class DLCM(BaseRankingModel):
             def decoder(feed_previous_bool):
                 reuse = None if feed_previous_bool else True
                 with tf.variable_scope(tf.get_variable_scope(),
-                                                   reuse=reuse):
+                                       reuse=reuse):
                     outputs, state = self.embedding_rnn_decoder(
                         encoder_state, cell, attention_states, input_list,
                         num_heads=self.hparams.num_heads, output_projection=output_projection,

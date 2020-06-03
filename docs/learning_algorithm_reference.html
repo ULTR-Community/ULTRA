@@ -125,9 +125,14 @@
 <li class="toctree-l3"><a class="reference internal" href="#id12">Hyper Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#dbgdinterleave">DBGDInterleave</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#mgd">MGD</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id13">Description</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id14">Hyper Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#nsgd">NSGD</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id15">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id16">Hyper Parameters</a></li>
 </ul>
 </li>
 </ul>
@@ -327,19 +332,32 @@ feed. See the following paper for more information on the algorithm.</p>
 <h3>Hyper Parameters<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
-<div class="section" id="dbgdinterleave">
-<h2>DBGDInterleave<a class="headerlink" href="#dbgdinterleave" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="mgd">
+<h2>MGD<a class="headerlink" href="#mgd" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id13">
 <h3>Description<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
-<p>The Dueling Bandit Gradient Descent (DBGD) algorithm for unbiased learning to rank.</p>
-<p>This class implements the Dueling Bandit Gradient Descent (DBGD) algorithm based on the input layer
-feed. See the following paper for more information on the algorithm.</p>
+<p>The Multileave Gradient Descent (MGD) algorithm for unbiased learning to rank.</p>
+<p>This class implements the Multileave Gradient Descent (MGD) algorithm based on the input layer feed. See the following paper for more information on the algorithm.</p>
 <ul class="simple">
-<li><p>Yisong Yue and Thorsten Joachims. 2009. Interactively optimizing information retrieval systems as a dueling bandits problem. In ICML. 1201–1208.</p></li>
+<li><p>Anne Schuth, Harrie Oosterhuis, Shimon Whiteson, Maarten de Rijke. 2016. Multileave Gradient Descent for Fast Online Learning to Rank. In WSDM. 457-466.</p></li>
 </ul>
 </div>
 <div class="section" id="id14">
 <h3>Hyper Parameters<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="nsgd">
+<h2>NSGD<a class="headerlink" href="#nsgd" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id15">
+<h3>Description<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<p>The Null Space Gradient Descent (NSGD) algorithm for unbiased learning to rank.</p>
+<p>This class implements the Null Space Gradient Descent (NSGD) algorithm based on the input layer feed. See the following paper for more information on the algorithm.</p>
+<ul class="simple">
+<li><p>Huazheng Wang, Ramsey Langley, Sonwoo Kim, Eric McCord-Snook, Hongning Wang. 2018. Efficient Exploration of Gradient Space for Online Learning to Rank. In SIGIR.</p></li>
+</ul>
+</div>
+<div class="section" id="id16">
+<h3>Hyper Parameters<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
 </div>

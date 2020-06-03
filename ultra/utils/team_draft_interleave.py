@@ -46,7 +46,8 @@ class TeamDraftInterleaving():
         return multileaved
 
     def infer_winner(self, clicks):
-        click_matrix = np.array([(self.teams[:len(clicks)] == i) * clicks for i in range(self.n_rankers)])
+        click_matrix = np.array(
+            [(self.teams[:len(clicks)] == i) * clicks for i in range(self.n_rankers)])
         # print (click_matrix)
         ranker_clicks = np.sum(click_matrix, axis=1)
         return ranker_clicks / (np.sum(ranker_clicks) + 0.0000001)

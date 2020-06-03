@@ -238,16 +238,26 @@
 
 <dl class="class">
 <dt id="ultra.ranking_model.base_ranking_model.BaseRankingModel">
-<em class="property">class </em><code class="sig-prename descclassname">ultra.ranking_model.base_ranking_model.</code><code class="sig-name descname">BaseRankingModel</code><span class="sig-paren">(</span><em class="sig-param">hparams_str</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.BaseRankingModel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ultra.ranking_model.base_ranking_model.</code><code class="sig-name descname">BaseRankingModel</code><span class="sig-paren">(</span><em class="sig-param">hparams_str=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.BaseRankingModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
 <dl class="attribute">
 <dt id="ultra.ranking_model.base_ranking_model.BaseRankingModel.ACT_FUNC_DIC">
 <code class="sig-name descname">ACT_FUNC_DIC</code><em class="property"> = {'elu': &lt;function elu&gt;, 'relu': &lt;function relu&gt;, 'selu': &lt;function selu&gt;, 'sigmoid': &lt;function sigmoid&gt;, 'tanh': &lt;function tanh&gt;}</em><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.BaseRankingModel.ACT_FUNC_DIC" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="attribute">
+<dt id="ultra.ranking_model.base_ranking_model.BaseRankingModel.INITIALIZER_DIC">
+<code class="sig-name descname">INITIALIZER_DIC</code><em class="property"> = {'constant': &lt;tensorflow.python.ops.init_ops.Constant object&gt;}</em><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.BaseRankingModel.INITIALIZER_DIC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ultra.ranking_model.base_ranking_model.BaseRankingModel.NORM_FUNC_DIC">
+<code class="sig-name descname">NORM_FUNC_DIC</code><em class="property"> = {'batch': &lt;class 'tensorflow.python.keras.layers.normalization.BatchNormalization'&gt;, 'layer': &lt;class 'tensorflow.python.keras.layers.normalization.LayerNormalization'&gt;}</em><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.BaseRankingModel.NORM_FUNC_DIC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="ultra.ranking_model.base_ranking_model.BaseRankingModel.__init__">
-<em class="property">abstract </em><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">hparams_str</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.BaseRankingModel.__init__" title="Permalink to this definition">¶</a></dt>
+<em class="property">abstract </em><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">hparams_str=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.BaseRankingModel.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create the network.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -258,13 +268,15 @@
 
 <dl class="method">
 <dt id="ultra.ranking_model.base_ranking_model.BaseRankingModel.build">
-<em class="property">abstract </em><code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param">input_list</em>, <em class="sig-param">is_training=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.BaseRankingModel.build" title="Permalink to this definition">¶</a></dt>
+<em class="property">abstract </em><code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param">input_list</em>, <em class="sig-param">noisy_params=None</em>, <em class="sig-param">noise_rate=0.05</em>, <em class="sig-param">is_training=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.BaseRankingModel.build" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create the model</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>input_list</strong> – (list&lt;tf.tensor&gt;) A list of tensors containing the features
 for a list of documents.</p></li>
+<li><p><strong>noisy_params</strong> – (dict&lt;parameter_name, tf.variable&gt;) A dictionary of noisy parameters to add.</p></li>
+<li><p><strong>noise_rate</strong> – (float) A value specify how much noise to add.</p></li>
 <li><p><strong>is_training</strong> – (bool) A flag indicating whether the model is running in training mode.</p></li>
 </ul>
 </dd>
@@ -275,24 +287,57 @@ for a list of documents.</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="ultra.ranking_model.base_ranking_model.BaseRankingModel.build_with_random_noise">
-<em class="property">abstract </em><code class="sig-name descname">build_with_random_noise</code><span class="sig-paren">(</span><em class="sig-param">input_list</em>, <em class="sig-param">noise_rate</em>, <em class="sig-param">is_training</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.BaseRankingModel.build_with_random_noise" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create the model and add random noise (for online learning).</p>
+<dt id="ultra.ranking_model.base_ranking_model.BaseRankingModel.get_variable">
+<code class="sig-name descname">get_variable</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">shape</em>, <em class="sig-param">noisy_params=None</em>, <em class="sig-param">noise_rate=0.05</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.BaseRankingModel.get_variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a tensorflow variable for the model. Add noise if required.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>input_list</strong> – (list&lt;tf.tensor&gt;) A list of tensors containing the features
-for a list of documents.</p></li>
+<li><p><strong>name</strong> – The name of the variable.</p></li>
+<li><p><strong>shape</strong> – The shape of the variable.</p></li>
+<li><p><strong>noisy_params</strong> – (dict&lt;parameter_name, tf.variable&gt;) A dictionary of noisy parameters to add.</p></li>
 <li><p><strong>noise_rate</strong> – (float) A value specify how much noise to add.</p></li>
-<li><p><strong>is_training</strong> – (bool) A flag indicating whether the model is running in training mode.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A list of tf.Tensor containing the ranking scores for each instance in input_list.
-A list of (tf.Tensor, tf.Tensor) containing the random noise and the parameters it is designed for.</p>
+<dd class="field-even"><p>A tf.Tensor</p>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="attribute">
+<dt id="ultra.ranking_model.base_ranking_model.BaseRankingModel.model_parameters">
+<code class="sig-name descname">model_parameters</code><em class="property"> = {}</em><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.BaseRankingModel.model_parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ultra.ranking_model.base_ranking_model.Initializer">
+<em class="property">class </em><code class="sig-prename descclassname">ultra.ranking_model.base_ranking_model.</code><code class="sig-name descname">Initializer</code><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.Initializer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Initializer key strings.</p>
+<dl class="attribute">
+<dt id="ultra.ranking_model.base_ranking_model.Initializer.CONSTANT">
+<code class="sig-name descname">CONSTANT</code><em class="property"> = 'constant'</em><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.Initializer.CONSTANT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ultra.ranking_model.base_ranking_model.NormalizationFunctions">
+<em class="property">class </em><code class="sig-prename descclassname">ultra.ranking_model.base_ranking_model.</code><code class="sig-name descname">NormalizationFunctions</code><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.NormalizationFunctions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Normalization Functions key strings.</p>
+<dl class="attribute">
+<dt id="ultra.ranking_model.base_ranking_model.NormalizationFunctions.BATCH">
+<code class="sig-name descname">BATCH</code><em class="property"> = 'batch'</em><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.NormalizationFunctions.BATCH" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ultra.ranking_model.base_ranking_model.NormalizationFunctions.LAYER">
+<code class="sig-name descname">LAYER</code><em class="property"> = 'layer'</em><a class="headerlink" href="#ultra.ranking_model.base_ranking_model.NormalizationFunctions.LAYER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 

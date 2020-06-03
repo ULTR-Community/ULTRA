@@ -44,13 +44,14 @@ class GSF(BaseRankingModel):
 
         if self.hparams.activation_func in BaseRankingModel.ACT_FUNC_DIC:
             self.act_func = BaseRankingModel.ACT_FUNC_DIC[self.hparams.activation_func]
-        
+
         if self.hparams.initializer in BaseRankingModel.INITIALIZER_DIC:
             self.initializer = BaseRankingModel.INITIALIZER_DIC[self.hparams.initializer]
-        
+
         self.model_parameters = {}
 
-    def build(self, input_list, noisy_params=None, noise_rate=0.05, is_training=False, **kwargs):
+    def build(self, input_list, noisy_params=None,
+              noise_rate=0.05, is_training=False, **kwargs):
         """ Create the GSF model
 
         Args:
@@ -83,7 +84,7 @@ class GSF(BaseRankingModel):
             def dnn(x):
                 current_size = x.get_shape()[-1].value
                 for j in range(len(output_sizes)):
-                    if self.layer_norm != None:
+                    if self.layer_norm is not None:
                         x = self.layer_norm[j](x, training=is_training)
                     expand_W = self.get_variable(
                         "dnn_W_%d" % j, [current_size, output_sizes[j]], noisy_params=noisy_params, noise_rate=noise_rate)

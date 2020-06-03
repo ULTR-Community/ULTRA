@@ -110,7 +110,10 @@ class DBGD(BaseAlgorithm):
 
             # Create random unit noise
             ranking_model_params = self.model.model_parameters
-            noisy_params = {x: tf.math.l2_normalize(tf.random.normal(ranking_model_params[x].get_shape())) for x in ranking_model_params}
+            noisy_params = {
+                x: tf.math.l2_normalize(
+                    tf.random.normal(
+                        ranking_model_params[x].get_shape())) for x in ranking_model_params}
 
             # Apply the noise to get new ranking scores
             new_output_list = self.get_ranking_scores(
@@ -130,73 +133,63 @@ class DBGD(BaseAlgorithm):
                 reshaped_train_labels, self.new_output, None)
             self.loss = 1.0 - previous_ndcg
 
+            final_winners = None
             if self.hparams.need_interleave:
                 self.output = (self.output, train_output, self.new_output)
-                # Compute gradients
-                params = []
-                self.gradients = []
-                for x in ranking_model_params:
-                    params.append(ranking_model_params[x])
-                    gradient_matrix = tf.expand_dims(tf.stack([tf.zeros_like(ranking_model_params[x]), noisy_params[x]]), axis=0)
-                    expended_winners = self.winners 
-                    for i in range(gradient_matrix.get_shape().rank - expended_winners.get_shape().rank):
-                        expended_winners = tf.expand_dims(expended_winners, axis=-1)
-                    self.gradients.append(
-                        tf.reduce_mean(
-                            tf.reduce_sum(
-                                expended_winners * gradient_matrix, 
-                                axis=1 
-                            ),
+                final_winners = self.winners
+            else:
+                score_lists = [train_output, self.new_output]
+                ndcg_lists = []
+                for scores in score_lists:
+                    ndcg = ultra.utils.make_ranking_metric_fn(
+                        'ndcg', self.rank_list_size)(
+                        reshaped_train_labels, scores, None)
+                    ndcg_lists.append(ndcg - previous_ndcg)
+                ndcg_gains = tf.ceil(tf.stack(ndcg_lists))
+                final_winners = ndcg_gains / \
+                    (tf.reduce_sum(ndcg_gains, axis=0) + 0.000000001)
+
+            # Compute gradients
+            params = []
+            self.gradients = []
+            for x in ranking_model_params:
+                params.append(ranking_model_params[x])
+                gradient_matrix = tf.expand_dims(
+                    tf.stack([tf.zeros_like(ranking_model_params[x]), noisy_params[x]]), axis=0)
+                expended_winners = final_winners
+                for i in range(gradient_matrix.get_shape(
+                ).rank - expended_winners.get_shape().rank):
+                    expended_winners = tf.expand_dims(
+                        expended_winners, axis=-1)
+                self.gradients.append(
+                    tf.reduce_mean(
+                        tf.reduce_sum(
+                            expended_winners * gradient_matrix,
+                            axis=1
+                        ),
                         axis=0)
-                        )
+                )
 
-                # Select optimizer
-                self.optimizer_func = tf.train.AdagradOptimizer
-                if self.hparams.grad_strategy == 'sgd':
-                    self.optimizer_func = tf.train.GradientDescentOptimizer
+            # Select optimizer
+            self.optimizer_func = tf.train.AdagradOptimizer
+            if self.hparams.grad_strategy == 'sgd':
+                self.optimizer_func = tf.train.GradientDescentOptimizer
 
-                # Gradients and SGD update operation for training the model.
-                opt = self.optimizer_func(self.hparams.learning_rate)
-                if self.hparams.max_gradient_norm > 0:
-                    self.clipped_gradients, self.norm = tf.clip_by_global_norm(self.gradients,
-                                                                               self.hparams.max_gradient_norm)
-                    self.updates = opt.apply_gradients(zip(self.clipped_gradients, params),
-                                                       global_step=self.global_step)
-                    tf.summary.scalar(
-                        'Gradient Norm',
-                        self.norm,
-                        collections=['train'])
-                else:
-                    self.norm = None
-                    self.updates = opt.apply_gradients(zip(self.gradients, params),
-                                                       global_step=self.global_step)
-
-            else:  # No result interleaving
-                update_or_not = tf.ceil(new_ndcg - previous_ndcg)
-                # Compute gradients
-                params = [p[1] for p in noise_list]
-                self.gradients = [p[0] * update_or_not for p in noise_list]
-
-                # Select optimizer
-                self.optimizer_func = tf.train.AdagradOptimizer
-                if self.hparams.grad_strategy == 'sgd':
-                    self.optimizer_func = tf.train.GradientDescentOptimizer
-
-                # Gradients and SGD update operation for training the model.
-                opt = self.optimizer_func(self.hparams.learning_rate)
-                if self.hparams.max_gradient_norm > 0:
-                    self.clipped_gradients, self.norm = tf.clip_by_global_norm(self.gradients,
-                                                                               self.hparams.max_gradient_norm)
-                    self.updates = opt.apply_gradients(zip(self.clipped_gradients, params),
-                                                       global_step=self.global_step)
-                    tf.summary.scalar(
-                        'Gradient Norm',
-                        self.norm,
-                        collections=['train'])
-                else:
-                    self.norm = None
-                    self.updates = opt.apply_gradients(zip(update_or_not * self.gradients, params),
-                                                       global_step=self.global_step)
+            # Gradients and SGD update operation for training the model.
+            opt = self.optimizer_func(self.hparams.learning_rate)
+            if self.hparams.max_gradient_norm > 0:
+                self.clipped_gradients, self.norm = tf.clip_by_global_norm(self.gradients,
+                                                                           self.hparams.max_gradient_norm)
+                self.updates = opt.apply_gradients(zip(self.clipped_gradients, params),
+                                                   global_step=self.global_step)
+                tf.summary.scalar(
+                    'Gradient Norm',
+                    self.norm,
+                    collections=['train'])
+            else:
+                self.norm = None
+                self.updates = opt.apply_gradients(zip(self.gradients, params),
+                                                   global_step=self.global_step)
 
             tf.summary.scalar(
                 'Learning Rate',

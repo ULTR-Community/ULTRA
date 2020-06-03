@@ -198,8 +198,6 @@
 </li>
         <li><a href="ultra.learning_algorithm.html#ultra.learning_algorithm.dbgd.DBGD.__init__">(ultra.learning_algorithm.dbgd.DBGD method)</a>
 </li>
-        <li><a href="ultra.learning_algorithm.html#ultra.learning_algorithm.dbgd_interleave.DBGDInterleave.__init__">(ultra.learning_algorithm.dbgd_interleave.DBGDInterleave method)</a>
-</li>
         <li><a href="ultra.learning_algorithm.html#ultra.learning_algorithm.dla.DLA.__init__">(ultra.learning_algorithm.dla.DLA method)</a>
 </li>
         <li><a href="ultra.learning_algorithm.html#ultra.learning_algorithm.ipw_rank.IPWrank.__init__">(ultra.learning_algorithm.ipw_rank.IPWrank method)</a>
@@ -261,9 +259,9 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ultra.utils.html#ultra.utils.propensity_estimator.BasicPropensityEstimator">BasicPropensityEstimator (class in ultra.utils.propensity_estimator)</a>
 </li>
-      <li><a href="ultra.ranking_model.html#ultra.ranking_model.base_ranking_model.BaseRankingModel.build">build() (ultra.ranking_model.base_ranking_model.BaseRankingModel method)</a>
+      <li><a href="ultra.ranking_model.html#ultra.ranking_model.base_ranking_model.NormalizationFunctions.BATCH">BATCH (ultra.ranking_model.base_ranking_model.NormalizationFunctions attribute)</a>
 </li>
-      <li><a href="ultra.ranking_model.html#ultra.ranking_model.base_ranking_model.BaseRankingModel.build_with_random_noise">build_with_random_noise() (ultra.ranking_model.base_ranking_model.BaseRankingModel method)</a>
+      <li><a href="ultra.ranking_model.html#ultra.ranking_model.base_ranking_model.BaseRankingModel.build">build() (ultra.ranking_model.base_ranking_model.BaseRankingModel method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -279,13 +277,15 @@
         <li><a href="ultra.learning_algorithm.html#ultra.learning_algorithm.ipw_rank.IPWrank.click_weighted_pairwise_loss">(ultra.learning_algorithm.ipw_rank.IPWrank method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ultra.learning_algorithm.html#ultra.learning_algorithm.dla.DLA.click_weighted_softmax_cross_entropy_loss">click_weighted_softmax_cross_entropy_loss() (ultra.learning_algorithm.dla.DLA method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ultra.learning_algorithm.html#ultra.learning_algorithm.ipw_rank.IPWrank.click_weighted_softmax_loss">click_weighted_softmax_loss() (ultra.learning_algorithm.ipw_rank.IPWrank method)</a>
 </li>
       <li><a href="ultra.input_layer.html#ultra.input_layer.click_simulation_feed.ClickSimulationFeed">ClickSimulationFeed (class in ultra.input_layer.click_simulation_feed)</a>
+</li>
+      <li><a href="ultra.ranking_model.html#ultra.ranking_model.base_ranking_model.Initializer.CONSTANT">CONSTANT (ultra.ranking_model.base_ranking_model.Initializer attribute)</a>
 </li>
       <li><a href="ultra.utils.html#ultra.utils.sys_tools.create_object">create_object() (in module ultra.utils.sys_tools)</a>
 </li>
@@ -296,8 +296,6 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ultra.learning_algorithm.html#ultra.learning_algorithm.dbgd.DBGD">DBGD (class in ultra.learning_algorithm.dbgd)</a>
-</li>
-      <li><a href="ultra.learning_algorithm.html#ultra.learning_algorithm.dbgd_interleave.DBGDInterleave">DBGDInterleave (class in ultra.learning_algorithm.dbgd_interleave)</a>
 </li>
       <li><a href="ultra.utils.html#ultra.utils.metrics.RankingMetricKey.DCG">DCG (ultra.utils.metrics.RankingMetricKey attribute)</a>
 </li>
@@ -409,7 +407,7 @@
 </li>
       <li><a href="ultra.learning_algorithm.html#ultra.learning_algorithm.base_algorithm.BaseAlgorithm.get_ranking_scores">get_ranking_scores() (ultra.learning_algorithm.base_algorithm.BaseAlgorithm method)</a>
 </li>
-      <li><a href="ultra.learning_algorithm.html#ultra.learning_algorithm.base_algorithm.BaseAlgorithm.get_ranking_scores_with_noise">get_ranking_scores_with_noise() (ultra.learning_algorithm.base_algorithm.BaseAlgorithm method)</a>
+      <li><a href="ultra.ranking_model.html#ultra.ranking_model.base_ranking_model.BaseRankingModel.get_variable">get_variable() (ultra.ranking_model.base_ranking_model.BaseRankingModel method)</a>
 </li>
       <li><a href="ultra.utils.html#ultra.utils.propensity_estimator.BasicPropensityEstimator.getPropensityForOneList">getPropensityForOneList() (ultra.utils.propensity_estimator.BasicPropensityEstimator method)</a>
 
@@ -433,10 +431,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ultra.utils.html#ultra.utils.team_draft_interleave.TeamDraftInterleaving.infer_winner">infer_winner() (ultra.utils.team_draft_interleave.TeamDraftInterleaving method)</a>
 </li>
-      <li><a href="ultra.utils.html#ultra.utils.team_draft_interleave.TeamDraftInterleaving.interleave">interleave() (ultra.utils.team_draft_interleave.TeamDraftInterleaving method)</a>
+      <li><a href="ultra.ranking_model.html#ultra.ranking_model.base_ranking_model.Initializer">Initializer (class in ultra.ranking_model.base_ranking_model)</a>
+</li>
+      <li><a href="ultra.ranking_model.html#ultra.ranking_model.base_ranking_model.BaseRankingModel.INITIALIZER_DIC">INITIALIZER_DIC (ultra.ranking_model.base_ranking_model.BaseRankingModel attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ultra.utils.html#ultra.utils.team_draft_interleave.TeamDraftInterleaving.interleave">interleave() (ultra.utils.team_draft_interleave.TeamDraftInterleaving method)</a>
+</li>
       <li><a href="ultra.input_layer.html#ultra.input_layer.interleaving_deterministic_online_simulation_feed.InterleavingDeterministicOnlineSimulationFeed">InterleavingDeterministicOnlineSimulationFeed (class in ultra.input_layer.interleaving_deterministic_online_simulation_feed)</a>
 </li>
       <li><a href="ultra.learning_algorithm.html#ultra.learning_algorithm.ipw_rank.IPWrank">IPWrank (class in ultra.learning_algorithm.ipw_rank)</a>
@@ -447,6 +449,8 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ultra.ranking_model.html#ultra.ranking_model.base_ranking_model.NormalizationFunctions.LAYER">LAYER (ultra.ranking_model.base_ranking_model.NormalizationFunctions attribute)</a>
+</li>
       <li><a href="ultra.input_layer.html#ultra.input_layer.list_available">list_available() (in module ultra.input_layer)</a>
 
       <ul>
@@ -457,10 +461,10 @@
       </ul></li>
       <li><a href="ultra.utils.html#ultra.utils.sys_tools.list_recursive_concrete_subclasses">list_recursive_concrete_subclasses() (in module ultra.utils.sys_tools)</a>
 </li>
-      <li><a href="ultra.utils.html#ultra.utils.data_utils.Raw_data.load_basic_data_information">load_basic_data_information() (ultra.utils.data_utils.Raw_data method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ultra.utils.html#ultra.utils.data_utils.Raw_data.load_basic_data_information">load_basic_data_information() (ultra.utils.data_utils.Raw_data method)</a>
+</li>
       <li><a href="ultra.utils.html#ultra.utils.data_utils.Raw_data.load_data_in_libsvm_format">load_data_in_libsvm_format() (ultra.utils.data_utils.Raw_data method)</a>
 </li>
       <li><a href="ultra.utils.html#ultra.utils.data_utils.Raw_data.load_data_in_ULTRA_format">load_data_in_ULTRA_format() (ultra.utils.data_utils.Raw_data method)</a>
@@ -487,15 +491,17 @@
 </li>
       <li><a href="ultra.utils.html#ultra.utils.metrics.RankingMetricKey.MAX_LABEL">MAX_LABEL (ultra.utils.metrics.RankingMetricKey attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ultra.input_layer.html#ultra.input_layer.base_input_feed.BaseInputFeed.MAX_SAMPLE_ROUND_NUM">MAX_SAMPLE_ROUND_NUM (ultra.input_layer.base_input_feed.BaseInputFeed attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ultra.utils.html#ultra.utils.metrics.mean_average_precision">mean_average_precision() (in module ultra.utils.metrics)</a>
 </li>
       <li><a href="ultra.utils.html#ultra.utils.metrics.mean_reciprocal_rank">mean_reciprocal_rank() (in module ultra.utils.metrics)</a>
 </li>
       <li><a href="ultra.utils.html#ultra.utils.data_utils.merge_TFSummary">merge_TFSummary() (in module ultra.utils.data_utils)</a>
+</li>
+      <li><a href="ultra.ranking_model.html#ultra.ranking_model.base_ranking_model.BaseRankingModel.model_parameters">model_parameters (ultra.ranking_model.base_ranking_model.BaseRankingModel attribute)</a>
 </li>
       <li><a href="ultra.utils.html#ultra.utils.metrics.RankingMetricKey.MRR">MRR (ultra.utils.metrics.RankingMetricKey attribute)</a>
 </li>
@@ -509,9 +515,13 @@
 </li>
       <li><a href="ultra.utils.html#ultra.utils.metrics.RankingMetricKey.NDCG">NDCG (ultra.utils.metrics.RankingMetricKey attribute)</a>
 </li>
+      <li><a href="ultra.utils.html#ultra.utils.team_draft_interleave.TeamDraftInterleaving.next_index_to_add">next_index_to_add() (ultra.utils.team_draft_interleave.TeamDraftInterleaving method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ultra.utils.html#ultra.utils.team_draft_interleave.TeamDraftInterleaving.next_index_to_add">next_index_to_add() (ultra.utils.team_draft_interleave.TeamDraftInterleaving method)</a>
+      <li><a href="ultra.ranking_model.html#ultra.ranking_model.base_ranking_model.BaseRankingModel.NORM_FUNC_DIC">NORM_FUNC_DIC (ultra.ranking_model.base_ranking_model.BaseRankingModel attribute)</a>
+</li>
+      <li><a href="ultra.ranking_model.html#ultra.ranking_model.base_ranking_model.NormalizationFunctions">NormalizationFunctions (class in ultra.ranking_model.base_ranking_model)</a>
 </li>
       <li><a href="ultra.utils.html#ultra.utils.metrics.normalized_discounted_cumulative_gain">normalized_discounted_cumulative_gain() (in module ultra.utils.metrics)</a>
 </li>
@@ -668,8 +678,6 @@
       <ul>
         <li><a href="ultra.learning_algorithm.html#ultra.learning_algorithm.dbgd.DBGD.step">(ultra.learning_algorithm.dbgd.DBGD method)</a>
 </li>
-        <li><a href="ultra.learning_algorithm.html#ultra.learning_algorithm.dbgd_interleave.DBGDInterleave.step">(ultra.learning_algorithm.dbgd_interleave.DBGDInterleave method)</a>
-</li>
         <li><a href="ultra.learning_algorithm.html#ultra.learning_algorithm.dla.DLA.step">(ultra.learning_algorithm.dla.DLA method)</a>
 </li>
         <li><a href="ultra.learning_algorithm.html#ultra.learning_algorithm.ipw_rank.IPWrank.step">(ultra.learning_algorithm.ipw_rank.IPWrank method)</a>
@@ -726,8 +734,6 @@
       <li><a href="ultra.learning_algorithm.html#module-ultra.learning_algorithm.base_algorithm">ultra.learning_algorithm.base_algorithm (module)</a>
 </li>
       <li><a href="ultra.learning_algorithm.html#module-ultra.learning_algorithm.dbgd">ultra.learning_algorithm.dbgd (module)</a>
-</li>
-      <li><a href="ultra.learning_algorithm.html#module-ultra.learning_algorithm.dbgd_interleave">ultra.learning_algorithm.dbgd_interleave (module)</a>
 </li>
       <li><a href="ultra.learning_algorithm.html#module-ultra.learning_algorithm.dla">ultra.learning_algorithm.dla (module)</a>
 </li>

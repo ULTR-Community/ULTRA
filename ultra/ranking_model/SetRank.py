@@ -348,7 +348,8 @@ class SetRank(BaseRankingModel):
             self.Encoder_layer = Encoder(self.hparams.num_layers, self.hparams.d_model,
                                          self.hparams.num_heads, self.hparams.diff, self.hparams.rate)
 
-    def build(self, input_list, noisy_params=None, noise_rate=0.05, is_training=False, **kwargs):
+    def build(self, input_list, noisy_params=None,
+              noise_rate=0.05, is_training=False, **kwargs):
         """ Create the SetRank model (no supports for noisy parameters)
 
         Args:
@@ -384,5 +385,3 @@ class SetRank(BaseRankingModel):
 #                     reind_output[ind[i]]=output[i]
 #                 output=reind_output
         return output  # [len_seq,batch,1]
-
-

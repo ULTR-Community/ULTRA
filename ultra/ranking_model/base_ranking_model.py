@@ -47,10 +47,12 @@ class NormalizationFunctions(object):
 
     LAYER = 'layer'
 
+
 class Initializer(object):
     """Initializer key strings."""
 
     CONSTANT = 'constant'
+
 
 class BaseRankingModel(ABC):
 
@@ -83,7 +85,8 @@ class BaseRankingModel(ABC):
         pass
 
     @abstractmethod
-    def build(self, input_list, noisy_params=None, noise_rate=0.05, is_training=False, **kwargs):
+    def build(self, input_list, noisy_params=None,
+              noise_rate=0.05, is_training=False, **kwargs):
         """ Create the model
 
         Args:
@@ -98,7 +101,8 @@ class BaseRankingModel(ABC):
         """
         pass
 
-    def get_variable(self, name, shape, noisy_params=None, noise_rate=0.05, **kwargs):
+    def get_variable(self, name, shape, noisy_params=None,
+                     noise_rate=0.05, **kwargs):
         """Get a tensorflow variable for the model. Add noise if required.
 
         Args:
@@ -112,6 +116,6 @@ class BaseRankingModel(ABC):
         """
         var = tf.get_variable(name, shape, **kwargs)
         self.model_parameters[var.name] = var
-        if noisy_params != None and var.name in noisy_params:
+        if noisy_params is not None and var.name in noisy_params:
             var = var + noisy_params[var.name] * noise_rate
         return var

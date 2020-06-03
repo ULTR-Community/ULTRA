@@ -101,7 +101,8 @@ class BaseAlgorithm(ABC):
             self.docid_inputs[:list_size], self.is_training, scope)
         return tf.concat(output_scores, 1)
 
-    def get_ranking_scores(self, input_id_list, is_training=False, scope=None, **kwargs):
+    def get_ranking_scores(self, input_id_list,
+                           is_training=False, scope=None, **kwargs):
         """Compute ranking scores with the given inputs.
 
         Args:
@@ -129,8 +130,9 @@ class BaseAlgorithm(ABC):
                 input_feature_list.append(
                     tf.nn.embedding_lookup(
                         letor_features, input_id_list[i]))
-            return self.model.build(input_feature_list, is_training=is_training, **kwargs)
-    
+            return self.model.build(
+                input_feature_list, is_training=is_training, **kwargs)
+
     def pairwise_cross_entropy_loss(self, pos_scores, neg_scores, name=None):
         """Computes pairwise softmax loss without propensity weighting.
 
