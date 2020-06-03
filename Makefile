@@ -10,7 +10,7 @@ doc:
 		bash ./docsource/create_documentation.sh
 
 codecov:
-		codecov -t $(cc_token)
+		bash <(curl -s https://codecov.io/bash) -t $(cc_token)
 
 TEST_ARGS = -v --full-trace -l --cov ultra/ --cov-report term-missing --cov-report xml --cov-config .coveragerc ultra/ tests/ -W ignore::DeprecationWarning --ignore=tests/inte_tests/ 
 test:
