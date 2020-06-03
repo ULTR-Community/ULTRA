@@ -1,5 +1,5 @@
 {
-    "train_input_feed":"ultra.input_layer.DeterministicOnlineSimulationFeed",
+    "train_input_feed":"ultra.input_layer.ClickSimulationFeed",
     "train_input_hparams":"",
     "valid_input_feed":"ultra.input_layer.DirectLabelFeed",
     "valid_input_hparams":"",
@@ -9,12 +9,12 @@
     "ranking_model":"ultra.ranking_model.Linear",
     "ranking_model_hparams":"",
 
-    "learning_algorithm": "ultra.learning_algorithm.DBGD",
-    "learning_algorithm_hparams":"need_interleave=False",
+    "learning_algorithm": "ultra.learning_algorithm.DLA",
+    "learning_algorithm_hparams":"",
 
     "metrics": [
         "mrr", "ndcg"
     ],
     "metrics_topn" : [3,5,10],
-    "objective_metric": ""
+    "objective_metric": "ndcg_10"
 }

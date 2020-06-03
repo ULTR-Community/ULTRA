@@ -125,7 +125,8 @@ class StochasticOnlineSimulationFeed(BaseInputFeed):
         local_batch_size = len(input_feed[self.model.docid_inputs[0].name])
 
         if self.need_interleave:
-            input_feed[self.model.winners.name] = np.zeros(local_batch_size)
+            input_feed[self.model.winners.name] = [
+                None for _ in range(local_batch_size)]
 
         for i in range(local_batch_size):
             # Get valid doc index
@@ -158,10 +159,15 @@ class StochasticOnlineSimulationFeed(BaseInputFeed):
 
             rerank_list = None
             if self.need_interleave:
-                old_rank_list = plackett_luce_sampling(rank_scores[1][i])
-                new_rank_list = plackett_luce_sampling(rank_scores[2][i])
+                # Rerank documents via interleaving
+                rank_lists = []
+                for j in range(1, len(rank_scores)):
+                    scores = rank_scores[j][i][:list_len]
+                    rank_list = plackett_luce_sampling(scores)
+                    rank_lists.append(rank_list)
+
                 rerank_list = self.interleaving.interleave(
-                    np.asarray([old_rank_list, new_rank_list]))
+                    np.asarray(rank_lists))
             else:
                 rerank_list = plackett_luce_sampling(rank_scores[i])
 

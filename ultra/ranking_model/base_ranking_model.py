@@ -40,6 +40,20 @@ class ActivationFunctions(object):
     SIGMOID = 'sigmoid'
 
 
+class NormalizationFunctions(object):
+    """Normalization Functions key strings."""
+
+    BATCH = 'batch'
+
+    LAYER = 'layer'
+
+
+class Initializer(object):
+    """Initializer key strings."""
+
+    CONSTANT = 'constant'
+
+
 class BaseRankingModel(ABC):
 
     ACT_FUNC_DIC = {
@@ -50,8 +64,19 @@ class BaseRankingModel(ABC):
         ActivationFunctions.SIGMOID: tf.nn.sigmoid
     }
 
+    NORM_FUNC_DIC = {
+        NormalizationFunctions.BATCH: tf.keras.layers.BatchNormalization,
+        NormalizationFunctions.LAYER: tf.keras.layers.LayerNormalization
+    }
+
+    INITIALIZER_DIC = {
+        Initializer.CONSTANT: tf.constant_initializer(0.001)
+    }
+
+    model_parameters = {}
+
     @abstractmethod
-    def __init__(self, hparams_str):
+    def __init__(self, hparams_str=None, **kwargs):
         """Create the network.
 
         Args:
@@ -60,31 +85,37 @@ class BaseRankingModel(ABC):
         pass
 
     @abstractmethod
-    def build(self, input_list, is_training=False):
+    def build(self, input_list, noisy_params=None,
+              noise_rate=0.05, is_training=False, **kwargs):
         """ Create the model
 
         Args:
             input_list: (list<tf.tensor>) A list of tensors containing the features
                         for a list of documents.
-            is_training: (bool) A flag indicating whether the model is running in training mode.
-
-        Returns:
-            A list of tf.Tensor containing the ranking scores for each instance in input_list.
-        """
-        pass
-
-    @abstractmethod
-    def build_with_random_noise(self, input_list, noise_rate, is_training):
-        """ Create the model and add random noise (for online learning).
-
-        Args:
-            input_list: (list<tf.tensor>) A list of tensors containing the features
-                        for a list of documents.
+            noisy_params: (dict<parameter_name, tf.variable>) A dictionary of noisy parameters to add.
             noise_rate: (float) A value specify how much noise to add.
             is_training: (bool) A flag indicating whether the model is running in training mode.
 
         Returns:
             A list of tf.Tensor containing the ranking scores for each instance in input_list.
-            A list of (tf.Tensor, tf.Tensor) containing the random noise and the parameters it is designed for.
         """
         pass
+
+    def get_variable(self, name, shape, noisy_params=None,
+                     noise_rate=0.05, **kwargs):
+        """Get a tensorflow variable for the model. Add noise if required.
+
+        Args:
+            name: The name of the variable.
+            shape: The shape of the variable.
+            noisy_params: (dict<parameter_name, tf.variable>) A dictionary of noisy parameters to add.
+            noise_rate: (float) A value specify how much noise to add.
+
+        Returns:
+            A tf.Tensor
+        """
+        var = tf.get_variable(name, shape, **kwargs)
+        self.model_parameters[var.name] = var
+        if noisy_params is not None and var.name in noisy_params:
+            var = var + noisy_params[var.name] * noise_rate
+        return var

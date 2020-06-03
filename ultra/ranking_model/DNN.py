@@ -34,103 +34,57 @@ class DNN(BaseRankingModel):
         self.hparams.parse(hparams_str)
         self.initializer = None
         self.act_func = None
+        self.layer_norm = None
+
         if self.hparams.activation_func in BaseRankingModel.ACT_FUNC_DIC:
             self.act_func = BaseRankingModel.ACT_FUNC_DIC[self.hparams.activation_func]
-        if self.hparams.initializer == 'constant':
-            self.initializer = tf.constant_initializer(0.001)
-        self.layer_norm = []
-        output_sizes = self.hparams.hidden_layer_sizes + [1]
-        if self.hparams.norm == "batch":
-            print("using batch norm")
-            for j in range(len(output_sizes)):
-                self.layer_norm.append(tf.keras.layers.BatchNormalization(
-                    name="DNN_layer_norm_%d" % j))
-        if self.hparams.norm == "layer":
-            print("using layer norm")
-            for j in range(len(output_sizes)):
-                self.layer_norm.append(tf.keras.layers.LayerNormalization(
-                    name="DNN_layer_norm_%d" % j))
 
-    def build(self, input_list, is_training=False):
-        """ Create the model
+        if self.hparams.initializer in BaseRankingModel.INITIALIZER_DIC:
+            self.initializer = BaseRankingModel.INITIALIZER_DIC[self.hparams.initializer]
+
+        self.model_parameters = {}
+
+    def build(self, input_list, noisy_params=None,
+              noise_rate=0.05, is_training=False, **kwargs):
+        """ Create the DNN model
 
         Args:
-            input_list: (list<tf.Tensor>) A list of tensors containing the features
+            input_list: (list<tf.tensor>) A list of tensors containing the features
                         for a list of documents.
+            noisy_params: (dict<parameter_name, tf.variable>) A dictionary of noisy parameters to add.
+            noise_rate: (float) A value specify how much noise to add.
             is_training: (bool) A flag indicating whether the model is running in training mode.
 
         Returns:
             A list of tf.Tensor containing the ranking scores for each instance in input_list.
-
         """
+
         with tf.variable_scope(tf.get_variable_scope(), initializer=self.initializer,
                                reuse=tf.AUTO_REUSE):
             input_data = tf.concat(input_list, axis=0)
-#             output_data = tf.compat.v1.layers.batch_normalization(input_data, training=is_training, name="input_batch_normalization")
             output_data = input_data
             output_sizes = self.hparams.hidden_layer_sizes + [1]
+
+            if self.layer_norm is None and self.hparams.norm in BaseRankingModel.NORM_FUNC_DIC:
+                self.layer_norm = []
+                for j in range(len(output_sizes)):
+                    self.layer_norm.append(BaseRankingModel.NORM_FUNC_DIC[self.hparams.norm](
+                        name="layer_norm_%d" % j))
+
             current_size = output_data.get_shape()[-1].value
             for j in range(len(output_sizes)):
-                if self.hparams.norm == "batch":
+                if self.layer_norm is not None:
                     output_data = self.layer_norm[j](
                         output_data, training=is_training)
-                if self.hparams.norm == "layer":
-                    output_data = self.layer_norm[j](output_data)
-                expand_W = tf.get_variable(
-                    "dnn_W_%d" % j, [current_size, output_sizes[j]])
-                expand_b = tf.get_variable("dnn_b_%d" % j, [output_sizes[j]])
+                expand_W = self.get_variable(
+                    "dnn_W_%d" % j, [current_size, output_sizes[j]], noisy_params=noisy_params, noise_rate=noise_rate)
+                expand_b = self.get_variable("dnn_b_%d" % j, [
+                                             output_sizes[j]], noisy_params=noisy_params, noise_rate=noise_rate)
                 output_data = tf.nn.bias_add(
                     tf.matmul(output_data, expand_W), expand_b)
-#                 output_data = tf.compat.v1.layers.batch_normalization(output_data, training=is_training, name="batch_normalization_%d" % j)
                 # Add activation if it is a hidden layer
                 if j != len(output_sizes) - 1:
                     output_data = self.act_func(output_data)
                 current_size = output_sizes[j]
 
             return tf.split(output_data, len(input_list), axis=0)
-
-    def build_with_random_noise(
-            self, input_list, noise_rate, is_training=False):
-        """ Create the model
-
-        Args:
-            input_list: (list<tf.Tensor>) A list of tensors containing the features
-                        for a list of documents.
-            noise_rate: (float) A value specify how much noise to add.
-            is_training: (bool) A flag indicating whether the model is running in training mode.
-
-        Returns:
-            A list of tf.Tensor containing the ranking scores for each instance in input_list.
-            A list of (tf.Tensor, tf.Tensor) containing the random noise and the parameters it is designed for.
-
-        """
-        noise_tensor_list = []
-        with tf.variable_scope(tf.get_variable_scope(), initializer=self.initializer,
-                               reuse=tf.AUTO_REUSE):
-            input_data = tf.concat(input_list, axis=0)
-            output_data = tf.compat.v1.layers.batch_normalization(
-                input_data, training=is_training, name="input_batch_normalization")
-            output_sizes = self.hparams.hidden_layer_sizes + [1]
-            current_size = output_data.get_shape()[-1].value
-            for j in range(len(output_sizes)):
-                original_W = tf.get_variable(
-                    "dnn_W_%d" % j, [current_size, output_sizes[j]])
-                original_b = tf.get_variable("dnn_b_%d" % j, [output_sizes[j]])
-                # Create random noise
-                random_W = tf.random.uniform(original_W.get_shape())
-                random_b = tf.random.uniform(original_b.get_shape())
-                noise_tensor_list.append((random_W, original_W))
-                noise_tensor_list.append((random_b, original_b))
-                expand_W = original_W + random_W * noise_rate
-                expand_b = original_b + random_b * noise_rate
-                # Run dnn
-                output_data = tf.nn.bias_add(
-                    tf.matmul(output_data, expand_W), expand_b)
-                output_data = tf.compat.v1.layers.batch_normalization(
-                    output_data, training=is_training, name="batch_normalization_%d" % j)
-                # Add activation if it is a hidden layer
-                if j != len(output_sizes) - 1:
-                    output_data = self.act_func(output_data)
-                current_size = output_sizes[j]
-            return tf.split(output_data, len(input_list),
-                            axis=0), noise_tensor_list

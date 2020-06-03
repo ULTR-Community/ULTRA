@@ -115,18 +115,32 @@ The navie algorithm that directly trains ranking models with input labels.
 Hyper Parameters
 ****************
 
-DBGDInterleave
-##############
+MGD
+###
 
 Description
 ***********
 
-The Dueling Bandit Gradient Descent (DBGD) algorithm for unbiased learning to rank.
+The Multileave Gradient Descent (MGD) algorithm for unbiased learning to rank.
 
-This class implements the Dueling Bandit Gradient Descent (DBGD) algorithm based on the input layer
-feed. See the following paper for more information on the algorithm.
+This class implements the Multileave Gradient Descent (MGD) algorithm based on the input layer feed. See the following paper for more information on the algorithm.
 
-* Yisong Yue and Thorsten Joachims. 2009. Interactively optimizing information retrieval systems as a dueling bandits problem. In ICML. 1201–1208.
+* Anne Schuth, Harrie Oosterhuis, Shimon Whiteson, Maarten de Rijke. 2016. Multileave Gradient Descent for Fast Online Learning to Rank. In WSDM. 457-466.
+
+Hyper Parameters
+****************
+
+NSGD
+####
+
+Description
+***********
+
+The Null Space Gradient Descent (NSGD) algorithm for unbiased learning to rank.
+
+This class implements the Null Space Gradient Descent (NSGD) algorithm based on the input layer feed. See the following paper for more information on the algorithm.
+
+* Huazheng Wang, Ramsey Langley, Sonwoo Kim, Eric McCord-Snook, Hongning Wang. 2018. Efficient Exploration of Gradient Space for Online Learning to Rank. In SIGIR.
 
 Hyper Parameters
 ****************

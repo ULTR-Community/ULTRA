@@ -30,7 +30,7 @@ import tensorflow as tf
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
-from tensorflow_ranking.python import utils
+from ultra.utils import metric_utils as utils
 
 
 class RankingMetricKey(object):
