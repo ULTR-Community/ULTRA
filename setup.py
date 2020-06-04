@@ -30,7 +30,6 @@ setup(
         #'keras >= 2.0.5',
         #'tensorflow-gpu >= 1.1.0,<2',
         'tensorflow >= 1.1.0,<1.15',
-        'tensorflow_ranking >= 0.1.0', # You may need to mannually install tensorflow_ranking from the source code
         'numpy >= 1.12.1',
         'six >= 1.10.0',
         'scipy >= 1.0.0',
