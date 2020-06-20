@@ -3,7 +3,7 @@ import sys
 
 input_file = sys.argv[1]
 output_file = sys.argv[2]
-ignore_no_positive_query = bool(sys.argv[3])
+ignore_no_positive_query = bool(int(sys.argv[3]))
 
 # Sort features by ID, count positive documents
 qid_list_data = {}
