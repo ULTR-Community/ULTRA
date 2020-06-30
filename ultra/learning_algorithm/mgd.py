@@ -50,7 +50,7 @@ class MGD(DBGD):
 
         self.hparams = ultra.utils.hparams.HParams(
             # The update rate for randomly sampled weights.
-            learning_rate=0.05,         # Learning rate.
+            learning_rate=0.5,         # Learning rate.
             max_gradient_norm=5.0,      # Clip gradients to this norm.
             need_interleave=True,       # Set True to use result interleaving
             grad_strategy='sgd',        # Select gradient strategy
@@ -102,7 +102,7 @@ class MGD(DBGD):
 
         # Build model
         if not forward_only:
-            self.rank_list_size = exp_settings['train_list_cutoff']
+            self.rank_list_size = exp_settings['selection_bias_cutoff']
             train_output = tf.concat(
                 self.get_ranking_scores(
                     self.docid_inputs,

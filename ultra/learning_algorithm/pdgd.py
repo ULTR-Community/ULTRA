@@ -100,7 +100,7 @@ class PDGD(BaseAlgorithm):
 
         # Build model
         if not forward_only:
-            self.rank_list_size = exp_settings['train_list_cutoff']
+            self.rank_list_size = exp_settings['selection_bias_cutoff']
             self.train_output = self.ranking_model(
                 self.rank_list_size, scope='ranking_model')
             train_labels = self.labels[:self.rank_list_size]

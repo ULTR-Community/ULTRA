@@ -81,7 +81,7 @@ class NavieAlgorithm(BaseAlgorithm):
 
         if not forward_only:
             # Build model
-            self.rank_list_size = exp_settings['train_list_cutoff']
+            self.rank_list_size = exp_settings['selection_bias_cutoff']
             train_output = self.ranking_model(
                 self.rank_list_size, scope='ranking_model')
             train_labels = self.labels[:self.rank_list_size]

@@ -112,7 +112,7 @@ class RegressionEM(BaseAlgorithm):
 
         if not forward_only:
             # Build EM graph only when it is training
-            self.rank_list_size = exp_settings['train_list_cutoff']
+            self.rank_list_size = exp_settings['selection_bias_cutoff']
             sigmoid_prob_b = tf.Variable(tf.ones([1]) - 1.0)
             train_output = self.ranking_model(
                 self.rank_list_size, scope='ranking_model')

@@ -36,6 +36,8 @@ tf.app.flags.DEFINE_integer("batch_size", 256,
                             "Batch size to use during training.")
 tf.app.flags.DEFINE_integer("max_list_cutoff", 0,
                             "The maximum number of top documents to consider in each rank list (0: no limit).")
+tf.app.flags.DEFINE_integer("selection_bias_cutoff", 10,
+                            "The maximum number of top documents to be shown to user (which creates selection bias) in each rank list (0: no limit).")
 tf.app.flags.DEFINE_integer("max_train_iteration", 10000,
                             "Limit on the iterations of training (0: no limit).")
 tf.app.flags.DEFINE_integer("start_saving_iteration", 0,
@@ -92,11 +94,11 @@ def train(exp_settings):
         exp_settings['max_candidate_num'] = max(test_set.rank_list_size, exp_settings['max_candidate_num'])
         test_set.pad(exp_settings['max_candidate_num'])
 
-    if 'train_list_cutoff' not in exp_settings: # check if there is a limit on the number of items per training query.
-        exp_settings['train_list_cutoff'] = exp_settings['max_candidate_num']
+    if 'selection_bias_cutoff' not in exp_settings: # check if there is a limit on the number of items per training query.
+        exp_settings['selection_bias_cutoff'] = FLAGS.selection_bias_cutoff if FLAGS.selection_bias_cutoff > 0 else exp_settings['max_candidate_num']
     else:
-        exp_settings['train_list_cutoff'] = min(exp_settings['train_list_cutoff'], exp_settings['max_candidate_num'])
-
+        exp_settings['selection_bias_cutoff'] = min(exp_settings['selection_bias_cutoff'], exp_settings['max_candidate_num'])
+    print('Users can only see the top %d documents for each query in training.' % exp_settings['selection_bias_cutoff'])
     
     # Pad data
     train_set.pad(exp_settings['max_candidate_num'])

@@ -59,6 +59,10 @@ class Raw_data:
 
         print("Finished reading %d queries with lists." % len(self.qids))
 
+        assert self.feature_size > 0, "No valid feature has been found."
+        assert len(self.qids) > 0, "No valid query has been found."
+        assert len(self.dids) > 0, "No valid doc has been found."
+
         return
 
     def load_basic_data_information(
@@ -135,6 +139,8 @@ class Raw_data:
         self.feature_size -= len(self.removed_feature_ids)
         feature_fin.close()
 
+        print('Feature reading finish.')
+
         init_list_fin = open(
             data_path +
             file_prefix +
@@ -151,6 +157,8 @@ class Raw_data:
             if len(self.initial_list[-1]) > self.rank_list_size:
                 self.rank_list_size = len(self.initial_list[-1])
         init_list_fin.close()
+
+        print('List reading finish.')
 
         label_fin = open(
             data_path +
@@ -169,10 +177,11 @@ class Raw_data:
                 for line in fin:
                     self.initial_scores.append(
                         [float(x) for x in line.strip().split(' ')[1:]])
-
+        print('Label reading finish.')
         self.initial_list_lengths = [
             len(self.initial_list[i]) for i in range(len(self.initial_list))]
         self.remove_invalid_data()
+        print('Data reading finish!')
         return
 
     def load_data_in_libsvm_format(
@@ -239,6 +248,9 @@ class Raw_data:
             for rf_idx in self.removed_feature_ids:
                 del self.features[-1][rf_idx - 1]
 
+            if line_num % 10000 == 0:
+                print('Reading finish: %d lines' % line_num)
+
         self.feature_size -= len(self.removed_feature_ids)
         feature_fin.close()
 
@@ -249,6 +261,7 @@ class Raw_data:
             if self.rank_list_size < x:
                 self.rank_list_size = x
         self.remove_invalid_data()
+        print('Data reading finish!')
         return
 
     def remove_invalid_data(self):
