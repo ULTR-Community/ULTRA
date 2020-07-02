@@ -96,8 +96,8 @@ def train(exp_settings):
 
     if 'selection_bias_cutoff' not in exp_settings: # check if there is a limit on the number of items per training query.
         exp_settings['selection_bias_cutoff'] = FLAGS.selection_bias_cutoff if FLAGS.selection_bias_cutoff > 0 else exp_settings['max_candidate_num']
-    else:
-        exp_settings['selection_bias_cutoff'] = min(exp_settings['selection_bias_cutoff'], exp_settings['max_candidate_num'])
+    
+    exp_settings['selection_bias_cutoff'] = min(exp_settings['selection_bias_cutoff'], exp_settings['max_candidate_num'])
     print('Users can only see the top %d documents for each query in training.' % exp_settings['selection_bias_cutoff'])
     
     # Pad data

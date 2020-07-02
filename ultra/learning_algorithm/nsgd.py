@@ -105,7 +105,7 @@ class NSGD(DBGD):
             self.rank_list_size = exp_settings['selection_bias_cutoff']
             train_output = tf.concat(
                 self.get_ranking_scores(
-                    self.docid_inputs,
+                    self.docid_inputs[:self.rank_list_size],
                     is_training=self.is_training,
                     scope='ranking_model'),
                 1)
@@ -162,8 +162,13 @@ class NSGD(DBGD):
                         null_space_dict[x][0], null_space_dict[x][1])
 
                 # Apply the noise to get new ranking scores
-                new_output_list = self.get_ranking_scores(
-                    self.docid_inputs[:self.rank_list_size], is_training=self.is_training, scope='ranking_model', noisy_params=noisy_params, noise_rate=self.hparams.learning_rate)
+                new_output_list = None
+                if self.hparams.need_interleave: # compute scores on whole list if needs interleave
+                    new_output_list = self.get_ranking_scores(
+                        self.docid_inputs, is_training=self.is_training, scope='ranking_model', noisy_params=noisy_params, noise_rate=self.hparams.learning_rate)
+                else:
+                    new_output_list = self.get_ranking_scores(
+                        self.docid_inputs[:self.rank_list_size], is_training=self.is_training, scope='ranking_model', noisy_params=noisy_params, noise_rate=self.hparams.learning_rate) 
                 new_output_lists.append(tf.concat(new_output_list, 1))
                 for x in noisy_params:
                     if x not in param_gradient_from_rankers:
@@ -177,12 +182,12 @@ class NSGD(DBGD):
             reshaped_train_labels = tf.transpose(
                 tf.convert_to_tensor(train_labels))
             previous_ndcg = ultra.utils.make_ranking_metric_fn('ndcg', self.rank_list_size)(
-                reshaped_train_labels, train_output[:, :self.rank_list_size], None)
+                reshaped_train_labels, train_output, None)
             self.loss = 1.0 - previous_ndcg
 
             final_winners = None
             if self.hparams.need_interleave:  # Use result interleaving
-                self.output = [self.output, train_output] + new_output_lists
+                self.output = [self.output] + new_output_lists
                 final_winners = self.winners
             else:  # No result interleaving
                 score_lists = [train_output] + new_output_lists
@@ -265,7 +270,7 @@ class NSGD(DBGD):
                 collections=['train'])
             tf.summary.scalar('Loss', self.loss, collections=['train'])
             pad_removed_train_output = self.remove_padding_for_metric_eval(
-                self.docid_inputs, train_output[:, :self.rank_list_size])
+                self.docid_inputs, train_output)
             for metric in self.exp_settings['metrics']:
                 for topn in self.exp_settings['metrics_topn']:
                     metric_value = ultra.utils.make_ranking_metric_fn(metric, topn)(

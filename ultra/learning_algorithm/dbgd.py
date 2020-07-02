@@ -116,9 +116,14 @@ class DBGD(BaseAlgorithm):
                         ranking_model_params[x].get_shape())) for x in ranking_model_params}
 
             # Apply the noise to get new ranking scores
-            new_output_list = self.get_ranking_scores(
-                self.docid_inputs[:self.rank_list_size], is_training=self.is_training, scope='ranking_model', noisy_params=noisy_params, noise_rate=self.hparams.learning_rate)
-
+            new_output_list = None
+            if self.hparams.need_interleave: # compute scores on whole list if needs interleave
+                new_output_list = self.get_ranking_scores(
+                    self.docid_inputs, is_training=self.is_training, scope='ranking_model', noisy_params=noisy_params, noise_rate=self.hparams.learning_rate)
+            else:
+                new_output_list = self.get_ranking_scores(
+                    self.docid_inputs[:self.rank_list_size], is_training=self.is_training, scope='ranking_model', noisy_params=noisy_params, noise_rate=self.hparams.learning_rate) 
+            
             # Compute NDCG for the old ranking scores and new ranking scores
             # reshape from [rank_list_size, ?] to [?, rank_list_size]
             reshaped_train_labels = tf.transpose(
@@ -128,14 +133,11 @@ class DBGD(BaseAlgorithm):
             previous_ndcg = ultra.utils.make_ranking_metric_fn(
                 'ndcg', self.rank_list_size)(
                 reshaped_train_labels, train_output, None)
-            new_ndcg = ultra.utils.make_ranking_metric_fn(
-                'ndcg', self.rank_list_size)(
-                reshaped_train_labels, self.new_output, None)
             self.loss = 1.0 - previous_ndcg
 
             final_winners = None
             if self.hparams.need_interleave:
-                self.output = (self.output, train_output, self.new_output)
+                self.output = (self.output, self.new_output)
                 final_winners = self.winners
             else:
                 score_lists = [train_output, self.new_output]

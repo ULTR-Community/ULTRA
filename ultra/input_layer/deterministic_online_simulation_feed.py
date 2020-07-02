@@ -141,7 +141,7 @@ class DeterministicOnlineSimulationFeed(BaseInputFeed):
             if self.need_interleave:
                 # Rerank documents via interleaving
                 rank_lists = []
-                for j in range(1, len(rank_scores)):
+                for j in range(len(rank_scores)):
                     scores = rank_scores[j][i][:list_len]
                     rank_list = sorted(
                         range(
