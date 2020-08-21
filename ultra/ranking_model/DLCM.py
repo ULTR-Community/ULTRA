@@ -66,7 +66,7 @@ class DLCM(BaseRankingModel):
 
         self.hparams = ultra.utils.hparams.HParams(
             # Set the input sequences. "reverse","initial","random"
-            input_sequence="reverse",
+            input_sequence="initial",
             num_layers=1,                    # Number of layers in the model.
             # Number of heads in the attention strategy.
             num_heads=3,

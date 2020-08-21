@@ -57,7 +57,7 @@ class DLA(BaseAlgorithm):
             # the function used to convert logits to probability distributions
             logits_to_prob='softmax',
             # The learning rate for ranker (-1 means same with learning_rate).
-            ranker_learning_rate=-1.0,
+            propensity_learning_rate=-1.0,
             ranker_loss_weight=1.0,            # Set the weight of unbiased ranking loss
             # Set strength for L2 regularization.
             l2_loss=0.0,
@@ -72,13 +72,14 @@ class DLA(BaseAlgorithm):
         self.model = None
         self.max_candidate_num = exp_settings['max_candidate_num']
         self.feature_size = data_set.feature_size
-        if self.hparams.ranker_learning_rate < 0:
-            self.ranker_learning_rate = tf.Variable(
+        if self.hparams.propensity_learning_rate < 0:
+            self.propensity_learning_rate = tf.Variable(
                 float(self.hparams.learning_rate), trainable=False)
         else:
-            self.ranker_learning_rate = tf.Variable(
-                float(self.hparams.ranker_learning_rate), trainable=False)
-        self.learning_rate = self.ranker_learning_rate
+            self.propensity_learning_rate = tf.Variable(
+                float(self.hparams.propensity_learning_rate), trainable=False)
+        self.learning_rate = tf.Variable(
+                float(self.hparams.learning_rate), trainable=False)
 
         # Feeds for inputs.
         self.is_training = tf.placeholder(tf.bool, name="is_train")
@@ -193,7 +194,7 @@ class DLA(BaseAlgorithm):
                 collections=['train'])
             tf.summary.scalar(
                 'Learning Rate',
-                self.ranker_learning_rate,
+                self.learning_rate,
                 collections=['train'])
             tf.summary.scalar(
                 'Final Loss', tf.reduce_mean(
@@ -245,8 +246,8 @@ class DLA(BaseAlgorithm):
                                                                                  self.hparams.max_gradient_norm * self.hparams.ranker_loss_weight)
         self.norm = tf.global_norm(denoise_gradients + ranking_model_gradients)
 
-        opt_denoise = self.optimizer_func(self.hparams.learning_rate)
-        opt_ranker = self.optimizer_func(self.ranker_learning_rate)
+        opt_denoise = self.optimizer_func(self.propensity_learning_rate)
+        opt_ranker = self.optimizer_func(self.learning_rate)
 
         denoise_updates = opt_denoise.apply_gradients(zip(denoise_gradients, denoise_params),
                                                       global_step=self.global_step)
