@@ -396,9 +396,9 @@ class DLCM(BaseRankingModel):
             enc_cell = copy.deepcopy(cell)
             ind = tf.range(0, list_size)
             print(self.hparams.input_sequence)
-            if self.hparams.input_sequence == "initial":
+            if self.hparams.input_sequence == "reverse":
                 ind = ind
-            elif self.hparams.input_sequence == "reverse":
+            elif self.hparams.input_sequence == "initial":
                 ind = tf.range(list_size - 1, -1, -1)
             elif self.hparams.input_sequence == "random":
                 ind = tf.random.shuffle(ind)
