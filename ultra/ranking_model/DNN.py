@@ -74,8 +74,12 @@ class DNN(BaseRankingModel):
             current_size = output_data.get_shape()[-1].value
             for j in range(len(output_sizes)):
                 if self.layer_norm is not None:
-                    output_data = self.layer_norm[j](
-                        output_data, training=is_training)
+                    if self.hparams.norm=="layer":
+                        output_data = self.layer_norm[j](
+                        output_data)
+                    else:
+                        output_data = self.layer_norm[j](
+                        output_data, training=is_training)    
                 expand_W = self.get_variable(
                     "dnn_W_%d" % j, [current_size, output_sizes[j]], noisy_params=noisy_params, noise_rate=noise_rate)
                 expand_b = self.get_variable("dnn_b_%d" % j, [
