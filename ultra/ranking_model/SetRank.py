@@ -13,7 +13,6 @@ import random
 import tensorflow as tf
 from ultra.ranking_model import BaseRankingModel
 import ultra.utils
-# Before changes we can get around 0.748 ndcg@10
 # encodr part the transformer is borrowed from
 # https://www.tensorflow.org/tutorials/text/transformer
 
@@ -43,8 +42,8 @@ class MultiHeadAttention(tf.keras.layers.Layer):
 
     def call(self, v, k, q, mask, training=True):
         batch_size = tf.shape(q)[0]
-        print(q.get_shape(), "q.get_shape()")
-        print("being called" + "*" * 100)
+#         print(q.get_shape(), "q.get_shape()")
+#         print("being called" + "*" * 100)
         if q.get_shape()[-2] > 10:
             collect = ["eval"]
         else:
@@ -156,10 +155,6 @@ def point_wise_feed_forward_network(d_model, dff):
         tf.keras.layers.Dense(dff, activation='relu'),
         tf.keras.layers.Dense(d_model)  # (batch_size, seq_len, d_model)
     ])
-# def z_norm(a,axis=-1,scale=1):
-# return
-# (a-tf.reduce_mean(a,axis=axis,keepdims=True))/(tf.math.reduce_std(a,axis=axis,keepdims=True)*scale+1e-10)
-
 
 def scaled_dot_product_attention(
         q, k, v, mask=None, is_training=True, collect=None):
@@ -192,126 +187,12 @@ def scaled_dot_product_attention(
     # add the mask to the scaled tensor.
     if mask is not None:
         scaled_attention_logits += (mask * -1e9)
-
-    # softmax is normalized on the last axis (seq_len_k) so that the scores
-    # add up to 1.
-
-    #       if is_training==True:
-    #         collect_scope='train'
-    #       else:
-    #         collect_scope='eval'
-    #       print(is_training)
-#         select=tf.constant(["train","eval"])
-    #       collect_scope_sum=tf.convert_to_tensor([collect_scope],tf.)
-    #       summary_op = tf.summary.text("is_training", tf.strings.as_string(is_training),collections=['train'])
-    #       summary_op1 = tf.summary.text("collect_scope", collect_scope,collections=['train'])
-#         def z_norm(a,axis=-1,scale=1):
-# return
-# (a-tf.reduce_mean(a,axis=axis,keepdims=True))/(tf.math.reduce_std(a,axis=axis,keepdims=True)*scale+1e-10)
     attention_weights = tf.nn.softmax(
         scaled_attention_logits, axis=-1)  # (..., seq_len_q, seq_len_k)
-#         d_seq = tf.cast(tf.shape(k)[-2], tf.float32)
-#         #   scaled_attention_weights_withinq=tf.nn.softmax(tf.reduce_sum(scaled_attention_logits,axis=-1,keep_dims=True),axis=2)/ d_seq
-#         #   scaled_attention_weights_betwq=tf.nn.softmax(tf.reduce_sum(scaled_attention_logits,axis=[2,3],keep_dims=True),axis=1)/ tf.math.square(d_seq)
 
-# #         withinqbatch_k=tf.layers.BatchNormalization(2)
-# #         betwqbatch_q=tf.layers.BatchNormalization(1)
-
-    last_dim = tf.reduce_mean(scaled_attention_logits, axis=-1, keep_dims=True)
-    last2_dim = tf.reduce_mean(scaled_attention_logits, axis=[
-                               2, 3], keep_dims=True)
-    scaled_attention_weights_withinq = tf.nn.softmax(last_dim, axis=2)
-    scaled_attention_weights_betwq = tf.nn.softmax(last2_dim, axis=1)
-#         print(scaled_attention_weights_withinq.get_shape()\
-#               ,"scaled_attention_weights_withinq.get_shape(),")
-    weights_different_entry = tf.expand_dims(attention_weights[0, :, :, :], 3)
-    weights_different_q = tf.expand_dims(
-        scaled_attention_weights_withinq[:, :, :, 0], 3)
-    weights_different_Heads = tf.expand_dims(
-        scaled_attention_weights_betwq[:, :, :, 0], 0)
-#         attention_weights_horizontal=tf.nn.softmax(tf.reduce_sum(scaled_attention_logits,axis=[2],keep_dims=True),axis=1)
-#         scaled_attention_weights_betwq_summary=tf.reduce_mean(attention_weights,axis=0)
-#         scaled_attention_weights_withinq_1st=tf.expand_dims(attention_weights[0,:,:,:],axis=3)
-#         attention_weights_horizontal=tf.reduce_sum(attention_weights,axis=2)
-#         attention_weights_horizontal_row=tf.expand_dims(attention_weights_horizontal,axis=3)
-#         scaled_attention_weights_betwq_1st=tf.expand_dims(scaled_attention_weights_betwq[:,:,:,0],axis=0)
-
-    #       def for_train():
-    #       tf.summary.histogram("train scaled_attention_weights_betwq_summary",scaled_attention_weights_betwq_summary,collections=collec)
-    def for_train():
-        tf.summary.image("weights_different_entry_[H,S,S,1]",
-                         weights_different_entry, max_outputs=8, collections=["train"])
-        tf.summary.image("weights_different_q_[B,H,S,1]",
-                         weights_different_q, max_outputs=8, collections=["train"])
-        tf.summary.image("weights_different_Heads_[1,B,H,1]",
-                         weights_different_Heads, max_outputs=8, collections=["train"])
-        tf.summary.text("weights_first_portion_Heads_[1,B,H,1]",
-                        tf.as_string(weights_different_Heads[0, 1, :, 0]), collections=["train"])
-        return True
-
-    def for_eval():
-        tf.summary.image("weights_different_entry_[H,S,S,1]",
-                         weights_different_entry, max_outputs=8, collections=["eval"])
-        tf.summary.image("weights_different_q_[B,H,S,1]",
-                         weights_different_q, max_outputs=8, collections=["eval"])
-        tf.summary.image("weights_different_Heads_[1,B,H,1]",
-                         weights_different_Heads, max_outputs=8, collections=["eval"])
-        tf.summary.text("weights_first_portion_Heads_[1,B,H,1]",
-                        tf.as_string(weights_different_Heads[0, 1, :, 0]), collections=["eval"])
-        return True
-#         tf.cond(is_training,for_train,for_eval)
-#         print(q.get_shape(),"q.get_shape()[-2]")
-    if "eval" in collect:
-        for_eval()
-        print("image for eval")
-    else:
-        for_train()
-        print("image for train")
-    #       for i in range(tf.shape(k)[1]):
-    #           tf.summary.scalar('attention_heads'+str(i), scaled_attention_weights_betwq_summary[i], collections=[collect_scope])
-# #         attention_weights=attention_weights*scaled_attention_weights_withinq
-# #         attention_weights=attention_weights*scaled_attention_weights_betwq
     output = tf.matmul(attention_weights, v)  # (..., seq_len_q, depth_v)
     return output, attention_weights
 
-
-# def scaled_dot_product_attention(q, k, v, mask):
-#     """Calculate the attention weights.
-#     q, k, v must have matching leading dimensions.
-#     k, v must have matching penultimate dimension, i.e.: seq_len_k = seq_len_v.
-#     The mask has different shapes depending on its type(padding or look ahead)
-#     but it must be broadcastable for addition.
-
-#     Args:
-#     q: query shape == (..., seq_len_q, depth)
-#     k: key shape == (..., seq_len_k, depth)
-#     v: value shape == (..., seq_len_v, depth_v)
-#     mask: Float tensor with shape broadcastable
-#           to (..., seq_len_q, seq_len_k). Defaults to None.
-
-#     Returns:
-#     output, attention_weights
-#     """
-
-# matmul_qk = tf.matmul(q, k, transpose_b=True)  # (..., seq_len_q,
-# seq_len_k)
-
-#     # scale matmul_qk
-#     dk = tf.cast(tf.shape(k)[-1], tf.float32)
-#     scaled_attention_logits = matmul_qk / tf.math.sqrt(dk)
-
-#     # add the mask to the scaled tensor.
-#     if mask is not None:
-#         scaled_attention_logits += (mask * -1e9)
-
-#     # softmax is normalized on the last axis (seq_len_k) so that the scores
-#     # add up to 1.
-# attention_weights = tf.nn.softmax(scaled_attention_logits, axis=-1)  #
-# (..., seq_len_q, seq_len_k)
-
-#     output = tf.matmul(attention_weights, v)  # (..., seq_len_q, depth_v)
-
-#     return output, attention_weights
 
 
 class SetRank(BaseRankingModel):
@@ -331,7 +212,7 @@ class SetRank(BaseRankingModel):
         Args:
             hparams_str: (String) The hyper-parameters used to build the network.
         """
-        print("build Transformer")
+        print("build SetRank")
         self.hparams = ultra.utils.hparams.HParams(
             d_model=256,
             num_heads=8,
@@ -364,15 +245,12 @@ class SetRank(BaseRankingModel):
         """
         with tf.variable_scope(tf.get_variable_scope() or "transformer", reuse=tf.AUTO_REUSE, initializer=self.initializer):
             sco_cur = tf.get_variable_scope()
-            print(sco_cur.name, "sco_cur.name")
             mask = None
             batch_size = tf.shape(input_list[0])[0]
             feature_size = tf.shape(input_list[0])[1]
             list_size = len(input_list)
             ind = list(range(0, list_size))
             random.shuffle(ind)
-
-#                 input_list=[input_list[i] for i in ind ]
             x = [tf.expand_dims(e, 1)for e in input_list]
 
             x = tf.concat(axis=1, values=x)  # [batch,len_seq,feature_size]
@@ -380,8 +258,4 @@ class SetRank(BaseRankingModel):
             output = []
             for i in range(list_size):
                 output.append(x[:, i, :])
-#                 reind_output=[None]*list_size
-#                 for i in range(list_size):
-#                     reind_output[ind[i]]=output[i]
-#                 output=reind_output
         return output  # [len_seq,batch,1]
