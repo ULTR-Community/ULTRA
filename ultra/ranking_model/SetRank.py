@@ -156,6 +156,7 @@ def point_wise_feed_forward_network(d_model, dff):
         tf.keras.layers.Dense(d_model)  # (batch_size, seq_len, d_model)
     ])
 
+
 def scaled_dot_product_attention(
         q, k, v, mask=None, is_training=True, collect=None):
     """Calculate the attention weights.
@@ -192,7 +193,6 @@ def scaled_dot_product_attention(
 
     output = tf.matmul(attention_weights, v)  # (..., seq_len_q, depth_v)
     return output, attention_weights
-
 
 
 class SetRank(BaseRankingModel):

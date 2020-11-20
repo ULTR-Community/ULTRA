@@ -117,13 +117,13 @@ class DBGD(BaseAlgorithm):
 
             # Apply the noise to get new ranking scores
             new_output_list = None
-            if self.hparams.need_interleave: # compute scores on whole list if needs interleave
+            if self.hparams.need_interleave:  # compute scores on whole list if needs interleave
                 new_output_list = self.get_ranking_scores(
                     self.docid_inputs, is_training=self.is_training, scope='ranking_model', noisy_params=noisy_params, noise_rate=self.hparams.learning_rate)
             else:
                 new_output_list = self.get_ranking_scores(
-                    self.docid_inputs[:self.rank_list_size], is_training=self.is_training, scope='ranking_model', noisy_params=noisy_params, noise_rate=self.hparams.learning_rate) 
-            
+                    self.docid_inputs[:self.rank_list_size], is_training=self.is_training, scope='ranking_model', noisy_params=noisy_params, noise_rate=self.hparams.learning_rate)
+
             # Compute NDCG for the old ranking scores and new ranking scores
             # reshape from [rank_list_size, ?] to [?, rank_list_size]
             reshaped_train_labels = tf.transpose(

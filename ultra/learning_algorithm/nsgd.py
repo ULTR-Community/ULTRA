@@ -163,12 +163,12 @@ class NSGD(DBGD):
 
                 # Apply the noise to get new ranking scores
                 new_output_list = None
-                if self.hparams.need_interleave: # compute scores on whole list if needs interleave
+                if self.hparams.need_interleave:  # compute scores on whole list if needs interleave
                     new_output_list = self.get_ranking_scores(
                         self.docid_inputs, is_training=self.is_training, scope='ranking_model', noisy_params=noisy_params, noise_rate=self.hparams.learning_rate)
                 else:
                     new_output_list = self.get_ranking_scores(
-                        self.docid_inputs[:self.rank_list_size], is_training=self.is_training, scope='ranking_model', noisy_params=noisy_params, noise_rate=self.hparams.learning_rate) 
+                        self.docid_inputs[:self.rank_list_size], is_training=self.is_training, scope='ranking_model', noisy_params=noisy_params, noise_rate=self.hparams.learning_rate)
                 new_output_lists.append(tf.concat(new_output_list, 1))
                 for x in noisy_params:
                     if x not in param_gradient_from_rankers:

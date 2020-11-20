@@ -59,7 +59,7 @@ class IPWrank(BaseAlgorithm):
             propensity_estimator_json='./example/PropensityEstimator/randomized_pbm_0.1_1.0_4_1.0.json',
             learning_rate=0.05,                 # Learning rate.
             max_gradient_norm=5.0,            # Clip gradients to this norm.
-            loss_func='click_weighted_softmax_cross_entropy',      # Select Loss function
+            loss_func='softmax_loss',      # Select Loss function
             # Set strength for L2 regularization.
             l2_loss=0.0,
             grad_strategy='ada',            # Select gradient strategy
@@ -132,17 +132,14 @@ class IPWrank(BaseAlgorithm):
             # reshape from [rank_list_size, ?] to [?, rank_list_size]
             reshaped_propensity = tf.transpose(
                 tf.convert_to_tensor(self.propensity_weights))
-            if self.hparams.loss_func == 'softmax':
-                self.loss = self.softmax_loss(
+            if self.hparams.loss_func == 'sigmoid_loss':
+                self.loss = self.sigmoid_loss_on_list(
                     train_output, reshaped_train_labels, reshaped_propensity)
-            elif self.hparams.loss_func == 'click_weighted_softmax_cross_entropy':
-                self.loss = self.click_weighted_softmax_loss(
-                    train_output, reshaped_train_labels, reshaped_propensity)
-            elif self.hparams.loss_func == 'click_weighted_pairwise_loss':
-                self.loss = self.click_weighted_pairwise_loss(
+            elif self.hparams.loss_func == 'pairwise_loss':
+                self.loss = self.pairwise_loss_on_list(
                     train_output, reshaped_train_labels, reshaped_propensity)
             else:
-                self.loss = self.sigmoid_loss(
+                self.loss = self.softmax_loss(
                     train_output, reshaped_train_labels, reshaped_propensity)
 
             params = tf.trainable_variables()
@@ -243,7 +240,7 @@ class IPWrank(BaseAlgorithm):
             return outputs[1], None, outputs[-1]
         else:
             return None, outputs[1], outputs[0]    # loss, outputs, summary.
-
+    '''
     def sigmoid_loss(self, output, labels, propensity, name=None):
         """Computes pointwise sigmoid loss without propensity weighting.
 
@@ -347,3 +344,4 @@ class IPWrank(BaseAlgorithm):
             loss = tf.nn.softmax_cross_entropy_with_logits(
                 logits=output, labels=label_dis) * tf.reduce_sum(labels * propensity, 1)
         return tf.reduce_sum(loss) / tf.reduce_sum(labels * propensity)
+        '''

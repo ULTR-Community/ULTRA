@@ -53,7 +53,7 @@ class DLA(BaseAlgorithm):
         self.hparams = ultra.utils.hparams.HParams(
             learning_rate=0.05,                 # Learning rate.
             max_gradient_norm=5.0,            # Clip gradients to this norm.
-            loss_func='click_weighted_softmax_cross_entropy',            # Select Loss function
+            loss_func='softmax_loss',            # Select Loss function
             # the function used to convert logits to probability distributions
             logits_to_prob='softmax',
             # The learning rate for ranker (-1 means same with learning_rate).
@@ -79,7 +79,7 @@ class DLA(BaseAlgorithm):
             self.propensity_learning_rate = tf.Variable(
                 float(self.hparams.propensity_learning_rate), trainable=False)
         self.learning_rate = tf.Variable(
-                float(self.hparams.learning_rate), trainable=False)
+            float(self.hparams.learning_rate), trainable=False)
 
         # Feeds for inputs.
         self.is_training = tf.placeholder(tf.bool, name="is_train")
@@ -126,12 +126,10 @@ class DLA(BaseAlgorithm):
             print('Loss Function is ' + self.hparams.loss_func)
             # Select loss function
             self.loss_func = None
-            if self.hparams.loss_func == 'click_weighted_softmax_cross_entropy':
-                self.loss_func = self.click_weighted_softmax_cross_entropy_loss
-            elif self.hparams.loss_func == 'click_weighted_log_loss':
-                self.loss_func = self.click_weighted_log_loss
-            elif self.hparams.loss_func == 'click_weighted_pairwise_loss':
-                self.loss_func = self.click_weighted_pairwise_loss
+            if self.hparams.loss_func == 'sigmoid_loss':
+                self.loss_func = self.sigmoid_loss_on_list
+            elif self.hparams.loss_func == 'pairwise_loss':
+                self.loss_func = self.pairwise_loss_on_list
             else:  # softmax loss without weighting
                 self.loss_func = self.softmax_loss
 
@@ -342,28 +340,6 @@ class DLA(BaseAlgorithm):
         else:
             return None, outputs[1], outputs[0]    # no loss, outputs, summary.
 
-    def softmax_loss(self, output, labels, propensity=None, name=None):
-        """Computes listwise softmax loss without propensity weighting.
-
-        Args:
-            output: (tf.Tensor) A tensor with shape [batch_size, list_size]. Each value is
-            the ranking score of the corresponding example.
-            labels: (tf.Tensor) A tensor of the same shape as `output`. A value >= 1 means a
-            relevant example.
-            propensity: No use.
-            name: A string used as the name for this variable scope.
-
-        Returns:
-            (tf.Tensor) A single value tensor containing the loss.
-        """
-
-        loss = None
-        with tf.name_scope(name, "softmax_loss", [output]):
-            label_dis = labels / tf.reduce_sum(labels, 1, keep_dims=True)
-            loss = tf.nn.softmax_cross_entropy_with_logits(
-                logits=output, labels=label_dis) * tf.reduce_sum(labels, 1)
-        return tf.reduce_sum(loss) / tf.reduce_sum(labels)
-
     def get_normalized_weights(self, propensity):
         """Computes listwise softmax loss with propensity weighting.
 
@@ -387,6 +363,7 @@ class DLA(BaseAlgorithm):
                 clip_value_max=self.hparams.max_propensity_weight)
         return propensity_weights
 
+    '''
     def click_weighted_softmax_cross_entropy_loss(
             self, output, labels, propensity_weights, name=None):
         """Computes listwise softmax loss with propensity weighting.
@@ -468,3 +445,4 @@ class DLA(BaseAlgorithm):
             click_prob = tf.sigmoid(output)
             loss = tf.losses.log_loss(labels, click_prob, propensity_weights)
         return loss
+        '''

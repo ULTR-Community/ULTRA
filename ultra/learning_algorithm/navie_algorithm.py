@@ -112,10 +112,10 @@ class NavieAlgorithm(BaseAlgorithm):
 
             self.loss = None
             if self.hparams.loss_func == 'sigmoid_cross_entropy':
-                self.loss = self.sigmoid_loss(
+                self.loss = self.sigmoid_loss_on_list(
                     train_output, reshaped_train_labels)
             elif self.hparams.loss_func == 'pairwise_loss':
-                self.loss = self.pairwise_loss(
+                self.loss = self.pairwise_loss_on_list(
                     train_output, reshaped_train_labels)
             else:
                 self.loss = self.softmax_loss(
@@ -172,81 +172,6 @@ class NavieAlgorithm(BaseAlgorithm):
         self.train_summary = tf.summary.merge_all(key='train')
         self.eval_summary = tf.summary.merge_all(key='eval')
         self.saver = tf.train.Saver(tf.global_variables())
-
-    def sigmoid_loss(self, output, labels, name=None):
-        """Computes pointwise sigmoid loss without propensity weighting.
-
-        Args:
-            output: (tf.Tensor) A tensor with shape [batch_size, list_size]. Each value is
-            the ranking score of the corresponding example.
-            labels: (tf.Tensor) A tensor of the same shape as `output`. A value >= 1 means a
-            relevant example.
-            propensity: No use.
-            name: A string used as the name for this variable scope.
-
-        Returns:
-            (tf.Tensor) A single value tensor containing the loss.
-        """
-
-        loss = None
-        with tf.name_scope(name, "softmax_loss", [output]):
-            label_dis = tf.math.minimum(labels, 1)
-            loss = tf.nn.sigmoid_cross_entropy_with_logits(
-                labels=label_dis, logits=output)
-        return tf.reduce_mean(tf.reduce_sum(loss, axis=1))
-
-    def pairwise_loss(self, output, labels, name=None):
-        """Computes pairwise entropy loss.
-
-        Args:
-            output: (tf.Tensor) A tensor with shape [batch_size, list_size]. Each value is
-            the ranking score of the corresponding example.
-            labels: (tf.Tensor) A tensor of the same shape as `output`. A value >= 1 means a
-                relevant example.
-            name: A string used as the name for this variable scope.
-
-        Returns:
-            (tf.Tensor) A single value tensor containing the loss.
-        """
-        loss = None
-        with tf.name_scope(name, "pairwise_loss", [output]):
-            sliced_output = tf.unstack(output, axis=1)
-            sliced_label = tf.unstack(labels, axis=1)
-            for i in range(len(sliced_output)):
-                for j in range(i + 1, len(sliced_output)):
-                    cur_label_weight = tf.math.sign(
-                        sliced_label[i] - sliced_label[j])
-                    cur_pair_loss = - \
-                        tf.exp(
-                            sliced_output[i]) / (tf.exp(sliced_output[i]) + tf.exp(sliced_output[j]))
-                    if loss is None:
-                        loss = cur_label_weight * cur_pair_loss
-                    loss += cur_label_weight * cur_pair_loss
-        batch_size = tf.shape(labels[0])[0]
-        # / (tf.reduce_sum(propensity_weights)+1)
-        return tf.reduce_sum(loss) / tf.cast(batch_size, dtypes.float32)
-
-    def softmax_loss(self, output, labels, name=None):
-        """Computes listwise softmax loss without propensity weighting.
-
-        Args:
-            output: (tf.Tensor) A tensor with shape [batch_size, list_size]. Each value is
-            the ranking score of the corresponding example.
-            labels: (tf.Tensor) A tensor of the same shape as `output`. A value >= 1 means a
-            relevant example.
-            propensity: No use.
-            name: A string used as the name for this variable scope.
-
-        Returns:
-            (tf.Tensor) A single value tensor containing the loss.
-        """
-
-        loss = None
-        with tf.name_scope(name, "softmax_loss", [output]):
-            label_dis = labels / tf.reduce_sum(labels, 1, keep_dims=True)
-            loss = tf.nn.softmax_cross_entropy_with_logits(
-                logits=output, labels=label_dis) * tf.reduce_sum(labels, 1)
-        return tf.reduce_sum(loss) / tf.reduce_sum(labels)
 
     def step(self, session, input_feed, forward_only):
         """Run a step of the model feeding the given inputs.

@@ -116,7 +116,7 @@ class MGD(DBGD):
             new_output_lists = []
             params = []
             param_gradient_from_rankers = {}
-            
+
             for i in range(self.ranker_num):
                 # Create random unit noise
                 noisy_params = {
@@ -125,7 +125,7 @@ class MGD(DBGD):
                             ranking_model_params[x].get_shape())) for x in ranking_model_params}
                 # Apply the noise to get new ranking scores
                 new_output_list = None
-                if self.hparams.need_interleave: # compute scores on whole list if needs interleave
+                if self.hparams.need_interleave:  # compute scores on whole list if needs interleave
                     new_output_list = self.get_ranking_scores(
                         self.docid_inputs, is_training=self.is_training, scope='ranking_model', noisy_params=noisy_params, noise_rate=self.hparams.learning_rate)
                 else:
