@@ -59,9 +59,12 @@ class NoisyLabelFeed(BaseInputFeed):
         print(
             'Create direct label feed with list size %d with feature size %d' %
             (self.rank_list_size, self.feature_size))
+        
+        self.session = None
 
     def prepare_noisy_labels_with_index(
-            self, data_set, index, docid_inputs, letor_features, labels, check_validation=True):
+            self, data_set, index, docid_inputs, letor_features, labels, 
+            letor_feature_vars, label_vars, check_validation=True):
         
         i = index
         
@@ -88,19 +91,19 @@ class NoisyLabelFeed(BaseInputFeed):
 
         # check the needs of noisy labels:
         label_list = []
+        label_var_list = []
         if self.hparams.noisy_label_var > 0:
             # try to read label_vars from files
             if not hasattr(data_set, 'label_vars'):
                 file_path = data_set.data_path + '/label_var_' + str(self.hparams.noisy_label_var) + '.var'
                 data_set.label_vars = create_variance_file(data_set, file_path, self.hparams.noisy_label_var)
             # create noisy labels
-            label_list = [
-                0 if data_set.initial_list[i][x] < 0 else np.random.normal(loc=data_set.labels[i][x], scale=data_set.label_vars[i][x]) for x in range(
+            label_var_list = [
+                0 if data_set.initial_list[i][x] < 0 else data_set.label_vars[i][x] for x in range(
                     self.rank_list_size)]
-        else:
-            label_list = [
-                0 if data_set.initial_list[i][x] < 0 else data_set.labels[i][x] for x in range(
-                    self.rank_list_size)]
+        label_list = [
+            0 if data_set.initial_list[i][x] < 0 else data_set.labels[i][x] for x in range(
+                self.rank_list_size)]
 
         # Check if data is valid
         if check_validation and sum(label_list) == 0:
@@ -108,22 +111,43 @@ class NoisyLabelFeed(BaseInputFeed):
         base = len(letor_features)
         for x in range(self.rank_list_size):
             if data_set.initial_list[i][x] >= 0:
+                letor_features.append(
+                    data_set.features[data_set.initial_list[i][x]])
                 if self.hparams.noisy_feature_var > 0:
                     # try to read feature_vars from files
                     if not hasattr(data_set, 'feature_vars'):
                         file_path = data_set.data_path + '/feature_var_' + str(self.hparams.noisy_feature_var) + '.var'
                         data_set.feature_vars = create_variance_file(data_set, file_path, self.hparams.noisy_feature_var)
                     # create noisy features
-                    feature_vec = data_set.features[data_set.initial_list[i][x]]
-                    feature_vec = [np.random.normal(loc=feature_vec[k],scale=data_set.feature_vars[i][x]) for k in range(len(feature_vec))]
-                    letor_features.append(feature_vec)
-                else:
-                    letor_features.append(
-                        data_set.features[data_set.initial_list[i][x]])
+                    letor_feature_vars.append([data_set.feature_vars[i][x] for k in range(len(data_set.features[data_set.initial_list[i][x]]))])
+                    
         docid_inputs.append(list([-1 if data_set.initial_list[i][x]
                                   < 0 else base + x for x in range(self.rank_list_size)]))
         labels.append(label_list)
+        label_vars.append(label_var_list)
         return
+
+    def add_gaussian_noise(self, means, stds):
+        if self.session == None:
+            config = tf.ConfigProto()
+            config.gpu_options.allow_growth = True
+            self.session = tf.Session(config=config)
+        # model
+        mean = tf.placeholder(tf.float32, shape=[None, None],
+                                                name="mean")  # the letor features for the documents
+        std = tf.placeholder(tf.float32, shape=[None, None],
+                                                name="std")  # the letor features for the documents
+        nor = tf.compat.v1.distributions.Normal(mean, std)
+        output = nor.sample()
+        # run sampling
+        input_feed = {
+            mean.name: means,
+            std.name: stds,
+        }
+        output_feed = [output]
+        outputs = self.session.run(output_feed, input_feed)
+        return outputs[0]
+        
 
     def get_batch(self, data_set, check_validation=False):
         """Get a random batch of data, prepare for step. Typically used for training.
@@ -146,13 +170,19 @@ class NoisyLabelFeed(BaseInputFeed):
             raise ValueError("Input ranklist length must be no less than the required list size,"
                              " %d != %d." % (len(data_set.initial_list[0]), self.rank_list_size))
         length = len(data_set.initial_list)
-        docid_inputs, letor_features, labels = [], [], []
+        docid_inputs, letor_features, labels, letor_feature_vars, label_vars = [], [], [], [], []
         rank_list_idxs = []
         for _ in range(self.batch_size):
             i = int(random.random() * length)
             rank_list_idxs.append(i)
             self.prepare_noisy_labels_with_index(data_set, i,
-                                                docid_inputs, letor_features, labels, check_validation)
+                                                docid_inputs, letor_features, labels, letor_feature_vars, label_vars, check_validation)
+
+        # Add noise
+        if self.hparams.noisy_label_var > 0:
+            labels = self.add_gaussian_noise(labels, label_vars)
+        if self.hparams.noisy_feature_var > 0:
+            letor_features = self.add_gaussian_noise(letor_features, letor_feature_vars)
 
         local_batch_size = len(docid_inputs)
         letor_features_length = len(letor_features)
@@ -211,13 +241,19 @@ class NoisyLabelFeed(BaseInputFeed):
             raise ValueError("Input ranklist length must be no less than the required list size,"
                              " %d != %d." % (len(data_set.initial_list[0]), self.rank_list_size))
 
-        docid_inputs, letor_features, labels = [], [], []
+        docid_inputs, letor_features, labels, letor_feature_vars, label_vars = [], [], [], [], []
 
         num_remain_data = len(data_set.initial_list) - index
         for offset in range(min(self.batch_size, num_remain_data)):
             i = index + offset
             self.prepare_noisy_labels_with_index(
-                data_set, i, docid_inputs, letor_features, labels, check_validation)
+                data_set, i, docid_inputs, letor_features, labels, letor_feature_vars, label_vars, check_validation)
+
+        # Add noise
+        if self.hparams.noisy_label_var > 0:
+            labels = self.add_gaussian_noise(labels, label_vars)
+        if self.hparams.noisy_feature_var > 0:
+            letor_features = self.add_gaussian_noise(letor_features, letor_feature_vars)
 
         local_batch_size = len(docid_inputs)
         letor_features_length = len(letor_features)
@@ -268,7 +304,7 @@ class NoisyLabelFeed(BaseInputFeed):
             raise ValueError("Input ranklist length must be no less than the required list size,"
                              " %d != %d." % (len(data_set.initial_list[0]), self.rank_list_size))
 
-        docid_inputs, letor_features, labels = [], [], []
+        docid_inputs, letor_features, labels, letor_feature_vars, label_vars = [], [], [], [], []
 
         i = index
         self.prepare_noisy_labels_with_index(
@@ -276,8 +312,16 @@ class NoisyLabelFeed(BaseInputFeed):
             i,
             docid_inputs,
             letor_features,
-            labels,
+            labels, 
+            letor_feature_vars, 
+            label_vars,
             check_validation)
+
+        # Add noise
+        if self.hparams.noisy_label_var > 0:
+            labels = self.add_gaussian_noise(labels, label_vars)
+        if self.hparams.noisy_feature_var > 0:
+            letor_features = self.add_gaussian_noise(letor_features, letor_feature_vars)
 
         letor_features_length = len(letor_features)
         for j in range(self.rank_list_size):
