@@ -68,7 +68,7 @@ bash example/toy/offline_exp_pipeline.sh
 
 5. [PD](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/pairwise_debias.py): this model is an implementation of the pairwise debiasing algorithm in <a href="https://arxiv.org/pdf/1809.05818.pdf">*Unbiased LambdaMART: An Unbiased Pairwise Learning-to-Rank Algorithm*.</a>
 
-6. [DBGD](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/dbgd.py): this model is an implementation of the Dual Bandit Gradient Descent algorithm in <a href="https://arxiv.org/abs/1503.03244">*Interactively optimizing information retrieval systems as a dueling bandits problem*</a>
+6. [DBGD](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/dbgd.py): this model is an implementation of the Dual Bandit Gradient Descent algorithm in <a href="https://www.cs.cornell.edu/people/tj/publications/yue_joachims_09a.pdf">*Interactively optimizing information retrieval systems as a dueling bandits problem*</a>
 
 7. [MGD](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/mgd.py): this model is an implementation of the Multileave Gradient Descent in <a href="https://dl.acm.org/doi/pdf/10.1145/2835776.2835804">*Multileave Gradient Descent for Fast Online Learning to Rank*</a>
 
