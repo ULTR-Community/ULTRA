@@ -1,0 +1,22 @@
+{
+    "train_input_feed": "ultra.input_layer.DeterministicOnlineSimulationFeed",
+    "train_input_hparams": "click_model_json=/home/aiqy/Project/ULTRA/scripts/OnOff_exp/ClickModel/pbm_0.1_1.0_4_1.0.json",
+    "valid_input_feed": "ultra.input_layer.DirectLabelFeed",
+    "valid_input_hparams": "",
+    "test_input_feed": "ultra.input_layer.DirectLabelFeed",
+    "test_input_hparams": "",
+    "ranking_model":"ultra.ranking_model.DNN",
+    "ranking_model_hparams":"hidden_layer_sizes=[512, 256, 128]",
+    "learning_algorithm": "ultra.learning_algorithm.NSGD",
+    "learning_algorithm_hparams": "learning_rate=0.5",
+    "metrics": [
+        "err",
+        "ndcg"
+    ],
+    "metrics_topn": [
+        3,
+        5,
+        10
+    ],
+    "objective_metric": "ndcg_10"
+}
