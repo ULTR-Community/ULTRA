@@ -56,7 +56,7 @@ bash example/toy/offline_exp_pipeline.sh
 
 3. [StochasticOnlineSimulationFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/stochastic_online_simulation_feed.py): this is the input layer that first create ranked lists by sampling documents based on their scores in the current ranking model and the Plackett-Luce distribution, and then generate synthetic clicks on the lists to feed the learning algorithm. It can do result interleaving if required by the learning algorithm.
 
-4. [DirectLabelFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/direct_label_feed.py): this is the input layer that directly feed the true relevance labels of each documents to the learning algorithm.
+4. [DirectLabelFeed](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/input_layer/direct_label_feed.py): this is the input layer that directly feed the labels of each documents (e.g., the true relevance labels or raw click logs) to the learning algorithm.
 
 ### Learning Algorithms
 
