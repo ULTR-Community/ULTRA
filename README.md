@@ -60,53 +60,53 @@ bash example/toy/offline_exp_pipeline.sh
 
 ### Learning Algorithms
 
-1. [NA](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/na.py): this model is an implementation of the naive algorithm that directly train models with input labels (e.g., clicks).
+1. [NA](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/learning_algorithm/navie_algorithm.py): this model is an implementation of the naive algorithm that directly train models with input labels (e.g., clicks).
 
-2. [DLA](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/dla.py): this is an implementation of the Dual Learning Algorithm in <a href="https://arxiv.org/pdf/1804.05938.pdf">*Unbiased Learning to Rank with Unbiased Propensity Estimation*</a>.
+2. [DLA](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/learning_algorithm/dla.py): this is an implementation of the Dual Learning Algorithm in <a href="https://arxiv.org/pdf/1804.05938.pdf">*Unbiased Learning to Rank with Unbiased Propensity Estimation*</a>.
 
-3. [IPW](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/ipw_rank.py): this model is an implementation of the Inverse Propensity Weighting algorithms in <a href="https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/45286.pdf">*Learning to Rank with Selection Bias in Personal Search*</a> and <a href="https://arxiv.org/pdf/1608.04468.pdf"> *Unbiased Learning-to-Rank with Biased Feedback*</a>
+3. [IPW](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/learning_algorithm/ipw_rank.py): this model is an implementation of the Inverse Propensity Weighting algorithms in <a href="https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/45286.pdf">*Learning to Rank with Selection Bias in Personal Search*</a> and <a href="https://arxiv.org/pdf/1608.04468.pdf"> *Unbiased Learning-to-Rank with Biased Feedback*</a>
 
-4. [REM](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/regression_EM.py): this model is an implementation of the regression-based EM algorithm in <a href="https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/46485.pdf">*Position bias estimation for unbiased learning to rank in personal search*</a>
+4. [REM](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/learning_algorithm/regression_EM.py): this model is an implementation of the regression-based EM algorithm in <a href="https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/46485.pdf">*Position bias estimation for unbiased learning to rank in personal search*</a>
 
-5. [PD](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/pairwise_debias.py): this model is an implementation of the pairwise debiasing algorithm in <a href="https://arxiv.org/pdf/1809.05818.pdf">*Unbiased LambdaMART: An Unbiased Pairwise Learning-to-Rank Algorithm*.</a>
+5. [PD](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/learning_algorithm/pairwise_debias.py): this model is an implementation of the pairwise debiasing algorithm in <a href="https://arxiv.org/pdf/1809.05818.pdf">*Unbiased LambdaMART: An Unbiased Pairwise Learning-to-Rank Algorithm*.</a>
 
-6. [DBGD](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/dbgd.py): this model is an implementation of the Dual Bandit Gradient Descent algorithm in <a href="https://www.cs.cornell.edu/people/tj/publications/yue_joachims_09a.pdf">*Interactively optimizing information retrieval systems as a dueling bandits problem*</a>
+6. [DBGD](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/learning_algorithm/dbgd.py): this model is an implementation of the Dual Bandit Gradient Descent algorithm in <a href="https://www.cs.cornell.edu/people/tj/publications/yue_joachims_09a.pdf">*Interactively optimizing information retrieval systems as a dueling bandits problem*</a>
 
-7. [MGD](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/mgd.py): this model is an implementation of the Multileave Gradient Descent in <a href="https://dl.acm.org/doi/pdf/10.1145/2835776.2835804">*Multileave Gradient Descent for Fast Online Learning to Rank*</a>
+7. [MGD](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/learning_algorithm/mgd.py): this model is an implementation of the Multileave Gradient Descent in <a href="https://dl.acm.org/doi/pdf/10.1145/2835776.2835804">*Multileave Gradient Descent for Fast Online Learning to Rank*</a>
 
-8. [NSGD](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/nsgd.py): this model is an implementation of the Null Space Gradient Descent algorithm in <a href="https://dl.acm.org/doi/pdf/10.1145/3209978.3210045">*Efficient Exploration of Gradient Space for Online Learning to Rank*</a>
+8. [NSGD](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/learning_algorithm/nsgd.py): this model is an implementation of the Null Space Gradient Descent algorithm in <a href="https://dl.acm.org/doi/pdf/10.1145/3209978.3210045">*Efficient Exploration of Gradient Space for Online Learning to Rank*</a>
 
-9. [PDGD](https://github.com/ULTR-Community/ULTRA/blob/master/learning_algorithm/pdgd.py): this model is an implementation of the Pairwise Differentiable Gradient Descent algorithm in <a href="https://arxiv.org/abs/1809.08415">*Differentiable unbiased online learning to rank*</a>
+9. [PDGD](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/learning_algorithm/pdgd.py): this model is an implementation of the Pairwise Differentiable Gradient Descent algorithm in <a href="https://arxiv.org/abs/1809.08415">*Differentiable unbiased online learning to rank*</a>
 
 ### Ranking Models
 
-1. [Linear](https://github.com/ULTR-Community/ULTRA/blob/master/ranking_model/Linear.py): this is a linear ranking algorithm that compute ranking scores with a linear function.
+1. [Linear](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/ranking_model/Linear.py): this is a linear ranking algorithm that compute ranking scores with a linear function.
 
-2. [DNN](https://github.com/ULTR-Community/ULTRA/blob/master/ranking_model/DNN.py): this is neural ranking algorithm that compute ranking scores with a multi-layer perceptron network (with non-linear activation functions).
+2. [DNN](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/ranking_model/DNN.py): this is neural ranking algorithm that compute ranking scores with a multi-layer perceptron network (with non-linear activation functions).
 
-3. [DLCM](https://github.com/ULTR-Community/ULTRA/blob/master/ranking_model/DLCM.py): this is an implementation of the Deep Listwise Context Model in <a href="https://arxiv.org/pdf/1804.05936.pdf">*Learning a Deep Listwise Context Model for Ranking Refinement*</a>.
+3. [DLCM](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/ranking_model/DLCM.py): this is an implementation of the Deep Listwise Context Model in <a href="https://arxiv.org/pdf/1804.05936.pdf">*Learning a Deep Listwise Context Model for Ranking Refinement*</a>.
 
-4. [GSF](https://github.com/ULTR-Community/ULTRA/blob/master/ranking_model/GSF.py): this is an implementation of the Groupwise Scoring Function in <a href="https://arxiv.org/pdf/1811.04415.pdf">*Learning Groupwise Multivariate Scoring Functions Using Deep Neural Networks*</a>.
+4. [GSF](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/ranking_model/GSF.py): this is an implementation of the Groupwise Scoring Function in <a href="https://arxiv.org/pdf/1811.04415.pdf">*Learning Groupwise Multivariate Scoring Functions Using Deep Neural Networks*</a>.
 
-5. [SetRank](https://github.com/ULTR-Community/ULTRA/blob/master/ranking_model/SetRank.py): this is an implementation of the SetRank model in <a href="https://arxiv.org/abs/1912.05891">*SetRank: Learning a Permutation-Invariant Ranking Model for Information Retrieval*</a>.
+5. [SetRank](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/ranking_model/SetRank.py): this is an implementation of the SetRank model in <a href="https://arxiv.org/abs/1912.05891">*SetRank: Learning a Permutation-Invariant Ranking Model for Information Retrieval*</a>.
 
 ## Supported Evaluation Metrics
 
-1. [MRR](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Mean_reciprocal_rank">Mean Reciprocal Rank</a> (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
+1. [MRR](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Mean_reciprocal_rank">Mean Reciprocal Rank</a> (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
 
-2. [ERR](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the Expected Reciprocal Rank from <a href="http://olivier.chapelle.cc/pub/err.pdf">*Expected reciprocal rank for graded relevance*</a>.
+2. [ERR](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/utils/metrics.py): the Expected Reciprocal Rank from <a href="http://olivier.chapelle.cc/pub/err.pdf">*Expected reciprocal rank for graded relevance*</a>.
 
-3. [ARP](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the Average Relevance Position (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
+3. [ARP](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/utils/metrics.py): the Average Relevance Position (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
 
-4. [NDCG](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Discounted_cumulative_gain">Normalized Discounted Cumulative Gain</a> (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
+4. [NDCG](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Discounted_cumulative_gain">Normalized Discounted Cumulative Gain</a> (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
 
-5. [DCG](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Discounted_cumulative_gain">Discounted Cumulative Gain</a> (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
+5. [DCG](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Discounted_cumulative_gain">Discounted Cumulative Gain</a> (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
 
-6. [Precision](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the Precision (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
+6. [Precision](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/utils/metrics.py): the Precision (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
 
-7. [MAP](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision">Mean Average Precision</a> (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
+7. [MAP](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/utils/metrics.py): the <a href="https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision">Mean Average Precision</a> (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
 
-8. [Ordered_Pair_Accuracy](https://github.com/ULTR-Community/ULTRA/blob/master/utils/metrics.py): the percentage of correctedly ordered pair (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
+8. [Ordered_Pair_Accuracy](https://github.com/ULTR-Community/ULTRA/blob/master/ultra/utils/metrics.py): the percentage of correctedly ordered pair (inherited from [TF-Ranking](https://github.com/tensorflow/ranking)).
 
 ## Click Simulation Example
 
