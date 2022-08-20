@@ -115,6 +115,21 @@ The navie algorithm that directly trains ranking models with input labels.
 Hyper Parameters
 ****************
 
+Vectorization
+#############
+
+Description
+***********
+
+Vectorization for unbiased learning to rank.
+
+See the following paper for more information on the Vectorization.
+
+* Mouxiang Chen, Chenghao Liu, Zemin Liu, Jianling Sun. 2022. Scalar is Not Enough: Vectorization-based Unbiased Learning to Rank. In Proceedings of SIGKDD '22.
+
+Hyper Parameters
+****************
+
 MGD
 ###
 

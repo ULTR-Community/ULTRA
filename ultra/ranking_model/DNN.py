@@ -29,7 +29,8 @@ class DNN(BaseRankingModel):
             # or tanh
             activation_func='elu',
             initializer='None',                         # Set parameter initializer
-            norm="layer"                                # Set the default normalization
+            norm="layer",                               # Set the default normalization
+            output_size=1                               # Set the output size
         )
         self.hparams.parse(hparams_str)
         self.initializer = None
@@ -63,7 +64,8 @@ class DNN(BaseRankingModel):
                                reuse=tf.AUTO_REUSE):
             input_data = tf.concat(input_list, axis=0)
             output_data = input_data
-            output_sizes = self.hparams.hidden_layer_sizes + [1]
+            output_sizes = self.hparams.hidden_layer_sizes + \
+                [self.hparams.output_size]
 
             if self.layer_norm is None and self.hparams.norm in BaseRankingModel.NORM_FUNC_DIC:
                 self.layer_norm = []

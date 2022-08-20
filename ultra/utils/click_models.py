@@ -10,9 +10,15 @@ def loadModelFromJson(model_desc):
         click_model = UserBrowsingModel()
     elif model_desc['model_name'] == 'cascade_model':
         click_model = CascadeModel()
+    elif model_desc['model_name'] == 'click_matrix_model':
+        click_model = ClickMatrixModel()
+    elif model_desc['model_name'] == 'trust_biased_model':
+        click_model = TrustBiasedModel()
     click_model.eta = model_desc['eta']
     click_model.click_prob = model_desc['click_prob']
     click_model.exam_prob = model_desc['exam_prob']
+    if 'extra' in model_desc:
+        click_model.extra = model_desc['extra']
     return click_model
 
 
@@ -180,7 +186,7 @@ class UserBrowsingModel(ClickModel):
                 exam_p = self.exam_prob[-1][-1]
             else:
                 idx = distance - \
-                    1 if distance < len(self.exam_prob[-1]) - 1 else -2
+                      1 if distance < len(self.exam_prob[-1]) - 1 else -2
                 exam_p = self.exam_prob[-1][idx]
         return exam_p
 
@@ -235,6 +241,87 @@ class CascadeModel(ClickModel):
         return self.exam_prob[rank if rank < len(self.exam_prob) else -1]
 
 
+class ClickMatrixModel(ClickModel):
+    """
+    Sample clicks according to a click matrix, where the rows represent relevance levels, and the
+    columns represent positions.
+    """
+
+    @property
+    def model_name(self):
+        return 'click_matrix_model'
+
+    def setExamProb(self, eta):
+        self.eta = eta
+        self.exam_prob = []
+
+    def sampleClicksForOneList(self, label_list):
+        click_list, exam_p_list, click_p_list = [], [], []
+        for rank in range(len(label_list)):
+            relevance_label = label_list[rank]
+            relevance_label = int(
+                relevance_label) if relevance_label > 0 else 0
+            click_p = self.click_prob[relevance_label][rank]
+            click_list.append(1 if random.random() < click_p else 0)
+        return click_list, exam_p_list, click_p_list
+
+    def estimatePropensityWeightsForOneList(
+            self, click_list, use_non_clicked_data=False):
+        raise
+
+
+class TrustBiasedModel(ClickModel):
+    """
+    See the following paper for more information on the trust bias simulation model.
+
+    Ali Vardasbi, Harrie Oosterhuis, and Maarten de Rijke. When Inverse Propensity Scoring does not
+    Work: Affine Corrections for Unbiased Learning to Rank. CIKM 2020
+    """
+
+    @property
+    def model_name(self):
+        return 'trust_biased_model'
+
+    def setExamProb(self, eta):
+        self.eta = eta
+        self.original_exam_prob = [0.68, 0.61, 0.48,
+                                   0.34, 0.28, 0.20, 0.11, 0.10, 0.08, 0.06]
+        self.exam_prob = [pow(x, eta) for x in self.original_exam_prob]
+
+    def sampleClicksForOneList(self, label_list, feature_list=None):
+        click_list, exam_p_list, click_p_list = [], [], []
+        for rank in range(len(label_list)):
+            click, exam_p, click_p = self.sampleClick(rank, label_list[rank])
+            click_list.append(click)
+            exam_p_list.append(exam_p)
+            click_p_list.append(click_p)
+        return click_list, exam_p_list, click_p_list
+
+    def estimatePropensityWeightsForOneList(
+            self, click_list, use_non_clicked_data=False):
+        raise
+
+    def sampleClick(self, rank, relevance_label):
+        if not relevance_label == int(relevance_label):
+            print('RELEVANCE LABEL MUST BE INTEGER!')
+        relevance_label = int(relevance_label) if relevance_label > 0 else 0
+        exam_p = self.getExamProb(rank)
+        click_p = self.getClickProb(rank, relevance_label)
+        click = 1 if random.random() < exam_p * click_p else 0
+        return click, exam_p, click_p
+
+    def getExamProb(self, rank):
+        return self.exam_prob[rank if rank < len(self.exam_prob) else -1]
+
+    def getClickProb(self, rank, label):
+        primitive_click_prob = self.click_prob[label if label < len(
+            self.click_prob) else -1]
+        ep_plus = 1 - (rank + 2) / 100
+        ep_minus = self.extra['epsilon_1_neg'] / (rank + 1)
+        return primitive_click_prob * ep_plus + \
+               (1 - primitive_click_prob) * ep_minus
+
+
 def test_initialization():
     # Test PBM
     test_model = PositionBiasedModel(0.1, 0.9, 4, 1.0)
@@ -242,7 +329,7 @@ def test_initialization():
     print('PBM(2, 0) -> %d, %f, %f' % test_model.sampleClick(2, 0))
     print('PBM(14, 1) -> %d, %f, %f' % test_model.sampleClick(14, 1))
     click_list, exam_p_list, click_p_list = test_model.sampleClicksForOneList([
-                                                                              4, 0, 3, 4])
+        4, 0, 3, 4])
     print(click_list)
     print(exam_p_list)
     print(click_p_list)
@@ -255,7 +342,7 @@ def test_initialization():
     print('UBM(14, 9, 1) -> %d, %f, %f' % test_model.sampleClick(14, 9, 1))
     print('UBM(14, 1, 2) -> %d, %f, %f' % test_model.sampleClick(14, 1, 2))
     click_list, exam_p_list, click_p_list = test_model.sampleClicksForOneList([
-                                                                              4, 0, 3, 4])
+        4, 0, 3, 4])
     print(click_list)
     print(exam_p_list)
     print(click_p_list)
@@ -269,7 +356,7 @@ def test_load_from_file():
         data = json.load(fin)
         click_model = loadModelFromJson(data)
     click_list, exam_p_list, click_p_list = click_model.sampleClicksForOneList([
-                                                                               4, 0, 3, 4])
+        4, 0, 3, 4])
     print(click_list)
     print(exam_p_list)
     print(click_p_list)
@@ -280,7 +367,7 @@ def main():
     MODELS = {
         'pbm': PositionBiasedModel,
         'cascade': CascadeModel,
-        'ubm': UserBrowsingModel,
+        'ubm': UserBrowsingModel
     }
 
     model_name = sys.argv[1]

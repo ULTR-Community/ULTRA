@@ -10,6 +10,7 @@ from .pairwise_debias import *
 from .navie_algorithm import *
 from .mgd import *
 from .nsgd import *
+from .vectorization import *
 
 
 def list_available() -> list:

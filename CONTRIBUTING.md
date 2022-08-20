@@ -48,7 +48,7 @@ Contributing Flow
 
 
 Your PR will be merged if:
-- Funcitonally benefit for the project.
+- Functionally benefit for the project.
 - With proper docstrings, see codebase as examples.
 - All reviewers approved your changes.
 
