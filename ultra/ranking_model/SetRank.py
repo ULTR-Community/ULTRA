@@ -117,7 +117,7 @@ class EncoderLayer(tf.keras.layers.Layer):
 
 class Encoder(tf.keras.layers.Layer):
     def __init__(self, num_layers, d_model, num_heads, dff,
-                 rate=0.1):
+                 rate=0.1, output_size=1):
         super(Encoder, self).__init__()
 
         self.d_model = d_model
@@ -129,7 +129,7 @@ class Encoder(tf.keras.layers.Layer):
         self.input_layer_norm = tf.keras.layers.LayerNormalization(
             epsilon=1e-6)
         self.input_embedding = point_wise_feed_forward_network(d_model, dff)
-        self.output_layer = point_wise_feed_forward_network(1, dff)
+        self.output_layer = point_wise_feed_forward_network(output_size, dff)
         self.enc_layers = [EncoderLayer(d_model, num_heads, dff, rate)
                            for _ in range(num_layers)]
 #         self.softmax_output=tf.keras.layers.Softmax(1)
@@ -146,7 +146,7 @@ class Encoder(tf.keras.layers.Layer):
             x = self.enc_layers[i](x, training, mask)
         x = self.output_layer(x)
 #         x=self.softmax_output(x)
-        return x  # (batch_size, input_seq_len, 1)
+        return x  # (batch_size, input_seq_len, output_size)
 
 
 def point_wise_feed_forward_network(d_model, dff):
@@ -219,15 +219,17 @@ class SetRank(BaseRankingModel):
             num_layers=2,
             diff=64,
             rate=0.0,
-            initializer=None
+            initializer=None,
+            output_size=1
         )
         self.hparams.parse(hparams_str)
         self.initializer = None
         if self.hparams.initializer == 'constant':
             self.initializer = tf.constant_initializer(0.001)
-        with tf.variable_scope(tf.get_variable_scope()or "transformer", reuse=tf.AUTO_REUSE):
+        with tf.variable_scope(tf.get_variable_scope() or "transformer", reuse=tf.AUTO_REUSE):
             self.Encoder_layer = Encoder(self.hparams.num_layers, self.hparams.d_model,
-                                         self.hparams.num_heads, self.hparams.diff, self.hparams.rate)
+                                         self.hparams.num_heads, self.hparams.diff, self.hparams.rate,
+                                         self.hparams.output_size)
 
     def build(self, input_list, noisy_params=None,
               noise_rate=0.05, is_training=False, **kwargs):
