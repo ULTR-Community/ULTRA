@@ -207,7 +207,7 @@ Please read the [Contributing Guide](./CONTRIBUTING.md) before creating a pull r
 ## Project Organizers
 
 - Qingyao Ai
-  * School of Computing, Tsinghua University
+  * Dept. of CS&T, Tsinghua University
   * [Homepage](http://ir.aiqingyao.org/)
 
 
